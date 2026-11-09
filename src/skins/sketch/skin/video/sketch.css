@@ -1,0 +1,513 @@
+/*
+ * Sketch: places and colors what the pen draws (src/video/sketch). Lines are filled SVG shapes;
+ * these rules position them, color them from the theme tokens, and run the draw-on. Colors and
+ * motion live in the tokens in src/styles/themes, so preferences can change them.
+ *
+ * This layer comes after `components`, so it overrides Scaffold's visuals where they differ.
+ */
+@layer sketch {
+  @scope (.media-skin[data-theme="scaffold"][data-preset="video"]) {
+    /* ---------------------------------------------------------------- drawn parts */
+
+    .media-sketch-surface,
+    .media-sketch-scribble,
+    .media-sketch-mark,
+    .media-sketch-track {
+      position: absolute;
+      max-width: none;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .media-sketch-track > svg {
+      max-width: none;
+    }
+
+    .media-sketch-surface {
+      z-index: -1;
+      filter: drop-shadow(2px 3px 0 var(--sketch-shadow));
+    }
+
+    .media-sketch-paper {
+      fill: var(--sketch-paper);
+    }
+
+    .media-sketch-ink {
+      fill: var(--sketch-graphite);
+    }
+
+    /* Masks that reveal a line as if drawn. Drawn by default; the rules below animate them. */
+    .media-sketch-draw {
+      fill: none;
+      stroke: white;
+      stroke-width: 14px;
+      stroke-linecap: round;
+      stroke-dasharray: 1 1;
+      stroke-dashoffset: 0;
+    }
+
+    @keyframes media-sketch-draw {
+      from {
+        stroke-dashoffset: 1;
+      }
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes media-sketch-spin {
+      to {
+        rotate: 360deg;
+      }
+    }
+
+    /* Surfaces whose parents draw their own paper need these. */
+    .media-button-disc,
+    .media-button-paper,
+    .video-controls-bottom,
+    .media-tooltip-popup,
+    .media-volume-popover-popup,
+    .media-menu-popup,
+    .media-time-slider-preview,
+    .media-indicator,
+    .media-dialog-popup,
+    .media-title-tag,
+    .media-sketch-spinner-disc,
+    .media-time-slider-thumb,
+    .media-volume-slider-thumb,
+    .media-menu-item,
+    .media-menu-back-item,
+    .media-menu-radio-item {
+      isolation: isolate;
+    }
+
+    /* ---------------------------------------------------------------- buttons */
+
+    .media-button {
+      background-color: transparent;
+    }
+
+    .media-button:focus-visible {
+      outline: none;
+    }
+
+    .media-button > [data-sketch-icon],
+    .media-button > .media-seek-button-content {
+      position: relative;
+    }
+
+    .media-sketch-scribble {
+      opacity: 0;
+    }
+
+    .media-sketch-scribble .media-sketch-draw {
+      stroke-width: 6px;
+      stroke-dashoffset: 1;
+    }
+
+    .media-sketch-scribble-ink {
+      fill: var(--sketch-graphite-soft);
+    }
+
+    @media (hover: hover) {
+      .media-button:not(.media-button-disc, .media-button-paper, [aria-disabled="true"], :disabled):hover > .media-sketch-scribble {
+        opacity: 1;
+      }
+
+      .media-button:not(.media-button-disc, .media-button-paper, [aria-disabled="true"], :disabled):hover > .media-sketch-scribble .media-sketch-draw {
+        animation: media-sketch-draw var(--sketch-draw-duration) var(--sketch-draw-easing) forwards;
+      }
+    }
+
+    /* Keyboard focus: the same loop in red pencil, on every focusable part. */
+    .media-button:focus-visible > .media-sketch-scribble,
+    .media-time-slider-thumb:focus-visible > .media-sketch-scribble,
+    .media-volume-slider-thumb:focus-visible > .media-sketch-scribble {
+      opacity: 1;
+    }
+
+    .media-button:focus-visible > .media-sketch-scribble .media-sketch-scribble-ink,
+    .media-time-slider-thumb:focus-visible > .media-sketch-scribble .media-sketch-scribble-ink,
+    .media-volume-slider-thumb:focus-visible > .media-sketch-scribble .media-sketch-scribble-ink {
+      fill: var(--sketch-red-pencil);
+    }
+
+    .media-button:focus-visible > .media-sketch-scribble .media-sketch-draw,
+    .media-time-slider-thumb:focus-visible > .media-sketch-scribble .media-sketch-draw,
+    .media-volume-slider-thumb:focus-visible > .media-sketch-scribble .media-sketch-draw {
+      animation: media-sketch-draw var(--sketch-draw-duration) var(--sketch-draw-easing) forwards;
+    }
+
+    .media-button-disc {
+      width: calc(var(--media-spacing) * 9);
+      height: calc(var(--media-spacing) * 9);
+    }
+
+    /* The play triangle sits optically centred, a little right of the box centre. */
+    .video-controls-center-play .media-play-button-play-icon {
+      translate: 6% 0;
+    }
+
+    .media-seek-button-label {
+      font-weight: 600;
+    }
+
+    .media-button:focus-visible,
+    .video-controls-center-button:focus-visible {
+      outline: none;
+    }
+
+    /* ---------------------------------------------------------------- control bar */
+
+    .video-controls-bottom {
+      inset-inline: calc(var(--media-spacing) * 2);
+      bottom: calc(var(--media-spacing) * 2);
+      gap: 0;
+      padding: var(--media-spacing) calc(var(--media-spacing) * 3) calc(var(--media-spacing) * 1.5);
+      background-color: transparent;
+    }
+
+    .video-controls-top {
+      gap: calc(var(--media-spacing) * 2.5);
+    }
+
+    .media-title-tag {
+      position: relative;
+      display: flex;
+      min-width: 0;
+      flex: 0 1 auto;
+      margin-inline-end: auto;
+      rotate: -1deg;
+    }
+
+    .media-title-tag:not(:has(.media-title[data-visible])) {
+      visibility: hidden;
+    }
+
+    .media-title {
+      flex: 0 1 auto;
+      background-color: transparent;
+      padding-block: calc(var(--media-spacing) * 1);
+      padding-inline: calc(var(--media-spacing) * 3.5);
+      font-weight: 600;
+      color: var(--sketch-graphite);
+    }
+
+    .media-time-group,
+    .media-time-slider-value {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .media-time-toggle:focus-visible {
+      outline: none;
+      position: relative;
+    }
+
+    /* A CSS ring here, since the time display renders its own element; same color, width and offset. */
+    .media-time-toggle:focus-visible::after {
+      content: "";
+      position: absolute;
+      inset: -4px -6px;
+      border: 2px solid var(--sketch-red-pencil);
+      border-radius: var(--sketch-cut-small);
+      rotate: -1deg;
+      pointer-events: none;
+    }
+
+    /* Controls leave calmly and return at once. */
+    .video-controls-bottom,
+    .video-controls-top,
+    .video-controls-center {
+      transition: opacity var(--media-duration-controls) ease-out;
+    }
+
+    /* ---------------------------------------------------------------- sliders */
+
+    .media-sketch-track {
+      inset-inline: 0;
+      top: 50%;
+      height: 24px;
+      translate: 0 -50%;
+    }
+
+    .media-sketch-track[data-orientation="vertical"] {
+      inset-inline: auto;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 24px;
+      height: auto;
+      translate: -50% 0;
+    }
+
+    .media-sketch-track > svg {
+      position: absolute;
+      inset: 0;
+      overflow: visible;
+    }
+
+    .media-sketch-track-line {
+      fill: var(--sketch-graphite);
+    }
+
+    .media-sketch-track-buffer {
+      fill: color-mix(in oklab, var(--sketch-graphite) 38%, transparent);
+      clip-path: inset(-8px calc(100% - var(--media-slider-buffer, 0%)) -8px -8px);
+    }
+
+    .media-sketch-track-fill {
+      fill: var(--media-accent);
+      clip-path: inset(-8px calc(100% - var(--media-slider-fill, 0%)) -8px -8px);
+    }
+
+    .media-time-slider[data-dragging] .media-sketch-track-fill {
+      clip-path: inset(-8px calc(100% - var(--media-slider-pointer, 0%)) -8px -8px);
+    }
+
+    .media-sketch-track[data-orientation="vertical"] .media-sketch-track-fill {
+      clip-path: inset(calc(100% - var(--media-slider-fill, 0%)) -8px -8px -8px);
+    }
+
+    /* Scaffold's flat bars give way to the drawn ones. */
+    .media-time-slider-track,
+    .media-time-slider-track::before,
+    .media-time-slider-buffer,
+    .media-time-slider-fill,
+    .media-volume-slider-track,
+    .media-volume-slider-fill {
+      background-color: transparent !important;
+      border: 0;
+    }
+
+    .media-volume-slider-track {
+      overflow: visible;
+    }
+
+    /* Chapters keep a small gap between them, and room above and below for the drawn line. */
+    .media-time-slider-chapter {
+      clip-path: inset(
+        -14px calc(100% - var(--media-slider-chapter-end) + var(--media-spacing) * var(--media-chapter-inset-end, 0))
+          -14px calc(var(--media-slider-chapter-start) + var(--media-spacing) * var(--media-chapter-inset-start, 0))
+      );
+    }
+
+    .media-time-slider-thumb,
+    .media-volume-slider-thumb {
+      width: 18px;
+      height: 18px;
+      background-color: transparent;
+      border: 0;
+      outline: none;
+    }
+
+    .media-time-slider-thumb:focus-visible,
+    .media-volume-slider-thumb:focus-visible {
+      outline: none;
+    }
+
+    /* The scrubbing preview is a taped polaroid. */
+    .media-time-slider-preview {
+      padding: 6px 6px 2px;
+      rotate: -1.5deg;
+    }
+
+    .media-sketch-tape {
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      width: 46px;
+      height: 16px;
+      z-index: 1;
+      translate: -50% 0;
+      rotate: 3deg;
+      background-color: var(--sketch-tape);
+    }
+
+    .media-slider-thumbnail {
+      background-color: transparent;
+    }
+
+    .media-time-slider-preview-meta {
+      color: var(--sketch-graphite);
+      background-color: transparent;
+      padding-block: calc(var(--media-spacing) * 0.75);
+    }
+
+    .media-time-slider-value {
+      font-weight: 600;
+    }
+
+    .media-time-slider-chapter-title {
+      color: var(--sketch-graphite-soft);
+      opacity: 1;
+    }
+
+    /* ---------------------------------------------------------------- popups */
+
+    .media-tooltip-popup {
+      background-color: transparent;
+      color: var(--sketch-graphite);
+      rotate: -1.5deg;
+    }
+
+    .media-tooltip-shortcut {
+      background-color: transparent;
+      color: var(--sketch-graphite-soft);
+    }
+
+    .media-volume-popover-popup {
+      background-color: transparent;
+      rotate: 1deg;
+    }
+
+    /* Menus clip their sliding panes, so their paper is drawn inside the box and the shadow comes from the popup. */
+    .media-menu-popup {
+      background-color: transparent;
+      color: var(--sketch-graphite);
+      filter: drop-shadow(2px 3px 0 var(--sketch-shadow));
+    }
+
+    .media-menu-popup .media-sketch-surface,
+    .media-dialog-popup .media-sketch-surface {
+      filter: none;
+    }
+
+    .media-volume-popover-popup[data-open] .media-sketch-surface .media-sketch-draw,
+    .media-menu-popup[data-open] > .media-sketch-surface .media-sketch-draw,
+    .media-dialog-popup[data-open] > .media-sketch-surface .media-sketch-draw {
+      animation: media-sketch-draw calc(var(--sketch-draw-duration) * 1.3) var(--sketch-draw-easing) both;
+    }
+
+    .media-menu-item,
+    .media-menu-back-item,
+    .media-menu-radio-item {
+      position: relative;
+      background-color: transparent;
+    }
+
+    .media-menu-item[data-highlighted],
+    .media-menu-back-item[data-highlighted],
+    .media-menu-radio-item[data-highlighted] {
+      background-color: transparent;
+    }
+
+    .media-menu-item:focus-visible,
+    .media-menu-back-item:focus-visible,
+    .media-menu-radio-item:focus-visible {
+      outline: none;
+    }
+
+    .media-sketch-mark {
+      inset: 0;
+      z-index: -1;
+    }
+
+    .media-sketch-mark .media-sketch-draw {
+      stroke-width: 8px;
+      stroke-dashoffset: 1;
+    }
+
+    .media-sketch-underline {
+      fill: var(--sketch-red-pencil);
+      opacity: 0;
+    }
+
+    .media-sketch-ring {
+      fill: var(--sketch-red-pencil);
+      opacity: 0;
+    }
+
+    [data-highlighted] > .media-sketch-mark .media-sketch-underline {
+      opacity: 1;
+    }
+
+    [data-highlighted] > .media-sketch-mark .media-sketch-draw {
+      animation: media-sketch-draw calc(var(--sketch-draw-duration) * 0.8) var(--sketch-draw-easing) forwards;
+    }
+
+    :focus-visible > .media-sketch-mark .media-sketch-ring {
+      opacity: 1;
+    }
+
+    .media-menu-radio-icon {
+      color: var(--sketch-red-pencil);
+    }
+
+    .media-menu-separator {
+      background-color: transparent;
+      border-top: 1.5px dashed color-mix(in oklab, var(--sketch-graphite) 40%, transparent);
+    }
+
+    /* ---------------------------------------------------------------- feedback */
+
+    .media-indicator {
+      background-color: transparent;
+      color: var(--sketch-graphite);
+    }
+
+    .media-dialog-popup {
+      background-color: transparent;
+      color: var(--sketch-graphite);
+      filter: drop-shadow(2px 3px 0 var(--sketch-shadow));
+    }
+
+    .media-dialog-title {
+      color: var(--sketch-red-pencil);
+    }
+
+    .media-dialog-popup .media-button-paper .media-sketch-surface {
+      filter: drop-shadow(1px 2px 0 var(--sketch-shadow));
+    }
+
+    .media-sketch-spinner-disc {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: calc(var(--media-spacing) * 14);
+      height: calc(var(--media-spacing) * 14);
+    }
+
+    .media-sketch-spin {
+      transform-box: view-box;
+      transform-origin: center;
+      animation: var(--media-spinner-animation, media-sketch-spin 1.2s steps(12) infinite);
+    }
+
+    /* Captions are drawn by the skin over the bottom of the picture (sketch/schematic.tsx). */
+    video::-webkit-media-text-track-container {
+      display: none;
+    }
+
+    video::cue {
+      color: transparent;
+      background-color: transparent;
+      text-shadow: none;
+    }
+
+    /* ---------------------------------------------------------------- preferences */
+
+    @media (forced-colors: active) {
+      .media-sketch-surface,
+      .media-menu-popup,
+      .media-dialog-popup {
+        filter: none;
+      }
+
+      .media-sketch-paper {
+        fill: Canvas;
+      }
+
+      .media-sketch-ink,
+      .media-sketch-track-line,
+      .media-sketch-scribble-ink {
+        fill: CanvasText;
+      }
+
+      .media-sketch-track-fill,
+      .media-sketch-underline,
+      .media-sketch-ring {
+        fill: Highlight;
+      }
+    }
+  }
+}

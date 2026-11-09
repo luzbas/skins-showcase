@@ -1,0 +1,109 @@
+/* Small Dish Society — an engineer's notebook on the Sketch skin's dotted paper: graphite, red pencil, IBM Plex Mono.
+   Parts are boxes with an offset pencil shadow; red marks the one thing to do next. */
+.sd {
+  --paper: #eeebe3;
+  --paper-light: #f7f4ec;
+  --graphite: #2b2a27;
+  --red: #c0392b;
+  --dots: #d2cdc1;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  background: radial-gradient(circle, var(--dots) 1px, transparent 1.4px) 0 0 / 20px 20px, var(--paper);
+  color: var(--graphite);
+  font-family: var(--mono);
+  font-size: 1rem;
+  line-height: 1.6;
+  overflow-x: clip;
+}
+.sd a { color: var(--graphite); }
+.sd a:hover { color: var(--red); }
+.sd :focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+
+.sd-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px 28px; padding: 24px clamp(16px, 4vw, 48px); border-bottom: 1.5px solid var(--graphite); }
+.sd .sd-logo { display: flex; align-items: baseline; gap: 12px; text-decoration: none; font-weight: 700; font-size: 1.25rem; }
+.sd-logo span { font-size: 0.75rem; font-weight: 500; }
+.sd-nav { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* A pad: a part with an offset pencil shadow. */
+.sd .sd-pad {
+  display: inline-block;
+  padding: 8px 12px;
+  border: 1.5px solid var(--graphite);
+  box-shadow: 2px 2px 0 var(--graphite);
+  background: var(--paper);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: translate 0.12s, box-shadow 0.12s;
+}
+.sd .sd-pad:hover { translate: 1px 1px; box-shadow: 1px 1px 0 var(--graphite); color: var(--graphite); }
+.sd .sd-pad--red { border-color: var(--red); box-shadow: 2px 2px 0 var(--red); color: var(--red); }
+.sd .sd-pad--red:hover { box-shadow: 1px 1px 0 var(--red); color: var(--red); }
+.sd .sd-pad--big { margin-top: 28px; padding: 14px 22px; font-size: 1rem; font-weight: 700; box-shadow: 3px 3px 0 var(--red); }
+
+/* ---------- Hero ---------- */
+.sd-hero { max-width: 1200px; margin: 0 auto; padding: 72px clamp(16px, 4vw, 48px) 56px; display: flex; flex-wrap: wrap; gap: 40px 56px; align-items: center; }
+.sd-hero-text { flex: 999 1 520px; }
+.sd-label { margin: 0 0 16px; font-size: 0.8125rem; font-weight: 600; }
+.sd-title { margin: 0; font-weight: 700; font-size: clamp(2.5rem, 5vw, 3.75rem); line-height: 1.05; letter-spacing: -0.02em; }
+.sd-mark { box-shadow: inset 0 -0.17em 0 rgb(192 57 43 / 0.35); }
+.sd-lede { margin: 24px 0 0; max-width: 52ch; font-size: 1.125rem; }
+.sd-fig { flex: 1 1 320px; margin: 0; color: var(--graphite); }
+.sd-fig svg { display: block; width: 100%; height: auto; }
+.sd-fig-red { stroke: var(--red); }
+.sd-fig-labels { font: 600 12px var(--mono); fill: var(--red); }
+.sd-fig figcaption { font-size: 0.75rem; text-align: center; }
+
+/* ---------- Sections ---------- */
+.sd-section { max-width: 1200px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 48px) 64px; }
+.sd-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 24px; margin-bottom: 18px; }
+.sd-h2 { margin: 0 0 24px; font-weight: 700; font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.2; }
+.sd-head .sd-h2 { margin: 0; }
+.sd-h2 span { margin-right: 10px; font-size: 0.8125rem; font-weight: 500; vertical-align: 0.3em; }
+.sd-head-note { margin: 0; font-size: 0.875rem; }
+
+.sd-sessions { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 28px 40px; }
+.sd-part { position: relative; flex: 1 1 230px; padding: 22px 20px 20px; border: 1.5px solid var(--graphite); box-shadow: 3px 3px 0 var(--graphite); background: var(--paper); }
+/* A pencil wire from each evening to the next. */
+.sd-part:not([data-last])::after { content: ''; position: absolute; top: 50%; right: -42px; width: 40px; border-top: 1.5px solid var(--graphite); }
+.sd-part[data-last] { border-color: var(--red); box-shadow: 3px 3px 0 var(--red); }
+.sd-part[data-last] .sd-label { color: var(--red); }
+.sd-part .sd-label { margin: 0; font-size: 0.75rem; }
+.sd-part-title { margin: 6px 0 8px; font-weight: 700; font-size: 1.25rem; line-height: 1.2; }
+.sd-part-text { margin: 0; font-size: 0.9375rem; }
+
+.sd-table-wrap { overflow-x: auto; }
+.sd-table { width: 100%; min-width: 620px; border-collapse: collapse; font-size: 0.9375rem; }
+.sd-table th { padding: 10px 12px; font-weight: 600; text-align: left; border-bottom: 1.5px solid var(--graphite); }
+.sd-table td { padding: 10px 12px; border-bottom: 1px dashed var(--graphite); }
+.sd-table th:first-child, .sd-table td:first-child { padding-left: 0; }
+.sd-provided { color: var(--red); font-weight: 600; }
+.sd-check { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
+.sd-check input { width: 18px; height: 18px; accent-color: var(--red); }
+.sd-check input:checked + span { color: var(--red); font-weight: 600; }
+.sd-table-note { margin: 12px 0 0; font-size: 0.8125rem; }
+
+/* ---------- Sign up ---------- */
+.sd-join { display: flex; flex-wrap: wrap; gap: 24px 40px; padding: clamp(20px, 3vw, 32px); border: 1.5px solid var(--red); box-shadow: 4px 4px 0 var(--red); background: var(--paper); }
+.sd-join-text { flex: 1 1 300px; }
+.sd-join-text p { margin: 0; }
+.sd-join-title { margin: 0 0 8px; font-weight: 700; font-size: 2rem; color: var(--red); }
+.sd-form { flex: 1 1 420px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.sd-form label { flex: 1 1 200px; display: flex; flex-direction: column; gap: 4px; font-size: 0.8125rem; font-weight: 600; }
+.sd-form input { padding: 12px; border: 1.5px solid var(--graphite); background: var(--paper-light); color: var(--graphite); font: 1rem var(--mono); }
+.sd-form button { padding: 13px 22px; border: 1.5px solid var(--graphite); background: var(--graphite); color: var(--paper); font: 700 1rem var(--mono); cursor: pointer; }
+.sd-form button:hover { background: var(--red); border-color: var(--red); }
+.sd-error { flex-basis: 100%; margin: 0; color: var(--red); font-weight: 600; }
+.sd-saved { flex: 1 1 420px; margin: 0; align-self: center; }
+.sd-saved strong { color: var(--red); }
+.sd-link { padding: 0; border: 0; background: none; color: var(--graphite); font: inherit; text-decoration: underline; cursor: pointer; }
+
+.sd-foot { padding: 20px clamp(16px, 4vw, 48px) 28px; border-top: 1.5px solid var(--graphite); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; font-size: 0.8125rem; }
+
+/* The wires only make sense when all four evenings sit in one row. */
+@media (max-width: 1339px) {
+  .sd-part::after { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sd .sd-pad { transition: none; }
+}

@@ -1,0 +1,1003 @@
+/*
+ * Papercut (naive): a construction-paper look over the Default skin.
+ * Everything here sits in its own layer, declared after the Default skin's layers, so it wins without !important.
+ * Tokens come first; the rules below them only add what tokens can't express (paper cut-outs, tilts, the googly eye).
+ * Lumpy cut edges come from the SVG filters rendered by `PapercutFilters` (#pc-lumpy, #pc-lumpy-sm), which also loads
+ * the Gaegu web font (SIL Open Font License); without it the font stack falls back to rounded system fonts.
+ */
+@layer papercut {
+  /* ---------- Tokens ---------- */
+  .papercut-skin {
+    /* Construction paper. */
+    --pc-ink: #2a2320;
+    --pc-cream: #fff9ea;
+    /* Deep enough that the cream time text on the bar reaches 4.5:1. */
+    --pc-red: #cc3b2b;
+    --pc-blue: #2f7bc0;
+    --pc-green: #3e9b4f;
+    --pc-orange: #e8a21c;
+    --pc-yellow: #f6c531;
+
+    /* Paper behaviour. */
+    --pc-edge: url(#pc-lumpy);
+    --pc-edge-sm: url(#pc-lumpy-sm);
+    --pc-shadow: drop-shadow(0 2px 1px rgb(42 35 32 / 0.45)) drop-shadow(0 6px 8px rgb(42 35 32 / 0.2));
+    --pc-shadow-lifted: drop-shadow(0 5px 3px rgb(42 35 32 / 0.35)) drop-shadow(0 14px 16px rgb(42 35 32 / 0.25));
+    --pc-zigzag-depth: calc(var(--media-spacing) * 2.5);
+    --pc-bleed: calc(var(--media-spacing) * 4);
+    --pc-focus: 3px dashed var(--media-ring);
+    --pc-hide-slide: 110%;
+
+    /* Video.js tokens. `--media-accent-color` still overrides the accent, as on the packaged skins. */
+    --media-default-accent-color: var(--pc-yellow);
+    --media-default-accent-text-color: var(--pc-ink);
+    --media-accent: transparent;
+    --media-accent-foreground: currentColor;
+    --media-font-family: 'Gaegu', 'Comic Sans MS', ui-rounded, system-ui, sans-serif;
+    --media-popover: var(--pc-red);
+    --media-popover-foreground: var(--pc-cream);
+    --media-ring: var(--pc-cream);
+    --media-muted: rgb(42 35 32 / 0.25);
+    --media-backdrop-filter-surface: none;
+    --media-backdrop-filter-indicator: none;
+    --media-shadow-surface: none;
+    --media-shadow-surface-inset: none;
+    --media-shadow-thumb: none;
+    --media-surface-border: transparent;
+    --media-control-size: calc(var(--media-spacing) * 11);
+    --media-icon-size: calc(var(--media-spacing) * 5.5);
+    --media-controls-radius: 4px;
+    --media-popup-radius: 6px;
+    --media-menu-item-radius: 4px;
+    --media-video-border-radius: var(--media-border-radius, 12px);
+    /* Captions clear the full-height paper strip. */
+    --media-caption-controls-y: calc(var(--media-spacing) * -20);
+  }
+
+  /* ---------- The control bar: a strip of red paper with a pinking-shear top edge ---------- */
+  .papercut-skin .video-controls-content,
+  .papercut-skin .video-controls-primary,
+  .papercut-skin .video-controls-secondary {
+    isolation: isolate;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  .papercut-skin .video-controls-content::after,
+  .papercut-skin .video-controls-primary::after,
+  .papercut-skin .video-controls-secondary::after {
+    content: none;
+  }
+
+  @container media-root (width >= 32rem) {
+    /* A full-width strip along the bottom edge instead of the Default skin's floating, inset bar. */
+    .papercut-skin .video-controls-content {
+      inset-inline: 0;
+      bottom: 0;
+      border-radius: 0;
+      padding: var(--pc-zigzag-depth) calc(var(--media-spacing) * 3) calc(var(--media-spacing) * 2);
+      text-shadow: none;
+    }
+
+    /* The paper runs past the sides and bottom, where the player clips it, so the rough edge never shows video. */
+    .papercut-skin .video-controls-content::before {
+      content: '';
+      position: absolute;
+      inset: 0 calc(var(--pc-bleed) * -1) calc(var(--pc-bleed) * -1);
+      z-index: -1;
+      background-color: var(--media-popover);
+      clip-path: polygon(
+        0 var(--pc-zigzag-depth),
+        2% 2px,
+        4% var(--pc-zigzag-depth),
+        6% 2px,
+        8% var(--pc-zigzag-depth),
+        10% 2px,
+        12% var(--pc-zigzag-depth),
+        14% 2px,
+        16% var(--pc-zigzag-depth),
+        18% 2px,
+        20% var(--pc-zigzag-depth),
+        22% 2px,
+        24% var(--pc-zigzag-depth),
+        26% 2px,
+        28% var(--pc-zigzag-depth),
+        30% 2px,
+        32% var(--pc-zigzag-depth),
+        34% 2px,
+        36% var(--pc-zigzag-depth),
+        38% 2px,
+        40% var(--pc-zigzag-depth),
+        42% 2px,
+        44% var(--pc-zigzag-depth),
+        46% 2px,
+        48% var(--pc-zigzag-depth),
+        50% 2px,
+        52% var(--pc-zigzag-depth),
+        54% 2px,
+        56% var(--pc-zigzag-depth),
+        58% 2px,
+        60% var(--pc-zigzag-depth),
+        62% 2px,
+        64% var(--pc-zigzag-depth),
+        66% 2px,
+        68% var(--pc-zigzag-depth),
+        70% 2px,
+        72% var(--pc-zigzag-depth),
+        74% 2px,
+        76% var(--pc-zigzag-depth),
+        78% 2px,
+        80% var(--pc-zigzag-depth),
+        82% 2px,
+        84% var(--pc-zigzag-depth),
+        86% 2px,
+        88% var(--pc-zigzag-depth),
+        90% 2px,
+        92% var(--pc-zigzag-depth),
+        94% 2px,
+        96% var(--pc-zigzag-depth),
+        98% 2px,
+        100% var(--pc-zigzag-depth),
+        100% 100%,
+        0 100%
+      );
+      filter: var(--pc-edge) var(--pc-shadow);
+    }
+  }
+
+  /* Narrow players split the bar into two paper scraps, bottom and top. */
+  @container media-root (width < 32rem) {
+    .papercut-skin .video-controls-primary,
+    .papercut-skin .video-controls-secondary {
+      color: var(--media-popover-foreground);
+    }
+
+    .papercut-skin .video-controls-primary::before,
+    .papercut-skin .video-controls-secondary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+      background-color: var(--media-popover);
+      filter: var(--pc-edge-sm) var(--pc-shadow);
+    }
+
+    /* The bottom scrap runs the full width too; the top one stays a loose scrap. */
+    .papercut-skin .video-controls-primary {
+      inset-inline: 0;
+      bottom: 0;
+      border-radius: 0;
+      padding: calc(var(--media-spacing) * 2) calc(var(--media-spacing) * 2) calc(var(--media-spacing) * 1.5);
+    }
+
+    .papercut-skin .video-controls-primary::before {
+      inset: 0 calc(var(--pc-bleed) * -1) calc(var(--pc-bleed) * -1);
+    }
+    .papercut-skin .video-controls-secondary {
+      rotate: 1.5deg;
+    }
+  }
+
+  /* ---------- Buttons: hand-cut paper discs, each at its own tilt ---------- */
+  .papercut-skin .video-controls .media-button {
+    --pc-button-paper: var(--pc-cream);
+    --pc-button-ink: var(--pc-ink);
+    --pc-tilt: 0deg;
+
+    position: relative;
+    isolation: isolate;
+    color: var(--pc-button-ink);
+    background-color: transparent;
+    rotate: var(--pc-tilt);
+    margin-inline: 2px;
+    transition-property: color, rotate, translate, scale, outline-offset;
+  }
+
+  .papercut-skin .video-controls .media-button::before {
+    content: '';
+    position: absolute;
+    inset: calc(var(--media-spacing) * 0.5);
+    z-index: -1;
+    border-radius: 54% 46% 50% 48% / 46% 52% 48% 54%;
+    background-color: var(--pc-button-paper);
+    box-shadow: inset 0 0 0 2.5px var(--pc-cream);
+    filter: var(--pc-edge-sm) var(--pc-shadow);
+    transition-property: filter;
+    transition-duration: var(--media-duration);
+  }
+
+  .papercut-skin .video-controls .media-play-button {
+    --pc-button-paper: var(--media-primary);
+    --pc-button-ink: var(--media-primary-foreground);
+    --pc-tilt: -6deg;
+    width: calc(var(--media-control-size) + var(--media-spacing) * 2);
+    height: calc(var(--media-control-size) + var(--media-spacing) * 2);
+  }
+
+  .papercut-skin .video-controls .media-mute-button {
+    --pc-button-paper: var(--pc-blue);
+    --pc-button-ink: var(--pc-cream);
+    --pc-tilt: 7deg;
+  }
+  .papercut-skin .video-controls .media-captions-button {
+    --pc-tilt: -5deg;
+  }
+  .papercut-skin .video-controls .media-settings-menu-trigger {
+    --pc-button-paper: var(--pc-orange);
+    --pc-tilt: 6deg;
+  }
+  .papercut-skin .video-controls .media-pip-button {
+    --pc-button-paper: var(--pc-green);
+    --pc-button-ink: var(--pc-cream);
+    --pc-tilt: -7deg;
+  }
+  .papercut-skin .video-controls .media-fullscreen-button {
+    --pc-tilt: 4deg;
+  }
+  .papercut-skin .video-controls :is(.media-cast-button, .media-airplay-button) {
+    --pc-tilt: -3deg;
+  }
+
+  /* Icons are cut from paper too: thicker, slightly wobbly. */
+  .papercut-skin .video-controls .media-button :is(.media-button-icon, .media-button-icon-base) {
+    filter: var(--pc-edge-sm);
+  }
+
+  @media (hover: hover) {
+    .papercut-skin .video-controls .media-button:not([aria-disabled='true']):hover {
+      background-color: transparent;
+      color: var(--pc-button-ink);
+      translate: 0 -2px;
+      rotate: calc(var(--pc-tilt) * 1.8);
+    }
+
+    /* The mute button opens the volume popover on hover, so it doesn't move under the pointer. */
+    .papercut-skin .video-controls .media-mute-button:not([aria-disabled='true']):hover {
+      translate: none;
+      rotate: var(--pc-tilt);
+    }
+
+    .papercut-skin .video-controls .media-button:not([aria-disabled='true']):hover::before {
+      filter: var(--pc-edge-sm) var(--pc-shadow-lifted);
+    }
+  }
+
+  .papercut-skin .video-controls .media-button:not([aria-disabled='true']):active {
+    translate: 0 1px;
+    scale: 0.93;
+  }
+
+  .papercut-skin
+    .media-button:where(:focus-visible, [aria-expanded='true'], [data-highlighted]):where(
+      :not([aria-disabled='true'])
+    ) {
+    background-color: transparent;
+    color: var(--pc-button-ink);
+  }
+
+  /* Focus: a dashed "cut here" line around the piece. */
+  .papercut-skin .media-button:focus-visible,
+  .papercut-skin .media-time-toggle:focus-visible,
+  .papercut-skin .media-slider-thumb:focus-visible {
+    outline: var(--pc-focus);
+    outline-offset: 2px;
+  }
+
+  /* The player itself, when focused: the same ink-on-cream line, since it sits over the page or the video. */
+  .papercut-skin.media-container:focus-visible {
+    outline: 3px dashed var(--pc-ink);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 10px var(--pc-cream);
+  }
+
+  /* ---------- Time: chunky handwriting on the strip ---------- */
+  .papercut-skin .media-time-value,
+  .papercut-skin .media-time-toggle {
+    font-size: 1.45em;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The time toggle is a button: pad it to a 44px-tall target. */
+  .papercut-skin .media-time-toggle {
+    padding-block: calc((var(--media-spacing) * 11 - 1em) / 2);
+    padding-inline: calc(var(--media-spacing) * 1);
+  }
+
+  /* Room for the googly eye at either end of the timeline. */
+  .papercut-skin .video-time-slider-group {
+    gap: calc(var(--media-spacing) * 5);
+  }
+
+  /* ---------- Sliders: a cream paper strip, yellow progress, a googly-eye thumb ---------- */
+  /* The strip is drawn by the track's ::before, which Video.js insets per chapter, so chapter breaks become notches. */
+  .papercut-skin .media-slider-track {
+    filter: url(#pc-lumpy-xs) drop-shadow(0 2px 1px rgb(42 35 32 / 0.4));
+  }
+
+  .papercut-skin .media-slider-track::before {
+    border-radius: 3px;
+    background-color: var(--pc-cream);
+  }
+
+  .papercut-skin .media-slider-track[data-orientation='horizontal'] {
+    height: calc(var(--media-spacing) * 3);
+  }
+
+  /* Chapter breaks: a wider notch cut into the strip. The ends of the timeline stay flush. */
+  .papercut-skin .media-time-slider-chapter {
+    --media-chapter-inset-start: 1.25;
+    --media-chapter-inset-end: 1.25;
+  }
+
+  .papercut-skin .media-time-slider-chapter:first-of-type {
+    --media-chapter-inset-start: 0;
+  }
+
+  .papercut-skin .media-time-slider-chapter:last-of-type {
+    --media-chapter-inset-end: 0;
+  }
+
+  /* The chapter under the pointer lifts a little, like a strip peeling off the page. */
+  .papercut-skin
+    .media-time-slider-chapter[data-highlighted]
+    .media-time-slider-chapter-track[data-orientation='horizontal'] {
+    height: calc(var(--media-spacing) * 4);
+    translate: 0 -1px;
+  }
+
+  /* Buffered video is a faint pencil shading on the strip. */
+  .papercut-skin .media-slider-buffer::before {
+    background-color: rgb(42 35 32 / 0.08);
+  }
+
+  /* Played video: the yellow strip gets a pencil outline, so it reads apart from the cream track (yellow alone is
+     only 1.5:1 against it). */
+  .papercut-skin .media-slider-fill::before {
+    background-color: var(--media-primary);
+    box-shadow: inset 0 0 0 2px var(--pc-ink);
+  }
+
+  /* The yellow overlaps the cream strip by --pc-fill-overlap above and below, so no cream fringe shows along its
+     edges (exactly matching edges leave an anti-aliased cream line, made worse by the wobble filter). The start isn't
+     extended: an unplayed chapter's empty fill would show as a sliver. Its corners match the track's instead. */
+  .papercut-skin .media-time-slider .media-slider-fill[data-orientation='horizontal'] {
+    --pc-fill-overlap: 2px;
+    clip-path: inset(calc(var(--pc-fill-overlap) * -1) 0);
+  }
+
+  .papercut-skin .media-time-slider .media-slider-fill[data-orientation='horizontal']::before {
+    inset: calc(var(--pc-fill-overlap) * -1) 0;
+    width: auto;
+    height: auto;
+    border-radius: 3px;
+  }
+
+  .papercut-skin .media-time-slider-thumb {
+    width: calc(var(--media-spacing) * 7);
+    height: calc(var(--media-spacing) * 7);
+    background:
+      radial-gradient(circle at 36% 30%, rgb(255 255 255 / 0.9) 0 9%, transparent 10%),
+      radial-gradient(circle at 56% 56%, var(--pc-ink) 0 30%, transparent 31%), #fff;
+    box-shadow: inset 0 0 0 3px var(--pc-ink);
+    filter: drop-shadow(0 2px 1px rgb(42 35 32 / 0.5)) drop-shadow(0 6px 8px rgb(42 35 32 / 0.2));
+  }
+
+  /* The googly eye is the playhead, so it stays visible instead of appearing only on hover. */
+  .papercut-skin .media-time-slider-thumb,
+  .papercut-skin .media-time-slider-thumb[data-interactive] {
+    opacity: 1;
+    scale: 1;
+  }
+
+  /* In the volume popover the card is cream, so its track is a darker scrap and the thumb a dark-rimmed button. */
+  .papercut-skin .media-volume-popover .media-slider-track::before {
+    background-color: rgb(42 35 32 / 0.22);
+  }
+
+  .papercut-skin .media-volume-popover .media-slider-track[data-orientation='vertical'] {
+    width: calc(var(--media-spacing) * 2);
+  }
+
+  .papercut-skin .media-volume-slider-thumb {
+    width: calc(var(--media-spacing) * 5);
+    height: calc(var(--media-spacing) * 5);
+    background-color: var(--pc-cream);
+    box-shadow: inset 0 0 0 3px var(--pc-ink);
+  }
+
+  /* ---------- Seek preview: the thumbnail is a polaroid stuck on the bar ----------
+     The thumbnail clips to its storyboard tile, so the frame is drawn with box shadows outside it: a cream border on
+     every side, deeper at the bottom (the chin). The hover time sits on the chin. */
+  .papercut-skin .media-time-slider {
+    --pc-photo-border: calc(var(--media-spacing) * 2.5);
+    --pc-photo-chin: calc(var(--media-spacing) * 8);
+    --pc-photo-tilt: -1.5deg;
+    --media-slider-preview-offset: calc(var(--media-spacing) * 21);
+    --media-slider-preview-label-offset: calc(var(--media-spacing) * 12.5);
+  }
+
+  .papercut-skin .media-time-slider .media-slider-thumbnail {
+    border-radius: 2px;
+    background-color: var(--pc-cream);
+    rotate: var(--pc-photo-tilt);
+    /* Slightly offset shadows make the border uneven, like it was cut by hand; #pc-ragged-frame roughs its edge. */
+    box-shadow:
+      1px -2px 0 var(--pc-photo-border) var(--pc-cream),
+      -2px 1px 0 var(--pc-photo-border) var(--pc-cream),
+      1px var(--pc-photo-chin) 0 var(--pc-photo-border) var(--pc-cream);
+    filter: url(#pc-ragged-frame) drop-shadow(0 2px 1px rgb(42 35 32 / 0.45))
+      drop-shadow(0 8px 12px rgb(42 35 32 / 0.25));
+  }
+
+  .papercut-skin .media-time-slider .media-slider-thumbnail::after {
+    content: none;
+  }
+
+  /* No thumbnails for this media: the time tag sits just above the bar, as there's no frame to sit on. */
+  .papercut-skin .media-slider-preview:has(.media-slider-thumbnail[data-hidden]) {
+    --media-slider-preview-label-offset: calc(var(--media-spacing) * 7);
+  }
+
+  /* No thumbnails for this media: no frame either, only the time tag. */
+  .papercut-skin .media-time-slider .media-slider-thumbnail[data-hidden] {
+    background-color: transparent;
+    box-shadow: none;
+    filter: none;
+  }
+
+  .papercut-skin .media-time-slider-preview-content {
+    color: var(--pc-ink);
+    text-shadow: none;
+    rotate: var(--pc-photo-tilt);
+    gap: calc(var(--media-spacing) * 1);
+  }
+
+  /* The time is a cream tag: it blends into the polaroid's chin, and still reads over the video when there are no
+     thumbnails to frame. */
+  .papercut-skin .media-time-slider-value {
+    padding: 3px calc(var(--media-spacing) * 2) 1px;
+    border-radius: 2px;
+    background-color: var(--pc-cream);
+    font-size: 1.35em;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  /* A chapter title, when there is one, is a little paper label stuck over the photo's bottom edge. */
+  .papercut-skin .media-time-slider-chapter-title:not(:empty) {
+    padding: 2px calc(var(--media-spacing) * 2);
+    background-color: var(--media-primary);
+    color: var(--media-primary-foreground);
+    font-weight: 700;
+    rotate: 2deg;
+    filter: drop-shadow(0 1px 1px rgb(42 35 32 / 0.35));
+  }
+
+  /* ---------- Popups, menus and tooltips: loose cream cards ---------- */
+  /* The popup keeps its own positioning and its ::before, which the volume popover uses as a hover bridge to its
+     trigger. The paper card is drawn with ::after instead. */
+  .papercut-skin .media-popup-surface {
+    --media-popover-foreground: var(--pc-ink);
+    isolation: isolate;
+    background-color: transparent;
+    color: var(--pc-ink);
+    box-shadow: none;
+    font-size: 1.2em;
+  }
+
+  .papercut-skin .media-popup-surface::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+    box-shadow: none;
+    background-color: var(--pc-cream);
+    filter: var(--pc-edge-sm) var(--pc-shadow);
+  }
+
+  .papercut-skin .media-menu-popup {
+    rotate: -1deg;
+  }
+
+  .papercut-skin .media-menu-separator {
+    background: none;
+    border-top: 2px dashed rgb(42 35 32 / 0.35);
+  }
+
+  .papercut-skin .media-menu-content [role^='menuitem'][data-highlighted] {
+    background-color: var(--media-primary);
+    color: var(--media-primary-foreground);
+  }
+
+  /* The chosen option gets a check mark on a little accent paper dot. */
+  .papercut-skin .media-menu-item-indicator {
+    display: grid;
+    place-items: center;
+    width: calc(var(--media-spacing) * 6);
+    height: calc(var(--media-spacing) * 6);
+    border-radius: 50%;
+    background-color: var(--media-primary);
+    color: var(--media-primary-foreground);
+    rotate: -8deg;
+    filter: var(--pc-edge-sm) drop-shadow(0 1px 1px rgb(42 35 32 / 0.35));
+  }
+
+  .papercut-skin .media-menu-radio-item-icon {
+    color: inherit;
+  }
+
+  /* The back row looks like a folded-down corner of the card. */
+  .papercut-skin .media-menu-back-item {
+    background-image: linear-gradient(135deg, rgb(42 35 32 / 0.18) 0 9px, var(--pc-cream) 9px 12px, transparent 12px);
+    font-weight: 700;
+  }
+
+  .papercut-skin .media-menu-content [role^='menuitem'][data-highlighted] {
+    rotate: -0.6deg;
+  }
+
+  .papercut-skin .media-menu-content [role^='menuitem']:focus-visible {
+    outline: 3px dashed var(--pc-ink);
+    outline-offset: -3px;
+  }
+
+  .papercut-skin .media-tooltip {
+    background-color: var(--pc-cream);
+    color: var(--pc-ink);
+    box-shadow: none;
+    font-size: 1.15em;
+    font-weight: 700;
+    rotate: -2deg;
+    filter: var(--pc-shadow);
+  }
+
+  /* ---------- Paper motion (subtle) ----------
+     Durations come from the skin's tokens, which collapse under reduced motion, and --pc-hide-slide drops to 0 there
+     so hiding becomes a plain fade. Transitions never run on first load. */
+
+  /* Hiding the controls pulls the strip down out of the picture, instead of Default's blur-and-shrink. */
+  @container media-root (width >= 32rem) {
+    .papercut-skin .video-controls-content:not([data-visible]) {
+      translate: 0 var(--pc-hide-slide);
+      scale: 1;
+      filter: none;
+    }
+  }
+
+  @container media-root (width < 32rem) {
+    .papercut-skin .video-controls-content:not([data-visible]) .video-controls-primary {
+      translate: 0 var(--pc-hide-slide);
+      scale: 1;
+      filter: none;
+    }
+
+    .papercut-skin .video-controls-content:not([data-visible]) .video-controls-secondary {
+      translate: 0 calc(var(--pc-hide-slide) * -1);
+      scale: 1;
+      filter: none;
+    }
+  }
+
+  /* Play, pause and replay flip like a card: the outgoing icon turns edge-on as the incoming one turns to face you. */
+  .papercut-skin .media-play-button {
+    --media-hidden-icon-scale: 1;
+  }
+
+  .papercut-skin .media-play-button .media-button-icon {
+    rotate: y 90deg;
+    transition-property: opacity, rotate;
+    transition-duration: var(--media-duration-slow);
+  }
+
+  .papercut-skin .media-play-button[data-started]:not([data-paused]):not([data-ended]) .media-play-button-pause-icon,
+  .papercut-skin .media-play-button:not([data-ended]):not([data-started]) .media-play-button-play-icon,
+  .papercut-skin .media-play-button:not([data-ended])[data-paused] .media-play-button-play-icon,
+  .papercut-skin .media-play-button[data-ended] .media-play-button-restart-icon {
+    rotate: y 0deg;
+  }
+
+  /* Mute and the volume levels swap with a small wobble. */
+  .papercut-skin .media-mute-button .media-button-icon {
+    rotate: -25deg;
+    transition-property: opacity, rotate;
+    transition-duration: var(--media-duration-slow);
+    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .papercut-skin .media-mute-button:not([data-muted]):not([data-volume-level='low']) .media-mute-button-high-icon,
+  .papercut-skin .media-mute-button:not([data-muted])[data-volume-level='low'] .media-mute-button-low-icon,
+  .papercut-skin .media-mute-button[data-muted] .media-mute-button-off-icon {
+    rotate: 0deg;
+  }
+
+  /* ---------- Player states: the paper stage in the middle of the video ---------- */
+  /* The stage sits over the video and under the controls; only the big button takes the pointer. */
+  .papercut-skin .pc-stage {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: calc(var(--media-spacing) * 2);
+    pointer-events: none;
+  }
+
+  /* Skip back, play, skip forward, side by side in the middle. */
+  .papercut-skin .pc-stage-row {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--media-spacing) * 4);
+  }
+
+  /* The skip buttons: cream paper discs either side of the big play button, shown only while paused (not at the end).
+     Unlike the big button they stay in the tab order while shown: they're the only on-screen skip controls. While
+     playing, the arrow keys still skip. */
+  .papercut-skin .pc-stage-seek {
+    --pc-seek-size: clamp(calc(var(--media-spacing) * 11), 8cqi, calc(var(--media-spacing) * 15));
+    --pc-tilt: -5deg;
+    position: relative;
+    isolation: isolate;
+    width: var(--pc-seek-size);
+    height: var(--pc-seek-size);
+    color: var(--pc-ink);
+    background-color: transparent;
+    rotate: var(--pc-tilt);
+    pointer-events: auto;
+    opacity: 0;
+    scale: 0.85;
+    visibility: hidden;
+    transition-property: opacity, scale, rotate, translate, visibility;
+    transition-duration: var(--media-duration-slow);
+  }
+
+  .papercut-skin .pc-stage-seek + .pc-big-play + .pc-stage-seek {
+    --pc-tilt: 6deg;
+  }
+
+  .papercut-skin .pc-stage-row:has(.pc-big-play[data-paused]:not([data-ended])) .pc-stage-seek {
+    opacity: 1;
+    scale: 1;
+    visibility: visible;
+  }
+
+  .papercut-skin .pc-stage-seek::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 48% 52% 46% 54% / 52% 48% 54% 46%;
+    background-color: var(--pc-cream);
+    /* An ink rim, like a marker outline, keeps the disc visible over bright video. */
+    box-shadow: 0 0 0 2.5px var(--pc-ink);
+    filter: var(--pc-edge-sm) var(--pc-shadow-lifted);
+  }
+
+  .papercut-skin .pc-stage-seek .media-button-icon {
+    width: calc(var(--pc-seek-size) * 0.5);
+    height: calc(var(--pc-seek-size) * 0.5);
+    filter: var(--pc-edge-sm);
+  }
+
+  .papercut-skin .pc-stage-seek .media-seek-button-label {
+    bottom: -0.35em;
+    font-size: 0.95em;
+    font-weight: 700;
+  }
+
+  @media (hover: hover) {
+    .papercut-skin .pc-stage-seek:hover {
+      background-color: transparent;
+      color: var(--pc-ink);
+      rotate: calc(var(--pc-tilt) * 1.8);
+      translate: 0 -2px;
+    }
+  }
+
+  .papercut-skin .pc-stage-seek:active {
+    scale: 0.93;
+  }
+
+  /* Over the video the focus line can't rely on one colour: ink dashes on a cream halo read over any frame. */
+  .papercut-skin .pc-stage-seek:focus-visible {
+    background-color: transparent;
+    color: var(--pc-ink);
+    outline: 3px dashed var(--pc-ink);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 10px var(--pc-cream);
+  }
+
+  /* The big play button: a large accent disc, shown whenever the video is paused (before start, paused or ended). */
+  .papercut-skin .pc-big-play {
+    --pc-big-size: clamp(calc(var(--media-spacing) * 16), 14cqi, calc(var(--media-spacing) * 26));
+    position: relative;
+    isolation: isolate;
+    width: var(--pc-big-size);
+    height: var(--pc-big-size);
+    color: var(--media-primary-foreground);
+    background-color: transparent;
+    rotate: -6deg;
+    pointer-events: auto;
+    opacity: 0;
+    scale: 0.85;
+    visibility: hidden;
+    transition-property: opacity, scale, rotate, translate, visibility;
+    transition-duration: var(--media-duration-slow);
+  }
+
+  .papercut-skin .pc-big-play[data-paused] {
+    opacity: 1;
+    scale: 1;
+    visibility: visible;
+  }
+
+  .papercut-skin .pc-big-play::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 54% 46% 50% 48% / 46% 52% 48% 54%;
+    background-color: var(--media-primary);
+    box-shadow:
+      inset 0 0 0 4px var(--pc-cream),
+      0 0 0 2.5px var(--pc-ink);
+    filter: var(--pc-edge) var(--pc-shadow-lifted);
+  }
+
+  .papercut-skin .pc-big-play .media-button-icon {
+    width: 42%;
+    height: 42%;
+    filter: var(--pc-edge-sm);
+  }
+
+  @media (hover: hover) {
+    .papercut-skin .pc-big-play[data-paused]:hover {
+      background-color: transparent;
+      color: var(--media-primary-foreground);
+      rotate: -10deg;
+      translate: 0 -3px;
+    }
+  }
+
+  .papercut-skin .pc-big-play:active {
+    scale: 0.94;
+  }
+
+  /* On small players the big button would crowd the picture; the bar's play button is enough. */
+  @container media-root (width < 24rem) {
+    .papercut-skin .pc-stage :is(.pc-big-play, .pc-stage-seek) {
+      display: none;
+    }
+  }
+
+  /* "The End": a paper banner across the video when it finishes, with the replay button under it. */
+  .papercut-skin .pc-end-banner {
+    margin: 0;
+    padding: calc(var(--media-spacing) * 2) calc(var(--media-spacing) * 10) calc(var(--media-spacing) * 1);
+    position: relative;
+    isolation: isolate;
+    color: var(--pc-ink);
+    font-size: clamp(2rem, 9cqi, 5rem);
+    font-weight: 700;
+    line-height: 1;
+    rotate: -3deg;
+    display: none;
+  }
+
+  .papercut-skin .pc-end-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--pc-cream);
+    /* Ribbon ends notched like a banner. */
+    clip-path: polygon(0 0, 100% 0, 96% 50%, 100% 100%, 0 100%, 4% 50%);
+    filter: var(--pc-edge) var(--pc-shadow-lifted);
+  }
+
+  .papercut-skin .pc-stage:has(.pc-big-play[data-ended]) .pc-end-banner {
+    display: block;
+  }
+
+  /* While the banner shows, the replay button sits straighter, tucked under it. */
+  .papercut-skin .pc-big-play[data-ended] {
+    rotate: 4deg;
+    margin-top: calc(var(--media-spacing) * -2);
+  }
+
+  /* While playing, Default's centre flash of the play/pause icon would sit where the big button appears; the big
+     button already shows the paused state, so the flash is dropped, backdrop circle included. The status announcer
+     still reports it. */
+  .papercut-skin .media-playback-status-indicator {
+    display: none;
+  }
+
+  /* ---------- Buffering: a paper pinwheel pinned with a brad ---------- */
+  /* While the pinwheel spins, the stage steps aside so the two never overlap. */
+  .papercut-skin:has(.media-buffering-indicator[data-visible]) .pc-stage {
+    visibility: hidden;
+  }
+
+  .papercut-skin .media-buffering-indicator::before {
+    background-color: rgb(42 35 32 / 0.25);
+    backdrop-filter: none;
+  }
+
+  .papercut-skin .media-buffering-indicator-spinner-icon {
+    display: none;
+  }
+
+  .papercut-skin .pc-pinwheel {
+    position: relative;
+    z-index: 30;
+    width: calc(var(--media-spacing) * 18);
+    height: calc(var(--media-spacing) * 18);
+    filter: var(--pc-shadow-lifted);
+  }
+
+  /* Four blades: a conic gradient of paper colours cut into a pinwheel outline. */
+  .papercut-skin .pc-pinwheel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: conic-gradient(var(--pc-red) 0 25%, var(--pc-yellow) 0 50%, var(--pc-blue) 0 75%, var(--pc-green) 0);
+    clip-path: polygon(
+      50% 0,
+      50% 50%,
+      100% 0,
+      100% 50%,
+      50% 50%,
+      100% 100%,
+      50% 100%,
+      50% 50%,
+      0 100%,
+      0 50%,
+      50% 50%,
+      0 0
+    );
+    filter: var(--pc-edge-sm);
+    animation: pc-pinwheel-spin 1.6s linear infinite;
+  }
+
+  /* The brad in the middle. */
+  .papercut-skin .pc-pinwheel::after {
+    content: '';
+    position: absolute;
+    inset: 41%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #f3f3f0 0 20%, #9a9a9a 60%, #4a4a4a 100%);
+    box-shadow: 0 1px 1px rgb(0 0 0 / 0.4);
+  }
+
+  .papercut-skin .media-buffering-indicator:not([data-visible]) .pc-pinwheel::before {
+    animation: none;
+  }
+
+  @keyframes pc-pinwheel-spin {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  /* ---------- Error dialog: a torn note taped over the video ---------- */
+  .papercut-skin .media-dialog-popup {
+    isolation: isolate;
+    border-radius: 4px;
+    background-color: transparent;
+    color: var(--pc-ink);
+    box-shadow: none;
+    text-shadow: none;
+    rotate: -1.5deg;
+    padding: calc(var(--media-spacing) * 5) calc(var(--media-spacing) * 5) calc(var(--media-spacing) * 4);
+    font-size: 1.15em;
+    filter: var(--pc-shadow-lifted);
+  }
+
+  /* The note itself, with rough edges, behind the text. */
+  .papercut-skin .media-dialog-popup::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    box-shadow: none;
+    background-color: var(--pc-cream);
+    filter: url(#pc-lumpy);
+  }
+
+  /* A strip of tape across the top. */
+  .papercut-skin .media-dialog-popup::before {
+    content: '';
+    position: absolute;
+    top: calc(var(--media-spacing) * -2.5);
+    left: 50%;
+    width: calc(var(--media-spacing) * 22);
+    height: calc(var(--media-spacing) * 6);
+    translate: -50% 0;
+    rotate: 3deg;
+    background-color: rgb(236 228 206 / 0.92);
+    box-shadow: 0 1px 2px rgb(42 35 32 / 0.2);
+    clip-path: polygon(0 12%, 5% 0, 95% 6%, 100% 30%, 96% 62%, 100% 92%, 4% 100%, 0 68%, 3% 40%);
+  }
+
+  .papercut-skin .media-dialog-title {
+    font-size: 1.35em;
+    font-weight: 700;
+  }
+
+  /* OK is a paper button in the accent colour, cut by hand. */
+  .papercut-skin .media-dialog-close {
+    position: relative;
+    isolation: isolate;
+    width: auto;
+    min-width: calc(var(--media-spacing) * 24);
+    align-self: center;
+    background-color: transparent;
+    color: var(--media-primary-foreground);
+    font-weight: 700;
+    font-size: 1.1em;
+    rotate: 1.5deg;
+  }
+
+  .papercut-skin .media-dialog-close::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 6px;
+    background-color: var(--media-primary);
+    filter: var(--pc-edge-sm) var(--pc-shadow);
+  }
+
+  @media (hover: hover) {
+    .papercut-skin .media-dialog-close:hover {
+      background-color: transparent;
+      color: var(--media-primary-foreground);
+      translate: 0 -2px;
+    }
+  }
+
+  .papercut-skin .media-dialog-close:focus-visible {
+    background-color: transparent;
+    outline: 3px dashed var(--pc-ink);
+    outline-offset: 3px;
+  }
+
+  /* ---------- Preferences ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .papercut-skin {
+      --pc-hide-slide: 0%;
+    }
+
+    /* The pinwheel holds still; the dimmed video and the status announcer still show it's loading. */
+    .papercut-skin .pc-pinwheel::before {
+      animation: none;
+    }
+
+    .papercut-skin .pc-stage-seek:hover {
+      translate: none;
+      rotate: var(--pc-tilt);
+    }
+
+    .papercut-skin .video-controls .media-button,
+    .papercut-skin .video-controls .media-button:hover {
+      translate: none;
+      rotate: var(--pc-tilt);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .papercut-skin .video-controls .media-button::before,
+    .papercut-skin .video-controls-content::before,
+    .papercut-skin .media-popup-surface::after {
+      forced-color-adjust: none;
+      background-color: Canvas;
+      border: 1px solid CanvasText;
+    }
+  }
+}

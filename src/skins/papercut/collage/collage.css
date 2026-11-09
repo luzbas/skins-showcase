@@ -1,0 +1,1663 @@
+/*
+ * Papercut · Collage — the papercut skin as a scrapbook spread. The picture is a photo taped down in the middle and
+ * every control is a scrap of construction paper pinned around it.
+ *
+ * Everything is placed in design units (--u): the desktop spread is drawn on a 1280 × 800 sheet, the phone layout on a
+ * 390 × 844 one. Each piece declares its spot (--x, --y), size (--w, --h) and tilt (--r) and one rule places them all;
+ * --pcc-scatter scales every tilt (0 lines everything up). The sheet scales to the player's width.
+ *
+ * A piece can also be anchored to the far edge of the sheet with --ex / --ey (0 = left/top, 0.5 = centre, 1 = right/
+ * bottom): it then keeps its distance from that edge when the stage is wider or taller than the sheet. That's what the
+ * fullscreen layouts use, so the scraps hug the screen's edges whatever its shape.
+ *
+ * Declared after the Default skin's layers, so these rules win without !important whatever the import order.
+ */
+@layer base, components, utilities, papercut-collage;
+
+@layer papercut-collage {
+  /* ---------- Tokens ---------- */
+  .papercut-collage {
+    /* Retro paperwork: yellowed bond, manila and kraft, salmon telegram forms, pale mint and carbon-blue copies,
+       faded red stamp ink and typewriter ink. */
+    --pc-ink: #2b2620;
+    --pc-cream: #f1e7cc;
+    --pc-red: #b5382c;
+    --pc-blue: #3d5a80;
+    --pc-yellow: #dcc48e;
+    --pcc-salmon: #e7a28f;
+    --pcc-pink: #efc3b6;
+    --pcc-mint: #c8d5be;
+    --pcc-sky: #bfd0d8;
+    --pcc-kraft: #c4a26a;
+    --pcc-manila: #d6bd85;
+    --pcc-tape: rgb(205 186 140 / 0.62);
+    --pcc-night: #1f1c19;
+    --pcc-folder: #c9ab72;
+    /* Grain: tiny brown specks, and a tea-stain darkening towards the edges, laid over every scrap of paper. */
+    --pcc-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.25 0 0 0 0 0.12 0 0 0 0.16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    --pcc-age: radial-gradient(ellipse at 35% 30%, transparent 55%, rgb(125 85 35 / 0.16) 100%);
+    --pcc-scatter: 1;
+
+    --pcc-edge: url(#pcc-lumpy);
+    --pcc-edge-sm: url(#pcc-lumpy-sm);
+    --pcc-shadow: drop-shadow(0 calc(var(--u) * 2) calc(var(--u) * 1) rgb(42 35 32 / 0.5))
+      drop-shadow(0 calc(var(--u) * 8) calc(var(--u) * 10) rgb(0 0 0 / 0.3));
+    --pcc-shadow-lifted: drop-shadow(0 calc(var(--u) * 5) calc(var(--u) * 3) rgb(42 35 32 / 0.45))
+      drop-shadow(0 calc(var(--u) * 16) calc(var(--u) * 18) rgb(0 0 0 / 0.35));
+    --pcc-type: 'Special Elite', 'Courier New', ui-monospace, monospace;
+    /* Cursors: a hand-cut paper arrow, and a printer's pointing hand (a manicule) with a red cuff for anything you
+       can press or drag. Hotspots sit on the arrow's tip and the fingertip; the system cursors are the fallbacks. */
+    --pcc-cursor: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 32 32%22%3E%3Cg transform=%22rotate(-4 3 2)%22%3E%3Cpath d=%22M5 4.2 L5.3 26 L11 20.6 L15.2 29.4 L19.4 27.6 L15.3 19 L23.2 18.7 Z%22 fill=%22rgba(43,38,32,.38)%22/%3E%3Cpath d=%22M3 2 L3.2 23.8 L8.9 18.5 L13.1 27.2 L17.2 25.5 L13.2 16.9 L21 16.6 Z%22 fill=%22%23f1e7cc%22 stroke=%22%232b2620%22 stroke-width=%221.6%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M5.6 7.2 L5.7 18.4%22 stroke=%22%23b5382c%22 stroke-width=%221.3%22 stroke-linecap=%22round%22 opacity=%22.75%22/%3E%3C/g%3E%3C/svg%3E") 3 2, default;
+    --pcc-cursor-hand: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 32 32%22%3E%3Cg transform=%22rotate(-8 14 2)%22%3E%3Cg transform=%22translate(1.6 1.6)%22 fill=%22rgba(43,38,32,.38)%22%3E%3Cpath d=%22M11.5 13 L11.5 4 Q11.5 1.5 14 1.5 Q16.5 1.5 16.5 4 L16.5 11 Q17 9.8 19 10 Q21 10.3 21 12 Q22.5 11 24 12.2 Q25.5 13.5 25 16 L25 21 Q25 25 21 26 L13 26 Q9 25 8.5 21 L7.5 16.5 Q7 14 9 14 Q11 14 11.5 16 Z%22/%3E%3Crect x=%2211%22 y=%2225.5%22 width=%2212%22 height=%225.5%22/%3E%3C/g%3E%3Cpath d=%22M11.5 13 L11.5 4 Q11.5 1.5 14 1.5 Q16.5 1.5 16.5 4 L16.5 11 Q17 9.8 19 10 Q21 10.3 21 12 Q22.5 11 24 12.2 Q25.5 13.5 25 16 L25 21 Q25 25 21 26 L13 26 Q9 25 8.5 21 L7.5 16.5 Q7 14 9 14 Q11 14 11.5 16 Z%22 fill=%22%23f1e7cc%22 stroke=%22%232b2620%22 stroke-width=%221.5%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M16.5 11.5 L16.5 15 M21 12.2 L21 15.2 M11.5 16 Q12 18.5 10.5 20%22 fill=%22none%22 stroke=%22%232b2620%22 stroke-width=%221.2%22 stroke-linecap=%22round%22/%3E%3Crect x=%2211%22 y=%2225.5%22 width=%2212%22 height=%225%22 rx=%22.8%22 fill=%22%23b5382c%22 stroke=%22%232b2620%22 stroke-width=%221.4%22/%3E%3Cpath d=%22M12.5 28 L21.5 28%22 stroke=%22%23f1e7cc%22 stroke-width=%221%22 stroke-dasharray=%221.6 1.4%22/%3E%3C/g%3E%3C/svg%3E") 14 2, pointer;
+
+    --media-default-accent-color: var(--pc-yellow);
+    --media-default-accent-text-color: var(--pc-ink);
+    --media-accent: transparent;
+    --media-accent-foreground: currentColor;
+    --media-font-family: 'Gaegu', 'Comic Sans MS', ui-rounded, system-ui, sans-serif;
+    --media-popover: var(--pc-cream);
+    --media-popover-foreground: var(--pc-ink);
+    --media-ring: var(--pc-yellow);
+    --media-backdrop-filter-surface: none;
+    --media-shadow-surface: none;
+    --media-shadow-thumb: none;
+    --media-surface-border: transparent;
+    --media-frame-border: transparent;
+    --media-hidden-icon-scale: 1;
+
+    height: auto;
+    background-color: var(--pcc-night);
+    color: var(--pc-cream);
+    border-radius: 18px;
+    overflow: clip;
+    cursor: var(--pcc-cursor);
+  }
+
+  /* Anything you can press or drag gets the pointing hand. */
+  .papercut-collage
+    :is(button, a[href], input, label, [role='slider'], .media-slider, [role^='menuitem'], .media-time-toggle):not(:disabled):not([aria-disabled='true']) {
+    cursor: var(--pcc-cursor-hand);
+  }
+
+  .papercut-collage:fullscreen {
+    display: grid;
+    place-items: center;
+    border-radius: 0;
+  }
+
+  /* ---------- The sheet ---------- */
+  .papercut-collage .pcc-stage {
+    /* Desktop: a 1280 × 800 sheet, trimmed to the part with pieces on it (x 90–1230, y 90–770). */
+    --ox: 90;
+    --oy: 90;
+    --sw: 1140;
+    --sh: 680;
+    --u: min(calc(100cqi / var(--sw)), calc(100dvh / var(--sh)));
+
+    position: relative;
+    width: calc(var(--u) * var(--sw));
+    height: calc(var(--u) * var(--sh));
+    margin-inline: auto;
+    font-size: calc(var(--u) * 22);
+  }
+
+  .papercut-collage :is(.pcc-piece, .pcc-deco, .pcc-photo) {
+    position: absolute;
+    box-sizing: border-box;
+    margin: 0;
+    left: calc(var(--ex, 0) * (100% - var(--u) * var(--sw)) + var(--u) * (var(--x) - var(--ox)));
+    top: calc(var(--ey, 0) * (100% - var(--u) * var(--sh)) + var(--u) * (var(--y) - var(--oy)));
+    width: calc(var(--u) * var(--w));
+    height: calc(var(--u) * var(--h));
+    rotate: calc(var(--r, 0) * var(--pcc-scatter) * 1deg);
+  }
+
+  .papercut-collage .pcc-controls {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .papercut-collage .pcc-controls > * {
+    pointer-events: auto;
+  }
+  .papercut-collage .pcc-deco {
+    pointer-events: none;
+  }
+
+  /* ---------- Paper: every piece's colour sits on a ::before cut with lumpy scissors ---------- */
+  .papercut-collage .pcc-piece {
+    --paper: var(--pc-cream);
+    --ink: var(--pc-ink);
+    isolation: isolate;
+    color: var(--ink);
+    background: transparent;
+  }
+
+  .papercut-collage .pcc-piece::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--pcc-grain), var(--pcc-age), var(--paper);
+    filter: var(--pcc-edge-sm) var(--pcc-shadow);
+    transition: filter var(--media-duration, 0.15s);
+  }
+
+  .papercut-collage .pcc-piece.media-button {
+    display: grid;
+    place-items: center;
+    padding: 0;
+    min-width: 0;
+    border: 0;
+    border-radius: calc(var(--u) * 6);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    transition-property: translate, scale, rotate;
+    transition-duration: 0.18s;
+    transition-timing-function: cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+
+  .papercut-collage .pcc-piece .media-button-icon,
+  .papercut-collage .pcc-icon {
+    width: calc(var(--u) * 34);
+    height: calc(var(--u) * 34);
+  }
+
+  .papercut-collage .pcc-icon {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  @media (hover: hover) {
+    .papercut-collage .pcc-piece.media-button:not([aria-disabled='true']):hover {
+      background: transparent;
+      color: var(--ink);
+      translate: 0 calc(var(--u) * -4);
+      scale: 1.03;
+    }
+    .papercut-collage .pcc-piece.media-button:not([aria-disabled='true']):hover::before {
+      filter: var(--pcc-edge-sm) var(--pcc-shadow-lifted);
+    }
+  }
+
+  .papercut-collage .pcc-piece.media-button:not([aria-disabled='true']):active {
+    translate: 0 calc(var(--u) * 1);
+    scale: 0.97;
+  }
+
+  .papercut-collage .pcc-piece.media-button:where(:focus-visible, [aria-expanded='true'], [data-highlighted]) {
+    background: transparent;
+    color: var(--ink);
+  }
+
+  /* Focus: a dashed "cut here" line round the piece, in yellow so it reads on the dark sheet. */
+  .papercut-collage .pcc-piece:focus-visible,
+  .papercut-collage .media-slider-thumb:focus-visible {
+    outline: 3px dashed var(--pc-cream);
+    outline-offset: calc(var(--u) * 6);
+  }
+
+  .papercut-collage.media-container:focus-visible {
+    outline: 3px dashed var(--pc-cream);
+    outline-offset: -6px;
+  }
+
+  /* ================= Desktop spread ================= */
+
+  /* ---------- Title strip ---------- */
+  .papercut-collage .pcc-title {
+    --x: 300;
+    --y: 112;
+    --r: -2.5;
+    --paper: var(--pc-cream);
+    --ink: var(--pc-red);
+    width: auto;
+    height: auto;
+    max-width: calc(var(--u) * 420);
+    padding: calc(var(--u) * 10) calc(var(--u) * 26) calc(var(--u) * 10) calc(var(--u) * 22);
+    z-index: 3;
+  }
+  .papercut-collage .pcc-title::after {
+    content: '';
+    position: absolute;
+    inset: calc(var(--u) * 5);
+    border: calc(var(--u) * 2.5) solid var(--pc-red);
+    border-radius: calc(var(--u) * 3);
+    opacity: 0.75;
+    pointer-events: none;
+  }
+  .papercut-collage .pcc-title-main {
+    margin: 0;
+    text-transform: uppercase;
+    font-family: var(--pcc-type);
+    font-size: calc(var(--u) * 22);
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .papercut-collage .pcc-title-sub {
+    --x: 512;
+    --y: 118;
+    --r: -4;
+    width: auto;
+    height: auto;
+    max-width: calc(var(--u) * 240);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 3;
+    font-size: calc(var(--u) * 22);
+    font-weight: 700;
+    color: var(--pc-cream);
+    white-space: nowrap;
+  }
+
+  /* ---------- The photo ---------- */
+  .papercut-collage .pcc-photo {
+    --x: 300;
+    --y: 158;
+    --w: 680;
+    --h: 404;
+    --r: -1.2;
+    --mat: 20;
+    z-index: 2;
+    isolation: isolate;
+  }
+  .papercut-collage .pcc-photo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--pcc-grain), var(--pcc-age), var(--pc-cream);
+    filter: var(--pcc-edge) var(--pcc-shadow);
+  }
+  .papercut-collage .pcc-window {
+    position: absolute;
+    inset: calc(var(--u) * var(--mat));
+    overflow: hidden;
+    background: #000;
+  }
+  .papercut-collage .pcc-window video {
+    border-radius: 0;
+  }
+
+  /* A rubber stamp lands on the picture while it's paused (not before it has started). */
+  .papercut-collage .pcc-paused-stamp {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    rotate: -9deg;
+    padding: 0.15em 0.5em;
+    border: calc(var(--u) * 5) solid var(--pc-red);
+    border-radius: calc(var(--u) * 10);
+    font-family: var(--pcc-type);
+    font-size: calc(var(--u) * 46);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--pc-red);
+    background: rgb(241 231 204 / 0.2);
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    opacity: 0;
+    scale: 1.4;
+    transition: opacity 0.2s, scale 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+  .papercut-collage:has(.pcc-play[data-started][data-paused]:not([data-ended])) .pcc-paused-stamp {
+    opacity: 0.9;
+    scale: 1;
+  }
+
+  .papercut-collage .pcc-tape {
+    z-index: 4;
+    background: var(--pcc-tape);
+    clip-path: polygon(3% 0, 97% 6%, 100% 92%, 0 100%);
+  }
+  .papercut-collage .pcc-tape--a {
+    --x: 270;
+    --y: 150;
+    --w: 110;
+    --h: 34;
+    --r: -32;
+  }
+  .papercut-collage .pcc-tape--b {
+    --x: 912;
+    --y: 530;
+    --w: 110;
+    --h: 34;
+    --r: -30;
+  }
+  .papercut-collage .pcc-clip {
+    --x: 760;
+    --y: 112;
+    --w: 90;
+    --h: 80;
+    --r: 4;
+    z-index: 5;
+  }
+
+  /* ---------- Play: a big red paper disc with a paperclip ---------- */
+  .papercut-collage .pcc-play {
+    --x: 140;
+    --y: 262;
+    --w: 132;
+    --h: 132;
+    --r: -6;
+    --paper: var(--pc-red);
+    --ink: var(--pc-cream);
+  }
+  .papercut-collage .pcc-play.media-button {
+    border-radius: 50%;
+  }
+  .papercut-collage .pcc-play .media-button-icon {
+    width: calc(var(--u) * 58);
+    height: calc(var(--u) * 58);
+    filter: drop-shadow(0 calc(var(--u) * 2) 0 var(--pc-ink));
+  }
+  .papercut-collage .pcc-paperclip {
+    --x: 220;
+    --y: 236;
+    --w: 30;
+    --h: 80;
+    --r: 18;
+    z-index: 2;
+  }
+  .papercut-collage .pcc-play-word {
+    --x: 150;
+    --y: 404;
+    --r: -5;
+    width: auto;
+    height: auto;
+    font-size: calc(var(--u) * 26);
+    font-weight: 700;
+    color: var(--pc-cream);
+  }
+  .papercut-collage .pcc-play-word::after {
+    content: 'play!';
+  }
+  .papercut-collage:has(.pcc-play[data-started]:not([data-paused]):not([data-ended])) .pcc-play-word::after {
+    content: 'pause';
+  }
+
+  /* ---------- Skip: ticket stubs with punched ends ---------- */
+  .papercut-collage .pcc-ticket::before {
+    -webkit-mask:
+      radial-gradient(circle at 0 50%, transparent calc(var(--u) * 10), #000 calc(var(--u) * 11)),
+      radial-gradient(circle at 100% 50%, transparent calc(var(--u) * 10), #000 calc(var(--u) * 11));
+    -webkit-mask-composite: source-in;
+    mask:
+      radial-gradient(circle at 0 50%, transparent calc(var(--u) * 10), #000 calc(var(--u) * 11)),
+      radial-gradient(circle at 100% 50%, transparent calc(var(--u) * 10), #000 calc(var(--u) * 11));
+    mask-composite: intersect;
+  }
+  .papercut-collage .pcc-ticket .media-seek-button-content {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u) * 8);
+    font-family: var(--pcc-type);
+    font-size: calc(var(--u) * 20);
+  }
+  .papercut-collage .pcc-ticket .media-seek-button-label {
+    position: static;
+    font-size: inherit;
+  }
+  .papercut-collage .pcc-ticket .media-seek-button-label::after {
+    content: 's';
+  }
+  .papercut-collage .pcc-ticket .media-button-icon {
+    width: calc(var(--u) * 26);
+    height: calc(var(--u) * 26);
+  }
+  .papercut-collage .pcc-seek--back {
+    --x: 122;
+    --y: 470;
+    --w: 150;
+    --h: 58;
+    --r: 4;
+    --paper: var(--pcc-salmon);
+  }
+  .papercut-collage .pcc-seek--fwd {
+    --x: 152;
+    --y: 544;
+    --w: 150;
+    --h: 58;
+    --r: -3;
+    --paper: var(--pcc-mint);
+  }
+  .papercut-collage .pcc-seek--fwd .media-seek-button-content {
+    flex-direction: row-reverse;
+  }
+
+  /* ---------- Timeline: a torn cream strip, red thread, googly-eye playhead ---------- */
+  .papercut-collage .pcc-strip {
+    --x: 312;
+    --y: 596;
+    --w: 660;
+    --h: 52;
+    --r: 0.7;
+    /* Above the photo, so the scrub preview that pops up over it is never cut off. */
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    padding-inline: calc(var(--u) * 30);
+  }
+  .papercut-collage .pcc-strip::before {
+    filter: var(--pcc-shadow);
+    clip-path: polygon(0 8%, 4% 0, 9% 7%, 15% 1%, 22% 6%, 30% 0, 38% 8%, 46% 2%, 55% 7%, 63% 0, 71% 6%, 80% 1%, 88% 8%,
+        95% 2%, 100% 6%, 100% 94%, 94% 100%, 86% 93%, 77% 99%, 68% 94%, 58% 100%, 49% 93%, 40% 99%, 31% 94%, 22% 100%,
+        13% 93%, 5% 99%, 0 92%);
+  }
+  .papercut-collage .pcc-strip .media-time-slider {
+    flex: 1;
+    min-width: 0;
+  }
+  .papercut-collage .pcc-strip .media-slider-track[data-orientation='horizontal'] {
+    height: calc(var(--u) * 6);
+  }
+  .papercut-collage .pcc-strip .media-slider-track::before {
+    border-radius: 3px;
+    background: repeating-linear-gradient(90deg, rgb(42 35 32 / 0.35) 0 calc(var(--u) * 8), transparent calc(var(--u) * 8) calc(var(--u) * 14));
+  }
+  .papercut-collage .pcc-strip .media-slider-buffer::before {
+    background-color: rgb(42 35 32 / 0.12);
+  }
+  .papercut-collage .pcc-strip .media-slider-fill::before {
+    border-radius: 3px;
+    background-color: var(--pc-red);
+  }
+  .papercut-collage .media-time-slider-chapter {
+    --media-chapter-inset-start: 1;
+    --media-chapter-inset-end: 1;
+  }
+  .papercut-collage .media-time-slider-thumb,
+  .papercut-collage .media-time-slider-thumb[data-interactive] {
+    width: calc(var(--u) * 40);
+    height: calc(var(--u) * 40);
+    background:
+      radial-gradient(circle at 34% 30%, rgb(255 255 255 / 0.9) 0 8%, transparent 9%),
+      radial-gradient(circle at 58% 56%, var(--pc-ink) 0 24%, transparent 25%), #faf4e4;
+    box-shadow: inset 0 0 0 calc(var(--u) * 3) var(--pc-ink);
+    filter: drop-shadow(0 calc(var(--u) * 3) calc(var(--u) * 2) rgb(42 35 32 / 0.45));
+    opacity: 1;
+    scale: 1;
+  }
+  /* The eye looks down at the PAUSED stamp while paused, ahead along the thread while playing. */
+  .papercut-collage:has(.pcc-play[data-paused]) .media-time-slider-thumb {
+    background:
+      radial-gradient(circle at 34% 30%, rgb(255 255 255 / 0.9) 0 8%, transparent 9%),
+      radial-gradient(circle at 46% 66%, var(--pc-ink) 0 24%, transparent 25%), #faf4e4;
+  }
+  .papercut-collage .media-slider-thumbnail {
+    display: none;
+  }
+  .papercut-collage .media-time-slider-preview-content {
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-family: var(--pcc-type);
+    font-size: calc(var(--u) * 18);
+    background-color: var(--pc-cream);
+    color: var(--pc-ink);
+    rotate: -3deg;
+    filter: var(--pcc-edge-sm) var(--pcc-shadow);
+  }
+
+  .papercut-collage .pcc-time {
+    --x: 330;
+    --y: 676;
+    --r: -2;
+    width: auto;
+    height: auto;
+    padding: calc(var(--u) * 8) calc(var(--u) * 16);
+    font-family: var(--pcc-type);
+    font-size: calc(var(--u) * 20);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .papercut-collage .pcc-time .media-time-value {
+    font: inherit;
+  }
+  .papercut-collage .pcc-time-current {
+    color: var(--pc-red);
+  }
+
+  /* ---------- Sound: a postage stamp and a strip of stacked paper bars ---------- */
+  .papercut-collage .pcc-stamp {
+    --x: 1010;
+    --y: 150;
+    --w: 84;
+    --h: 96;
+    --r: 7;
+    --paper: var(--pcc-pink);
+  }
+  .papercut-collage .pcc-stamp::before {
+    border-radius: calc(var(--u) * 4);
+    box-shadow: inset 0 0 0 calc(var(--u) * 3) var(--pcc-pink), inset 0 0 0 calc(var(--u) * 5) rgb(181 56 44 / 0.45);
+  }
+  .papercut-collage .pcc-stamp .media-button-icon {
+    width: calc(var(--u) * 40);
+    height: calc(var(--u) * 40);
+    color: var(--pc-blue);
+    rotate: -20deg;
+    transition: opacity 0.3s, rotate 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .papercut-collage .pcc-stamp:not([data-muted]):not([data-volume-level='low']) .media-mute-button-high-icon,
+  .papercut-collage .pcc-stamp:not([data-muted])[data-volume-level='low'] .media-mute-button-low-icon,
+  .papercut-collage .pcc-stamp[data-muted] .media-mute-button-off-icon {
+    rotate: 0deg;
+  }
+  .papercut-collage .pcc-stamp[data-muted] .media-button-icon {
+    color: var(--pc-red);
+  }
+
+  .papercut-collage .pcc-volume {
+    --x: 1022;
+    --y: 268;
+    --w: 66;
+    --h: 240;
+    --r: 2.5;
+    --paper: var(--pcc-sky);
+    border-radius: calc(var(--u) * 6);
+    display: flex;
+    justify-content: center;
+    padding-block: calc(var(--u) * 14);
+  }
+  .papercut-collage .pcc-volume .media-volume-slider {
+    width: calc(var(--u) * 44);
+    height: 100%;
+  }
+  .papercut-collage .pcc-volume .media-slider-track[data-orientation='vertical'] {
+    width: 100%;
+  }
+  .papercut-collage .pcc-volume .media-slider-track::before {
+    border-radius: 3px;
+    background: repeating-linear-gradient(0deg, rgb(61 90 128 / 0.18) 0 calc(var(--u) * 28), transparent calc(var(--u) * 28) calc(var(--u) * 35));
+  }
+  .papercut-collage .pcc-volume .media-slider-fill::before {
+    border-radius: 3px;
+    background: repeating-linear-gradient(0deg, var(--pc-blue) 0 calc(var(--u) * 28), transparent calc(var(--u) * 28) calc(var(--u) * 35));
+    opacity: 0.9;
+  }
+  .papercut-collage .pcc-volume .media-slider-thumb {
+    width: calc(var(--u) * 54);
+    height: calc(var(--u) * 14);
+    border-radius: 3px;
+    background-color: var(--pc-cream);
+    box-shadow: inset 0 0 0 calc(var(--u) * 2.5) var(--pc-ink);
+    opacity: 1;
+    scale: 1;
+  }
+  .papercut-collage .pcc-volume-word {
+    --x: 1032;
+    --y: 514;
+    --r: 3;
+    width: auto;
+    height: auto;
+    font-size: calc(var(--u) * 22);
+    font-weight: 700;
+    color: var(--pc-cream);
+  }
+
+  /* ---------- Speed: a luggage tag on a string ---------- */
+  .papercut-collage .pcc-string {
+    --x: 1118;
+    --y: 110;
+    --w: 60;
+    --h: 120;
+    z-index: 0;
+  }
+  .papercut-collage .pcc-speed {
+    --x: 1110;
+    --y: 218;
+    --w: 78;
+    --h: 120;
+    --r: 9;
+    --paper: var(--pcc-kraft);
+    transform-origin: 50% 0;
+  }
+  .papercut-collage .pcc-speed::before {
+    clip-path: polygon(22% 0, 78% 0, 100% 18%, 100% 100%, 0 100%, 0 18%);
+  }
+  .papercut-collage .pcc-speed-hole {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--u) * 12);
+    translate: -50% 0;
+    width: calc(var(--u) * 16);
+    height: calc(var(--u) * 16);
+    border-radius: 50%;
+    background: var(--pcc-night);
+    box-shadow: 0 0 0 calc(var(--u) * 4) var(--pc-cream);
+  }
+  .papercut-collage .pcc-speed-label {
+    display: grid;
+    justify-items: center;
+    padding-top: calc(var(--u) * 26);
+    font-family: var(--pcc-type);
+  }
+  .papercut-collage .pcc-speed-rate {
+    font-size: calc(var(--u) * 28);
+  }
+  .papercut-collage .pcc-speed-word {
+    font-size: calc(var(--u) * 11);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ---------- Captions: an oval rubber stamp, inked when on ---------- */
+  .papercut-collage .pcc-cc {
+    --x: 1104;
+    --y: 372;
+    --w: 86;
+    --h: 64;
+    --r: -10;
+    --paper: rgb(241 231 204 / 0.5);
+    --ink: #4a423d;
+  }
+  .papercut-collage .pcc-cc.media-button,
+  .papercut-collage .pcc-cc::before {
+    border-radius: 50%;
+  }
+  .papercut-collage .pcc-cc::before {
+    box-shadow: inset 0 0 0 calc(var(--u) * 4) var(--pc-red);
+  }
+  .papercut-collage .pcc-cc[data-active] {
+    --paper: var(--pc-cream);
+    --ink: var(--pc-red);
+  }
+  .papercut-collage .pcc-cc[data-hidden] {
+    display: none;
+  }
+
+  /* ---------- Settings: a manila folder tab ---------- */
+  .papercut-collage .pcc-settings {
+    --x: 1004;
+    --y: 566;
+    --w: 170;
+    --h: 62;
+    --r: -3;
+    --paper: var(--pcc-manila);
+  }
+  .papercut-collage .pcc-settings.media-button {
+    display: flex;
+    gap: calc(var(--u) * 8);
+    border-radius: calc(var(--u) * 14) calc(var(--u) * 14) calc(var(--u) * 4) calc(var(--u) * 4);
+  }
+  .papercut-collage .pcc-settings .pcc-icon {
+    width: calc(var(--u) * 26);
+    height: calc(var(--u) * 26);
+  }
+  .papercut-collage .pcc-settings-word {
+    font-family: var(--pcc-type);
+    font-size: calc(var(--u) * 18);
+  }
+
+  /* ---------- Picture in picture: a little polaroid ---------- */
+  .papercut-collage .pcc-pip {
+    --x: 1010;
+    --y: 648;
+    --w: 74;
+    --h: 84;
+    --r: 5;
+  }
+  .papercut-collage .pcc-pip.media-button {
+    place-items: start center;
+    padding-top: calc(var(--u) * 8);
+  }
+  .papercut-collage .pcc-pip .media-button-icon {
+    width: calc(var(--u) * 58);
+    height: calc(var(--u) * 50);
+    padding: calc(var(--u) * 6);
+    box-sizing: border-box;
+    background: var(--pc-blue);
+    color: var(--pc-cream);
+  }
+  .papercut-collage .pcc-pip[data-hidden],
+  .papercut-collage .pcc-pip[aria-disabled='true'] {
+    opacity: 0.5;
+  }
+
+  /* ---------- Fullscreen: a ruled index card ---------- */
+  .papercut-collage .pcc-fullscreen {
+    --x: 1100;
+    --y: 646;
+    --w: 92;
+    --h: 74;
+    --r: -6;
+    --ink: var(--pc-red);
+  }
+  .papercut-collage .pcc-fullscreen::before {
+    background:
+      var(--pcc-grain),
+      repeating-linear-gradient(180deg, transparent 0 calc(var(--u) * 13), rgb(61 90 128 / 0.3) calc(var(--u) * 13) calc(var(--u) * 14)),
+      var(--pcc-age),
+      var(--pc-cream);
+  }
+
+  /* The folder and graph paper only back the phone layout; the shades and the settings card are fullscreen only. */
+  .papercut-collage :is(.pcc-folder, .pcc-folder-tab, .pcc-sheet, .pcc-shade) {
+    display: none;
+  }
+  .papercut-collage .pcc-card-trigger.media-button {
+    display: none;
+  }
+
+  /* ---------- Double-tap skip: a ticket stub stamped on that side of the picture ---------- */
+  .papercut-collage .pcc-seek-flash {
+    position: absolute;
+    top: 50%;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+    padding: 0.35em 0.8em;
+    border-radius: 6px;
+    font-family: var(--pcc-type);
+    font-size: max(16px, calc(var(--u) * 24));
+    color: var(--pc-ink);
+    background: var(--pcc-grain), var(--pcc-salmon);
+    filter: var(--pcc-edge-sm) var(--pcc-shadow);
+    pointer-events: none;
+    translate: 0 -50%;
+    rotate: -5deg;
+    transition: opacity 0.2s, scale 0.2s cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+  .papercut-collage .pcc-seek-flash[data-direction='backward'] {
+    left: 12%;
+  }
+  .papercut-collage .pcc-seek-flash[data-direction='forward'] {
+    right: 12%;
+    rotate: 4deg;
+    background: var(--pcc-grain), var(--pcc-mint);
+  }
+  .papercut-collage .pcc-seek-flash:not([data-direction]),
+  .papercut-collage .pcc-seek-flash:is([data-starting-style], [data-ending-style]) {
+    opacity: 0;
+    scale: 0.85;
+  }
+  .papercut-collage .pcc-seek-flash .media-seek-indicator-icon {
+    width: 1em;
+    height: 1em;
+  }
+  .papercut-collage .pcc-seek-flash[data-direction='backward'] .media-seek-indicator-icon {
+    scale: -1 1;
+  }
+
+  /* ---------- Settings menu: a loose cream card ---------- */
+  .papercut-collage .pcc-menu {
+    --media-popover-foreground: var(--pc-ink);
+    --media-menu-item-radius: 4px;
+    isolation: isolate;
+    background-color: transparent;
+    color: var(--pc-ink);
+    box-shadow: none;
+    font-size: max(16px, calc(var(--u) * 20));
+    rotate: -1deg;
+  }
+  .papercut-collage .pcc-menu::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: 8px;
+    background-color: var(--pc-cream);
+    filter: var(--pcc-edge-sm) var(--pcc-shadow);
+  }
+  .papercut-collage .pcc-menu [role^='menuitem'] {
+    min-height: 44px;
+  }
+  .papercut-collage .pcc-menu .media-menu-separator {
+    background: none;
+    border-top: 2px dashed rgb(42 35 32 / 0.35);
+  }
+  .papercut-collage .pcc-menu [role^='menuitem'][data-highlighted] {
+    background-color: var(--media-primary);
+    color: var(--media-primary-foreground);
+    rotate: -0.6deg;
+  }
+  .papercut-collage .pcc-menu [role^='menuitem']:focus-visible {
+    outline: 3px dashed var(--pc-ink);
+    outline-offset: -3px;
+  }
+
+  /* ================= Phone: the same scraps re-pinned on a 390 × 844 sheet ================= */
+  @container media-root (max-width: 599px) {
+    .papercut-collage .pcc-stage {
+      --ox: 0;
+      --oy: 56;
+      --sw: 390;
+      --sh: 750;
+      font-size: calc(var(--u) * 18);
+    }
+
+    .papercut-collage :is(.pcc-folder, .pcc-folder-tab, .pcc-sheet) {
+      display: block;
+    }
+    .papercut-collage :is(
+        .pcc-clip,
+        .pcc-paperclip,
+        .pcc-play-word,
+        .pcc-volume,
+        .pcc-volume-word,
+        .pcc-string,
+        .pcc-pip,
+        .pcc-settings-word
+      ) {
+      display: none;
+    }
+
+    .papercut-collage .pcc-folder {
+      --x: 14;
+      --y: 96;
+      --w: 362;
+      --h: 690;
+      --r: -0.8;
+      border-radius: calc(var(--u) * 18);
+      background: var(--pcc-grain), var(--pcc-age), var(--pcc-folder);
+      filter: var(--pcc-edge) var(--pcc-shadow);
+    }
+    .papercut-collage .pcc-folder-tab {
+      --x: 30;
+      --y: 70;
+      --w: 140;
+      --h: 40;
+      --r: -0.8;
+      border-radius: calc(var(--u) * 12) calc(var(--u) * 12) 0 0;
+      background: var(--pcc-folder);
+      filter: var(--pcc-edge);
+    }
+    .papercut-collage .pcc-sheet {
+      --x: 30;
+      --y: 118;
+      --w: 330;
+      --h: 640;
+      --r: 1;
+      background:
+        repeating-linear-gradient(90deg, transparent 0 calc(var(--u) * 15), rgb(61 90 128 / 0.18) calc(var(--u) * 15) calc(var(--u) * 16)),
+        repeating-linear-gradient(180deg, transparent 0 calc(var(--u) * 15), rgb(61 90 128 / 0.18) calc(var(--u) * 15) calc(var(--u) * 16)),
+        var(--pcc-grain),
+        var(--pcc-age),
+        var(--pc-cream);
+      filter: var(--pcc-edge) var(--pcc-shadow);
+    }
+
+    .papercut-collage .pcc-title {
+      --x: 40;
+      --y: 132;
+      --r: -3;
+      max-width: calc(var(--u) * 200);
+      padding: calc(var(--u) * 8) calc(var(--u) * 18);
+    }
+    .papercut-collage .pcc-title-main {
+      font-size: calc(var(--u) * 19);
+    }
+    .papercut-collage .pcc-title-sub {
+      --x: 226;
+      --y: 138;
+      max-width: calc(var(--u) * 126);
+      font-size: calc(var(--u) * 20);
+      color: var(--pc-blue);
+    }
+
+    .papercut-collage .pcc-photo {
+      --x: 24;
+      --y: 186;
+      --w: 342;
+      --h: 214;
+      --r: -1.5;
+      --mat: 11;
+    }
+    .papercut-collage .pcc-paused-stamp {
+      font-size: calc(var(--u) * 26);
+      border-width: calc(var(--u) * 3);
+    }
+    .papercut-collage .pcc-tape--a {
+      --x: 6;
+      --y: 182;
+      --w: 70;
+      --h: 24;
+      --r: -30;
+    }
+    .papercut-collage .pcc-tape--b {
+      --x: 316;
+      --y: 384;
+      --w: 70;
+      --h: 24;
+      --r: -28;
+    }
+
+    .papercut-collage .pcc-strip {
+      --x: 34;
+      --y: 424;
+      --w: 322;
+      --h: 48;
+      --r: 1;
+      padding-inline: calc(var(--u) * 20);
+    }
+    .papercut-collage .media-time-slider-thumb,
+    .papercut-collage .media-time-slider-thumb[data-interactive] {
+      width: calc(var(--u) * 34);
+      height: calc(var(--u) * 34);
+    }
+    .papercut-collage .pcc-time {
+      --x: 210;
+      --y: 488;
+      --r: -2.5;
+      font-size: calc(var(--u) * 17);
+      padding: calc(var(--u) * 6) calc(var(--u) * 12);
+    }
+    .papercut-collage .pcc-play {
+      --x: 140;
+      --y: 538;
+      --w: 110;
+      --h: 110;
+    }
+    .papercut-collage .pcc-play .media-button-icon {
+      width: calc(var(--u) * 48);
+      height: calc(var(--u) * 48);
+    }
+    .papercut-collage .pcc-seek--back {
+      --x: 40;
+      --y: 570;
+      --w: 92;
+      --h: 50;
+      --r: 5;
+    }
+    .papercut-collage .pcc-seek--fwd {
+      --x: 258;
+      --y: 570;
+      --w: 92;
+      --h: 50;
+      --r: -4;
+    }
+    .papercut-collage .pcc-ticket .media-seek-button-content {
+      font-size: calc(var(--u) * 17);
+      gap: calc(var(--u) * 4);
+    }
+    .papercut-collage .pcc-ticket .media-button-icon {
+      width: calc(var(--u) * 20);
+      height: calc(var(--u) * 20);
+    }
+
+    .papercut-collage .pcc-stamp {
+      --x: 40;
+      --y: 670;
+      --w: 60;
+      --h: 70;
+      --r: 6;
+    }
+    .papercut-collage .pcc-stamp .media-button-icon {
+      width: calc(var(--u) * 30);
+      height: calc(var(--u) * 30);
+    }
+    .papercut-collage .pcc-speed {
+      --x: 110;
+      --y: 662;
+      --w: 58;
+      --h: 86;
+      --r: 8;
+    }
+    .papercut-collage .pcc-speed-hole {
+      top: calc(var(--u) * 9);
+      width: calc(var(--u) * 12);
+      height: calc(var(--u) * 12);
+      box-shadow: 0 0 0 calc(var(--u) * 3) var(--pc-cream);
+    }
+    .papercut-collage .pcc-speed-label {
+      padding-top: calc(var(--u) * 22);
+    }
+    .papercut-collage .pcc-speed-rate {
+      font-size: calc(var(--u) * 20);
+    }
+    .papercut-collage .pcc-speed-word {
+      display: none;
+    }
+    .papercut-collage .pcc-cc {
+      --x: 178;
+      --y: 680;
+      --w: 66;
+      --h: 50;
+      --r: -9;
+    }
+    .papercut-collage .pcc-cc .media-button-icon {
+      width: calc(var(--u) * 28);
+      height: calc(var(--u) * 28);
+    }
+    .papercut-collage .pcc-settings {
+      --x: 254;
+      --y: 672;
+      --w: 52;
+      --h: 52;
+      --r: -4;
+    }
+    /* Only the gear shows here (the word is hidden), so centre it in the square tab. */
+    .papercut-collage .pcc-settings.media-button {
+      justify-content: center;
+      align-items: center;
+      gap: 0;
+    }
+    .papercut-collage .pcc-fullscreen {
+      --x: 300;
+      --y: 690;
+      --w: 52;
+      --h: 48;
+      --r: 7;
+    }
+    .papercut-collage .pcc-fullscreen .media-button-icon,
+    .papercut-collage .pcc-settings .pcc-icon {
+      width: calc(var(--u) * 26);
+      height: calc(var(--u) * 26);
+    }
+  }
+
+  /* ================= Fullscreen: the picture fills the screen, the scraps lie over its edges =================
+     Designed on a 1280 × 720 sheet. Pieces on the right and bottom are anchored to those edges, so on a 16:10 or
+     ultrawide screen they stay in the corners. While the viewer is idle and the video plays (data-idle, from Video.js's
+     controls visibility), every scrap slides off its nearest edge, a few ms apart, and the cursor hides. */
+  .papercut-collage[data-fullscreen] {
+    border-radius: 0;
+  }
+  .papercut-collage[data-fullscreen][data-idle],
+  .papercut-collage[data-fullscreen][data-idle] * {
+    cursor: none;
+  }
+
+  .papercut-collage[data-fullscreen] .pcc-stage {
+    --ox: 0;
+    --oy: 0;
+    --sw: 1280;
+    --sh: 720;
+    --u: min(calc(100cqi / var(--sw)), calc(100dvh / var(--sh)));
+    width: 100%;
+    height: 100dvh;
+    margin: 0;
+    font-size: calc(var(--u) * 22);
+  }
+
+  .papercut-collage[data-fullscreen] .pcc-photo {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    rotate: none;
+    z-index: 0;
+  }
+  .papercut-collage[data-fullscreen] .pcc-photo::before {
+    content: none;
+  }
+  .papercut-collage[data-fullscreen] .pcc-window {
+    inset: 0;
+  }
+  .papercut-collage[data-fullscreen] .pcc-paused-stamp {
+    font-size: calc(var(--u) * 66);
+    border-width: calc(var(--u) * 7);
+  }
+
+  /* Gone in fullscreen: the tape, the clip and the spread's handwriting. */
+  .papercut-collage[data-fullscreen] :is(.pcc-tape, .pcc-clip, .pcc-play-word, .pcc-volume-word, .pcc-folder, .pcc-folder-tab, .pcc-sheet) {
+    display: none;
+  }
+
+  .papercut-collage[data-fullscreen] .pcc-shade {
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .papercut-collage[data-fullscreen] .pcc-shade--top {
+    top: 0;
+    height: 24%;
+    background: linear-gradient(rgb(20 14 8 / 0.5), rgb(20 14 8 / 0));
+  }
+  .papercut-collage[data-fullscreen] .pcc-shade--bottom {
+    bottom: 0;
+    height: 40%;
+    background: linear-gradient(rgb(20 14 8 / 0), rgb(20 14 8 / 0.62));
+  }
+
+  .papercut-collage[data-fullscreen] .pcc-controls {
+    z-index: 3;
+  }
+  .papercut-collage[data-fullscreen] :is(.pcc-title, .pcc-title-sub) {
+    z-index: 3;
+  }
+
+  /* ---------- Top edge ---------- */
+  .papercut-collage[data-fullscreen] .pcc-title {
+    --x: 40;
+    --y: 34;
+    --r: -2;
+    --d: 0ms;
+    max-width: calc(100% - var(--u) * 420);
+  }
+  .papercut-collage[data-fullscreen] .pcc-title-sub {
+    --x: 44;
+    --y: 88;
+    --r: -3;
+    --d: 40ms;
+    max-width: calc(100% - var(--u) * 420);
+    font-size: calc(var(--u) * 26);
+    color: var(--pc-cream);
+    text-shadow: 0 2px 4px rgb(0 0 0 / 0.5);
+  }
+  .papercut-collage[data-fullscreen] .pcc-pip {
+    --x: 968;
+    --y: 28;
+    --w: 66;
+    --h: 76;
+    --ex: 1;
+    --d: 60ms;
+  }
+  .papercut-collage[data-fullscreen] .pcc-cc {
+    --x: 1056;
+    --y: 38;
+    --w: 84;
+    --h: 60;
+    --r: -8;
+    --ex: 1;
+    --d: 80ms;
+  }
+  .papercut-collage[data-fullscreen] .pcc-fullscreen {
+    --x: 1164;
+    --y: 30;
+    --w: 84;
+    --h: 70;
+    --ex: 1;
+    --d: 100ms;
+  }
+
+  /* ---------- Bottom edge ---------- */
+  .papercut-collage[data-fullscreen] .pcc-play {
+    --x: 38;
+    --y: 548;
+    --ey: 1;
+    --d: 0ms;
+  }
+  .papercut-collage[data-fullscreen] .pcc-paperclip {
+    --x: 128;
+    --y: 524;
+    --ey: 1;
+    --d: 0ms;
+    z-index: 1;
+  }
+  .papercut-collage[data-fullscreen] .pcc-strip {
+    --x: 192;
+    --y: 572;
+    --h: 52;
+    --r: 0.6;
+    --ey: 1;
+    --d: 30ms;
+    width: calc(100% - var(--u) * 468);
+  }
+  .papercut-collage[data-fullscreen] .pcc-seek--back {
+    --x: 210;
+    --y: 642;
+    --w: 120;
+    --h: 50;
+    --ey: 1;
+    --d: 60ms;
+  }
+  .papercut-collage[data-fullscreen] .pcc-seek--fwd {
+    --x: 344;
+    --y: 646;
+    --w: 120;
+    --h: 50;
+    --ey: 1;
+    --d: 80ms;
+  }
+  .papercut-collage[data-fullscreen] .pcc-time {
+    --x: 482;
+    --y: 648;
+    --ey: 1;
+    --d: 100ms;
+  }
+  .papercut-collage[data-fullscreen] .pcc-stamp {
+    --x: 1030;
+    --y: 548;
+    --w: 70;
+    --h: 80;
+    --ex: 1;
+    --ey: 1;
+    --d: 60ms;
+  }
+  .papercut-collage[data-fullscreen] .pcc-volume {
+    --x: 1112;
+    --y: 470;
+    --w: 54;
+    --h: 160;
+    --r: 2;
+    --ex: 1;
+    --ey: 1;
+    --d: 80ms;
+  }
+  .papercut-collage[data-fullscreen] .pcc-string {
+    --x: 1194;
+    --y: 452;
+    --w: 40;
+    --h: 70;
+    --ex: 1;
+    --ey: 1;
+    --d: 100ms;
+  }
+  .papercut-collage[data-fullscreen] .pcc-speed {
+    --x: 1180;
+    --y: 516;
+    --w: 68;
+    --h: 104;
+    --ex: 1;
+    --ey: 1;
+    --d: 100ms;
+  }
+  .papercut-collage[data-fullscreen] .pcc-settings {
+    --x: 1044;
+    --y: 646;
+    --w: 150;
+    --h: 50;
+    --ex: 1;
+    --ey: 1;
+    --d: 120ms;
+  }
+
+  /* ---------- Showing and hiding ---------- */
+  .papercut-collage[data-fullscreen] :is(.pcc-piece, .pcc-deco) {
+    --off: 0 calc(var(--u) * -190);
+    transition-property: translate, opacity, scale, rotate;
+    transition-duration: 0.42s, 0.25s, 0.18s, 0.18s;
+    transition-timing-function: cubic-bezier(0.3, 1.35, 0.5, 1), ease, cubic-bezier(0.3, 1.6, 0.5, 1), ease;
+    transition-delay: var(--d, 0ms), var(--d, 0ms), 0ms, 0ms;
+  }
+  .papercut-collage[data-fullscreen] :is(.pcc-piece, .pcc-deco):is(.pcc-play, .pcc-paperclip, .pcc-strip, .pcc-ticket, .pcc-time, .pcc-stamp, .pcc-volume, .pcc-string, .pcc-speed, .pcc-settings) {
+    --off: 0 calc(var(--u) * 230);
+  }
+  .papercut-collage[data-fullscreen][data-idle] :is(.pcc-piece, .pcc-deco, .pcc-shade) {
+    translate: var(--off, 0 0);
+    opacity: 0;
+    pointer-events: none;
+    transition-timing-function: cubic-bezier(0.5, 0, 0.75, 0), ease, ease, ease;
+    transition-duration: 0.35s, 0.3s, 0.18s, 0.18s;
+  }
+  .papercut-collage[data-fullscreen][data-idle] .pcc-shade {
+    translate: none;
+  }
+
+  /* ================= Fullscreen on a touch screen =================
+     Designed on an 844 × 390 pt landscape phone screen. Only what a phone needs stays on screen: title and chapter top
+     left (clear of the Dynamic Island), sound · CC · settings · exit top right, the transport in the middle where thumbs
+     rest, the time and a near edge-to-edge timeline above the home indicator. No volume strip (phones use their side
+     buttons); speed, captions, quality and picture-in-picture live in the settings card. One tap shows or hides the
+     scraps and a double tap on either half skips 10 s (Video.js gestures). Held in portrait, the same layout uses a
+     narrower 480 pt sheet. */
+  @media (pointer: coarse) {
+    .papercut-collage[data-fullscreen] .pcc-stage {
+      --sw: 844;
+      --sh: 390;
+      font-size: calc(var(--u) * 18);
+    }
+
+    .papercut-collage[data-fullscreen] :is(.pcc-volume, .pcc-volume-word, .pcc-string, .pcc-speed, .pcc-pip, .pcc-settings, .pcc-paperclip) {
+      display: none;
+    }
+    .papercut-collage[data-fullscreen] .pcc-card-trigger.media-button {
+      display: grid;
+    }
+    .papercut-collage[data-fullscreen] .pcc-paused-stamp {
+      font-size: calc(var(--u) * 40);
+      border-width: calc(var(--u) * 5);
+    }
+
+    .papercut-collage[data-fullscreen] .pcc-title {
+      --x: 70;
+      --y: 18;
+      max-width: calc(100% - var(--u) * 390);
+      padding: calc(var(--u) * 5) calc(var(--u) * 10);
+    }
+    .papercut-collage[data-fullscreen] .pcc-title-main {
+      font-size: calc(var(--u) * 16);
+    }
+    .papercut-collage[data-fullscreen] .pcc-title::after {
+      inset: calc(var(--u) * 3);
+      border-width: calc(var(--u) * 2);
+    }
+    .papercut-collage[data-fullscreen] .pcc-title-sub {
+      --x: 72;
+      --y: 58;
+      max-width: calc(100% - var(--u) * 390);
+      font-size: calc(var(--u) * 19);
+    }
+
+    .papercut-collage[data-fullscreen] .pcc-stamp {
+      --x: calc(var(--sw) - 296);
+      --y: 16;
+      --w: 50;
+      --h: 56;
+      --r: 6;
+      --ey: 0;
+      --off: 0 calc(var(--u) * -120);
+    }
+    .papercut-collage[data-fullscreen] .pcc-cc {
+      --x: calc(var(--sw) - 234);
+      --y: 20;
+      --w: 62;
+      --h: 46;
+    }
+    .papercut-collage[data-fullscreen] .pcc-card-trigger {
+      --x: calc(var(--sw) - 160);
+      --y: 18;
+      --w: 52;
+      --h: 50;
+      --r: -4;
+      --ex: 1;
+      --d: 80ms;
+      --paper: var(--pcc-manila);
+    }
+    .papercut-collage[data-fullscreen] .pcc-card-trigger.media-button {
+      border-radius: calc(var(--u) * 10) calc(var(--u) * 10) calc(var(--u) * 4) calc(var(--u) * 4);
+    }
+    .papercut-collage[data-fullscreen] .pcc-fullscreen {
+      --x: calc(var(--sw) - 96);
+      --y: 16;
+      --w: 54;
+      --h: 50;
+      --r: 6;
+    }
+    .papercut-collage[data-fullscreen] :is(.pcc-stamp, .pcc-cc, .pcc-card-trigger, .pcc-fullscreen) :is(.media-button-icon, .pcc-icon) {
+      width: calc(var(--u) * 26);
+      height: calc(var(--u) * 26);
+    }
+    .papercut-collage[data-fullscreen] .pcc-cc .media-button-icon {
+      width: calc(var(--u) * 28);
+      height: calc(var(--u) * 28);
+    }
+
+    /* Middle: the transport, centred on the screen whatever its shape. */
+    .papercut-collage[data-fullscreen] :is(.pcc-play, .pcc-seek--back, .pcc-seek--fwd) {
+      --ex: 0.5;
+      --ey: 0.5;
+      --off: 0 0;
+    }
+    .papercut-collage[data-fullscreen][data-idle] :is(.pcc-play, .pcc-seek--back, .pcc-seek--fwd) {
+      scale: 0.85;
+    }
+    .papercut-collage[data-fullscreen] .pcc-play {
+      --x: calc(var(--sw) / 2 - 52);
+      --y: calc(var(--sh) / 2 - 57);
+      --w: 104;
+      --h: 104;
+    }
+    .papercut-collage[data-fullscreen] .pcc-play .media-button-icon {
+      width: calc(var(--u) * 46);
+      height: calc(var(--u) * 46);
+    }
+    .papercut-collage[data-fullscreen] .pcc-seek--back {
+      --x: calc(var(--sw) / 2 - 186);
+      --y: calc(var(--sh) / 2 - 27);
+      --w: 100;
+      --h: 48;
+      --d: 20ms;
+    }
+    .papercut-collage[data-fullscreen] .pcc-seek--fwd {
+      --x: calc(var(--sw) / 2 + 86);
+      --y: calc(var(--sh) / 2 - 23);
+      --w: 100;
+      --h: 48;
+      --d: 40ms;
+    }
+    .papercut-collage[data-fullscreen] .pcc-ticket .media-seek-button-content {
+      font-size: calc(var(--u) * 17);
+      gap: calc(var(--u) * 4);
+    }
+    .papercut-collage[data-fullscreen] .pcc-ticket .media-button-icon {
+      width: calc(var(--u) * 20);
+      height: calc(var(--u) * 20);
+    }
+
+    /* Bottom: time and the timeline, above the home indicator. */
+    .papercut-collage[data-fullscreen] .pcc-time {
+      --x: 72;
+      --y: calc(var(--sh) - 106);
+      --d: 20ms;
+      font-size: calc(var(--u) * 15);
+      padding: calc(var(--u) * 4) calc(var(--u) * 10);
+    }
+    .papercut-collage[data-fullscreen] .pcc-strip {
+      --x: 62;
+      --y: calc(var(--sh) - 72);
+      --h: 46;
+      --r: 0.5;
+      --d: 0ms;
+      width: calc(100% - var(--u) * 124);
+      padding-inline: calc(var(--u) * 22);
+    }
+    .papercut-collage[data-fullscreen] .media-time-slider-thumb,
+    .papercut-collage[data-fullscreen] .media-time-slider-thumb[data-interactive] {
+      width: calc(var(--u) * 36);
+      height: calc(var(--u) * 36);
+    }
+
+    .papercut-collage[data-fullscreen] .pcc-seek-flash {
+      font-size: calc(var(--u) * 24);
+    }
+  }
+
+  @media (pointer: coarse) and (orientation: portrait) {
+    .papercut-collage[data-fullscreen] .pcc-stage {
+      --sw: 480;
+    }
+    .papercut-collage[data-fullscreen] .pcc-title {
+      --x: 20;
+    }
+    .papercut-collage[data-fullscreen] .pcc-title-sub {
+      --x: 22;
+    }
+    .papercut-collage[data-fullscreen] .pcc-time {
+      --x: 22;
+    }
+    .papercut-collage[data-fullscreen] .pcc-strip {
+      --x: 14;
+      width: calc(100% - var(--u) * 28);
+    }
+  }
+
+  /* ---------- The touch settings card: a lined index card in from the right edge ---------- */
+  .papercut-collage .pcc-card-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    border: 0;
+    padding: 0;
+    background: rgb(20 14 8 / 0.25);
+    cursor: default;
+  }
+  .papercut-collage .pcc-card {
+    position: absolute;
+    z-index: 10;
+    top: calc(var(--u) * 14);
+    right: calc(var(--u) * 28);
+    width: calc(var(--u) * 320);
+    max-width: calc(100% - var(--u) * 28);
+    max-height: calc(100% - var(--u) * 28);
+    overflow: auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u) * 10);
+    padding: calc(var(--u) * 14) calc(var(--u) * 18) calc(var(--u) * 16) calc(var(--u) * 24);
+    isolation: isolate;
+    color: var(--pc-ink);
+    rotate: -1deg;
+    animation: pcc-card-in 0.38s cubic-bezier(0.3, 1.25, 0.5, 1);
+  }
+  .papercut-collage .pcc-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 4px;
+    background:
+      linear-gradient(90deg, transparent calc(var(--u) * 12), rgb(181 56 44 / 0.4) calc(var(--u) * 12) calc(var(--u) * 14), transparent calc(var(--u) * 14)),
+      repeating-linear-gradient(180deg, transparent 0 calc(var(--u) * 25), rgb(61 90 128 / 0.22) calc(var(--u) * 25) calc(var(--u) * 26)),
+      var(--pcc-grain),
+      var(--pcc-age),
+      var(--pc-cream);
+    filter: var(--pcc-edge-sm) var(--pcc-shadow);
+  }
+  @keyframes pcc-card-in {
+    from {
+      translate: calc(var(--u) * 340) 0;
+      opacity: 0;
+    }
+  }
+  .papercut-collage .pcc-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .papercut-collage .pcc-card-title {
+    margin: 0;
+    font-family: var(--pcc-type);
+    font-size: max(15px, calc(var(--u) * 17));
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pc-red);
+  }
+  .papercut-collage .pcc-card-row {
+    display: grid;
+    gap: calc(var(--u) * 4);
+  }
+  .papercut-collage .pcc-card-heading {
+    font-family: var(--pcc-type);
+    font-size: max(12px, calc(var(--u) * 13));
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .papercut-collage .pcc-card-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--u) * 6);
+  }
+  .papercut-collage .pcc-chip {
+    min-width: 44px;
+    min-height: 40px;
+    padding: 0 0.6em;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    box-shadow: inset 0 0 0 2px rgb(43 38 32 / 0.35);
+    color: var(--pc-ink);
+    font: inherit;
+    font-size: max(16px, calc(var(--u) * 18));
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .papercut-collage .pcc-chip--typed {
+    font-family: var(--pcc-type);
+    font-weight: 400;
+    font-size: max(14px, calc(var(--u) * 15));
+  }
+  .papercut-collage .pcc-chip[data-on] {
+    background: var(--pc-red);
+    color: var(--pc-cream);
+    box-shadow: none;
+    rotate: -2deg;
+  }
+  .papercut-collage .pcc-chip:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .papercut-collage .pcc-card-close {
+    box-shadow: none;
+  }
+  .papercut-collage :is(.pcc-chip, .pcc-card-pip):focus-visible {
+    outline: 3px dashed var(--pc-ink);
+    outline-offset: 2px;
+  }
+  .papercut-collage .pcc-card-pip.media-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    justify-content: flex-start;
+    min-height: 44px;
+    padding: 0;
+    background: transparent;
+    color: var(--pc-ink);
+    font-size: max(16px, calc(var(--u) * 19));
+    font-weight: 700;
+  }
+  .papercut-collage .pcc-card-pip .media-button-icon {
+    width: 1.2em;
+    height: 1.2em;
+  }
+  .papercut-collage .pcc-card-pip::after {
+    content: 'Picture in picture';
+  }
+  .papercut-collage .pcc-card-pip[data-pip]::after {
+    content: 'Leave picture in picture';
+  }
+  .papercut-collage .pcc-card-pip:is([data-hidden], [data-availability='unsupported']) {
+    display: none;
+  }
+
+  /* ---------- Performance ---------- */
+  /* The big paper pieces are rotated, grained and run through the SVG wobble filter, which is slow to paint (worst on
+     phones). Without their own compositor layers, every timeline/time update while playing repainted them as well,
+     dropping frames in the portrait layout. On their own layers they're painted once and only composited after that;
+     the strip and time label, which change every frame, get layers too so their repaints stay small. */
+  .papercut-collage :is(.pcc-deco, .pcc-photo, .pcc-strip, .pcc-time) {
+    will-change: transform;
+  }
+
+  /* Touch screens: the scrub preview's text changes on every move, so skip the wobble filter there. */
+  @media (pointer: coarse) {
+    .papercut-collage .media-time-slider-preview-content {
+      filter: var(--pcc-shadow);
+    }
+  }
+
+  /* ---------- Preferences ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .papercut-collage .pcc-piece.media-button,
+    .papercut-collage .pcc-piece.media-button:hover,
+    .papercut-collage .pcc-piece.media-button:active {
+      transition: none;
+      translate: none;
+      scale: none;
+    }
+    .papercut-collage .pcc-paused-stamp,
+    .papercut-collage .pcc-seek-flash {
+      transition: none;
+      scale: none;
+    }
+    .papercut-collage[data-fullscreen] :is(.pcc-piece, .pcc-deco),
+    .papercut-collage[data-fullscreen][data-idle] :is(.pcc-piece, .pcc-deco) {
+      translate: none;
+      scale: none;
+      transition: opacity 0.2s;
+    }
+    .papercut-collage .pcc-card {
+      animation: none;
+    }
+    .papercut-collage:has(.pcc-play[data-started][data-paused]:not([data-ended])) .pcc-paused-stamp {
+      scale: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .papercut-collage .pcc-piece::before,
+    .papercut-collage .pcc-photo::before,
+    .papercut-collage .pcc-menu::after {
+      forced-color-adjust: none;
+      background: Canvas;
+      border: 1px solid CanvasText;
+    }
+  }
+}

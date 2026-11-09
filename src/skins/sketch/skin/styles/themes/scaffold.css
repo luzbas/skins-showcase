@@ -1,0 +1,108 @@
+@layer base.theme, base.preset, base.preferences;
+
+@layer base.preset {
+  /*
+   * Sketch: graphite and red pencil on cream paper scraps. Paper is opaque, so the same colors
+   * hold in light and dark schemes and over any frame of video.
+   */
+  .media-skin[data-theme="scaffold"] {
+    /* Pencil and paper. Lines are drawn by the pen in src/video/sketch; these color them. */
+    --sketch-paper: #eeebe3;
+    --sketch-graphite: #2b2a27;
+    --sketch-graphite-soft: #5e5a52;
+    /* The faint pencil of board decorations and buffered pins, and the board's dot grid. */
+    --sketch-graphite-faint: #b3ad9f;
+    --sketch-dots: #d2cdc1;
+    --sketch-red-pencil: #c0392b;
+    --sketch-shadow: rgb(0 0 0 / 0.35);
+    --sketch-tape: rgb(222 210 180 / 0.85);
+    /* Hand-cut corners for the few rings drawn in CSS: unequal radii so no two corners match. */
+    --sketch-cut-small: 8px 3px 7px 4px / 4px 7px 3px 8px;
+    /* How long a line takes to draw itself on. Preferences zero it under reduced motion. */
+    --sketch-draw-duration: 240ms;
+    --sketch-draw-easing: cubic-bezier(0.45, 0, 0.55, 1);
+
+    --media-font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --media-background: transparent;
+    --media-foreground: var(--sketch-graphite);
+    --media-default-accent-color: var(--sketch-red-pencil);
+    --media-accent: var(--media-accent-color, var(--media-default-accent-color));
+    --media-accent-foreground: var(--media-accent-text-color, var(--sketch-paper));
+    --media-primary: var(--media-accent);
+    --media-primary-foreground: var(--media-accent-text-color, var(--sketch-paper));
+    --media-muted: color-mix(in oklab, var(--sketch-graphite) 22%, transparent);
+    --media-muted-foreground: var(--sketch-graphite-soft);
+    --media-popover: var(--sketch-paper);
+    --media-popover-boundary-offset: calc(var(--media-spacing) * 3);
+    --media-tooltip-boundary-offset: var(--media-popover-boundary-offset);
+    --media-popover-foreground: var(--sketch-graphite);
+    --media-ring: var(--media-accent);
+    --media-button-highlight: transparent;
+    --media-live-color: var(--sketch-red-pencil);
+    --media-video-border-radius: var(--media-border-radius, 6px);
+    --media-control-radius: 0px;
+    --media-controls-radius: 0px;
+    --media-menu-item-radius: 0px;
+    --media-popup-radius: 0px;
+    --media-dialog-radius: 0px;
+    --media-scrollbar-thumb-color: var(--sketch-graphite-soft);
+    --media-shadow-surface: none;
+    --media-shadow-surface-inset: none;
+    --media-shadow-thumb: none;
+    --media-backdrop-filter-surface: none;
+    --media-backdrop-filter-indicator: none;
+    --media-backdrop-filter-dialog: none;
+  }
+
+  .media-skin[data-theme="scaffold"][data-preset$="audio"] {
+    --media-foreground: black;
+    --media-muted: #e5e5e5;
+  }
+
+  @supports (color: light-dark(red, red)) {
+    .media-skin[data-theme="scaffold"][data-preset$="audio"] {
+      --media-foreground: light-dark(black, white);
+      --media-muted: light-dark(#e5e5e5, #404040);
+    }
+  }
+
+  /* Lines appear at once instead of drawing themselves on. */
+  @media (prefers-reduced-motion: reduce) {
+    .media-skin[data-theme="scaffold"] {
+      --sketch-draw-duration: 0ms;
+    }
+  }
+
+  /* Solid paper, darker pencil. */
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    .media-skin[data-theme="scaffold"]:where([data-preset$="video"]) {
+      --media-background: var(--sketch-paper);
+      --sketch-graphite: #000;
+      --sketch-graphite-soft: #2b2a27;
+      --sketch-graphite-faint: #5e5a52;
+      --sketch-red-pencil: #9e2a1f;
+      --sketch-shadow: rgb(0 0 0 / 0.6);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .media-skin[data-theme="scaffold"] {
+      --sketch-paper: Canvas;
+      --sketch-graphite: CanvasText;
+      --sketch-graphite-soft: CanvasText;
+      --sketch-graphite-faint: CanvasText;
+      --sketch-dots: transparent;
+      --sketch-red-pencil: Highlight;
+      --sketch-shadow: transparent;
+      --sketch-tape: transparent;
+      --media-background: Canvas;
+      --media-popover: Canvas;
+      --media-popover-foreground: CanvasText;
+      --media-foreground: CanvasText;
+      --media-accent: Highlight;
+      --media-primary: Highlight;
+      --media-primary-foreground: HighlightText;
+      --media-ring: Highlight;
+    }
+  }
+}

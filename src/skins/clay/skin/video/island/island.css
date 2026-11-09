@@ -1,0 +1,348 @@
+/*
+ * Clay · Island: the diorama layout. Declared in its own layer after `clay` (see the import order in ../skin.tsx),
+ * so it wins over the bar layout's rules without !important. Positions and sizes come inline from island-skin.tsx;
+ * `--ci-u` is the size of one scene unit in px, `--ci-w` / `--ci-h` a spot's size.
+ */
+@layer clay-island {
+  .clay-skin.clay-island {
+    --ci-sky: #cfe6f5;
+    --ci-night: #17151d;
+    height: auto;
+    background: var(--ci-sky);
+    border-radius: 22px;
+    overflow: clip;
+  }
+
+  .clay-skin.clay-island[data-fs] {
+    height: 100%;
+    background: var(--ci-night);
+    border-radius: 0;
+  }
+
+  /* Design review (`previewMode`): a fullscreen layout shown over the window without real fullscreen. */
+  .clay-skin.clay-island[data-preview] {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  .clay-island .ci-stage {
+    position: relative;
+    width: 100%;
+  }
+
+  .clay-island[data-fs] .ci-stage {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* ---------- The video: inside the TV's ink bezel, or the whole screen in fullscreen ---------- */
+  .clay-island .ci-screen {
+    position: absolute;
+    z-index: 1;
+    overflow: hidden;
+    background: #000;
+    border-radius: calc(var(--ci-u) * 0.12);
+  }
+
+  .clay-island[data-fs] .ci-screen {
+    inset: 0;
+    border-radius: 0;
+  }
+
+  /* Inline, the video sits in front of the TV picture (its bezel frames it); in fullscreen it is the backdrop. */
+  .clay-island:not([data-fs]) .ci-screen {
+    z-index: 3;
+  }
+
+  /* The timeline's hover preview (chapter name and time) pops up over the bottom of the picture, so the controls have
+     to sit above the video. The controls layer drops its own stacking context inline, so the clay pieces still sit
+     behind the video while the controls (in their usual order) come in front of it. */
+  .clay-island:not([data-fs]) .ci-controls {
+    z-index: auto;
+  }
+
+  .clay-island:not([data-fs]) .ci-spot {
+    z-index: 4;
+  }
+
+  /* The transport discs are round, but their spots are square: only the disc itself takes the pointer, so the corners
+     of the big play disc don't cover the middle of the timeline above it. */
+  .clay-island .ci-spot:is(.ci-spot--play, .ci-spot--back, .ci-spot--fwd) {
+    pointer-events: none;
+  }
+
+  .clay-island .ci-spot:is(.ci-spot--play, .ci-spot--back, .ci-spot--fwd) > .media-button {
+    pointer-events: auto;
+    border-radius: 50%;
+  }
+
+  /* Their clay artwork is drawn a little larger than the button; it shouldn't catch the pointer either. */
+  .clay-island .ci-spot:is(.ci-spot--play, .ci-spot--back, .ci-spot--fwd) > .media-button::before {
+    pointer-events: none;
+  }
+
+  /* The TV is the whole player inline, so the video's captions stay where the browser puts them. In fullscreen they
+     lift above the grass ledge while the controls show. */
+  .clay-island:not([data-fs]) video {
+    --media-caption-track-y: 0px;
+  }
+
+  .clay-island[data-fs][data-controls-visible] video {
+    --media-caption-track-y: calc(var(--ci-u) * -1.9);
+  }
+
+  .clay-island .ci-screen .video-status-indicators {
+    z-index: 3;
+  }
+
+  /* ---------- Pieces and spots ---------- */
+  .clay-island .ci-controls {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: block;
+    pointer-events: none;
+  }
+
+  .clay-island .ci-item {
+    position: absolute;
+    margin: 0;
+  }
+
+  .clay-island .ci-piece {
+    pointer-events: none;
+    user-select: none;
+    max-width: none;
+    filter: drop-shadow(0 calc(var(--ci-u) * 0.05) calc(var(--ci-u) * 0.06) rgb(43 39 56 / 0.28))
+      drop-shadow(0 calc(var(--ci-u) * 0.14) calc(var(--ci-u) * 0.22) rgb(43 39 56 / 0.18));
+  }
+
+  /* The clay pictures are big and their soft drop shadows are slow to paint (worst on phones). Without their own
+     compositor layers, every timeline/time update while playing repainted them too, dropping frames. On their own
+     layers they're painted once and only composited after that. The timeline rail changes every frame, so it gets a
+     layer as well, keeping its repaints small. */
+  .clay-island :is(.ci-piece, .ci-rail) {
+    will-change: transform;
+  }
+
+  .clay-island .ci-spot {
+    display: grid;
+    place-items: center;
+    pointer-events: auto;
+  }
+
+  .clay-island .ci-spot > .media-button {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    --media-icon-size: calc(var(--ci-w) * 0.56);
+  }
+
+  .clay-island .ci-spot > .media-button .media-button-icon {
+    width: var(--media-icon-size);
+    height: var(--media-icon-size);
+  }
+
+  /* Cast and AirPlay hide themselves where the browser can't use them; their clay ball stays, so the antenna tips (and
+     the mushroom cap in fullscreen) never look bare. */
+  .clay-island :is(.ci-spot--cast, .ci-spot--airplay) {
+    background: var(--ca-disc-pink) center / 88% no-repeat;
+    border-radius: 50%;
+  }
+  .clay-island .ci-spot--airplay {
+    background-image: var(--ca-disc-cream);
+  }
+
+  /* Phone fullscreen: Cast and AirPlay share one spot on the tree, so show only the one this browser supports (or
+     neither, rather than an empty ball). */
+  .clay-island[data-mode='fs-phone'] :is(.ci-spot--cast, .ci-spot--airplay):not(:has(> :not([data-hidden]))) {
+    display: none;
+  }
+
+  .clay-island .ci-spot--back > .media-button,
+  .clay-island .ci-spot--fwd > .media-button {
+    --clay-disc: var(--ca-disc-cream);
+  }
+
+  .clay-island .ci-spot--fullscreen > .media-button,
+  .clay-island .ci-spot--captions > .media-button {
+    --clay-disc: var(--ca-disc-white);
+  }
+
+  /* The skip buttons' "10" sits in the open bottom of the arrow, live text. */
+  .clay-island .ci-seek .media-button-icon {
+    translate: 0 -8%;
+  }
+
+  .clay-island .ci-seek .media-seek-button-label {
+    inset-inline: 0;
+    bottom: 21%;
+    text-align: center;
+    color: var(--clay-ink);
+    font-size: calc(var(--ci-w) * 0.2);
+    font-weight: 700;
+    text-shadow: none;
+  }
+
+  /* Over the video (fullscreen) the transport gets an ink rim so it reads on any frame. */
+  .clay-island[data-fs] :is(.ci-spot--play, .ci-spot--back, .ci-spot--fwd) > .media-button::before {
+    filter: var(--clay-rim) var(--clay-shadow-lifted);
+  }
+
+  /* ---------- Timeline: a strip of cream clay (TV chin, or the grass ledge) with the time either side ---------- */
+  .clay-island .ci-rail {
+    --clay-track-h: calc(var(--ci-h) * 0.4);
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ci-h) * 0.35);
+    padding-inline: calc(var(--ci-h) * 0.6);
+    border-style: solid;
+    border-color: transparent;
+    border-image: var(--ca-bar-cream) 0 110 fill / 0 calc(var(--ci-h) / 2) / 0 stretch;
+    filter: var(--clay-shadow);
+  }
+
+  .clay-island .ci-rail .media-time-slider {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    /* Room for the playhead ball at either end, so it never sits on the time. */
+    margin-inline: calc(var(--ci-h) * 0.3);
+  }
+
+  .clay-island .ci-rail .media-time-slider-thumb {
+    width: calc(var(--ci-h) * 0.82);
+    height: calc(var(--ci-h) * 0.82);
+  }
+
+  .clay-island .ci-time {
+    font-size: calc(var(--ci-h) * 0.42);
+    min-width: 2.6em;
+    text-align: center;
+  }
+
+  /* ---------- Volume: a clay strip pressed across the mushroom cap ---------- */
+  .clay-island .ci-spot--volume .media-volume-slider {
+    --clay-track-h: calc(var(--ci-h) * 0.42);
+    width: 100%;
+    height: 100%;
+  }
+
+  .clay-island .ci-spot--volume .media-volume-slider-thumb {
+    width: calc(var(--ci-h) * 0.85);
+    height: calc(var(--ci-h) * 0.85);
+  }
+
+  /* ---------- Title cloud: the title and the chapter playing now, in ink ---------- */
+  .clay-island .ci-title {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    color: var(--clay-ink);
+    line-height: 1.05;
+    pointer-events: none;
+  }
+
+  .clay-island .ci-title-main,
+  .clay-island .ci-title-main:not([data-visible]) {
+    position: static;
+    display: block;
+    padding: 0;
+    color: var(--clay-ink);
+    font-size: calc(var(--ci-u) * 0.5);
+    font-weight: 700;
+    opacity: 1;
+    translate: none;
+    scale: 1;
+    filter: none;
+    text-shadow: none;
+  }
+
+  .clay-island .ci-title-main::before {
+    content: none;
+  }
+
+  .clay-island .ci-title-chapter {
+    margin-top: 0.25em;
+    font-size: calc(var(--ci-u) * 0.3);
+    font-weight: 600;
+    color: var(--clay-ink);
+    opacity: 0.8;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ---------- Fullscreen: the pieces slide off the edges while the viewer is idle ---------- */
+  .clay-island[data-fs] .ci-item {
+    transition-property: translate, opacity, scale;
+    transition-duration: 0.45s, 0.3s, 0.45s;
+    transition-timing-function: var(--clay-spring), ease, var(--clay-spring);
+  }
+
+  .clay-island[data-fs][data-idle] .ci-item {
+    opacity: 0;
+    pointer-events: none;
+    transition-timing-function: ease-in;
+  }
+
+  .clay-island[data-fs][data-idle] .ci-item[data-side='bottom'] {
+    translate: 0 calc(var(--ci-u) * 3);
+  }
+  .clay-island[data-fs][data-idle] .ci-item[data-side='top'] {
+    translate: 0 calc(var(--ci-u) * -3);
+  }
+  .clay-island[data-fs][data-idle] .ci-item[data-side='left'] {
+    translate: calc(var(--ci-u) * -4) 0;
+  }
+  .clay-island[data-fs][data-idle] .ci-item[data-side='right'] {
+    translate: calc(var(--ci-u) * 4) 0;
+  }
+  .clay-island[data-fs][data-idle] .ci-item[data-side='center'] {
+    scale: 0.6;
+  }
+
+  .clay-island[data-fs][data-idle],
+  .clay-island[data-fs][data-idle] * {
+    cursor: none;
+  }
+
+  /* ---------- Reduced motion: the pieces just fade ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .clay-island[data-fs] .ci-item {
+      transition-duration: 0.01s;
+    }
+    .clay-island[data-fs][data-idle] .ci-item {
+      translate: none;
+      scale: 1;
+    }
+  }
+
+  /* ---------- Forced colours: scenery goes, controls fall back to the Video.js icons ---------- */
+  @media (forced-colors: active) {
+    .clay-island .ci-piece {
+      display: none;
+    }
+    .clay-skin.clay-island {
+      background: Canvas;
+    }
+    .clay-island .ci-rail {
+      border-image: none;
+      background: Canvas;
+      border: 1px solid CanvasText;
+      border-radius: 999px;
+    }
+  }
+}

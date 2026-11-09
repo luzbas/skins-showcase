@@ -1,0 +1,1325 @@
+/*
+ * ASCII Glitch · Schematic — the ASCII skin as a circuit board: the video is the central node and every control is a
+ * labelled unit wired into it. Warm, earthy and saturated: ochre and terracotta on espresso, with sage for "live".
+ *
+ * The board is a CSS grid that re-lays itself with container queries on the player (media-root): one column on a
+ * small phone, two columns (units above and below the feed) on a phone or tablet, and the full schematic (units on
+ * every side of the feed) from 60rem. The wires are each unit's ::after, the wire labels its ::before.
+ *
+ * It sits on top of the ASCII skin's own rules (.ascii-skin, in ../skin/styles/ascii.css): the tokens below re-colour
+ * those, and this layer, declared after theirs, adds the layout. Everything is scoped to .ascii-schematic.
+ */
+@layer base, components, utilities, ascii, ascii-schematic;
+
+@layer ascii-schematic {
+  /* ---------- Tokens ---------- */
+  .ascii-schematic {
+    --sx-espresso: #150d08;
+    --sx-panel: rgb(30 19 12 / 0.94);
+    --sx-ochre: #ffb22e;
+    --sx-terra: #ff6236;
+    --sx-sage: #b9dc5a;
+    --sx-cream: #fff0d6;
+    --sx-on-ochre: #1d1009;
+    --sx-gap: 2.25rem;
+    /* Fullscreen keeps clear of the notch, rounded corners and home indicator. */
+    --sx-safe-top: max(0.75rem, env(safe-area-inset-top));
+    --sx-safe-right: max(1rem, env(safe-area-inset-right));
+    --sx-safe-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    --sx-safe-left: max(1rem, env(safe-area-inset-left));
+
+    /* Re-colour the ASCII skin: its "green" becomes ochre, its "magenta" terracotta. */
+    --ax-black: var(--sx-espresso);
+    --ax-ink: var(--sx-cream);
+    --ax-green: var(--sx-ochre);
+    --ax-magenta: var(--sx-terra);
+    --ax-red: #ff3b1f;
+    --ax-dim: rgb(255 178 46 / 0.45);
+    --ax-faint: rgb(255 178 46 / 0.16);
+    --ax-split-text:
+      -1px 0 rgb(255 178 46 / 0.85),
+      1px 0 rgb(255 98 54 / 0.85);
+    --ax-split-icon: drop-shadow(-1px 0 rgb(255 178 46 / 0.9)) drop-shadow(1px 0 rgb(255 98 54 / 0.9));
+
+    /* The glyph screen: a little coarser (the feed is smaller than a full player) and tinted onto an earthy ramp,
+       rust → ochre → cream, over the picture's own colours. */
+    --ax-columns: 140;
+    --ax-tint: 0.85;
+    --ax-pal-a: #c2361a;
+    --ax-pal-b: #ffb22e;
+    --ax-pal-c: #fff3dc;
+
+    --media-background: var(--sx-espresso);
+    --media-popover: rgb(21 13 8 / 0.95);
+    --media-caption-controls-y: 0px;
+
+    height: auto;
+    padding: 2.5rem 2rem 1.75rem;
+    border-radius: 12px;
+    background:
+      radial-gradient(80% 60% at 50% 42%, rgb(255 140 40 / 0.08), transparent 70%),
+      radial-gradient(120% 90% at 50% 40%, #241509 0%, var(--sx-espresso) 72%);
+    color: var(--sx-cream);
+  }
+
+  @media (max-width: 40rem) {
+    .ascii-schematic {
+      --sx-gap: 1.75rem;
+      padding: 1.75rem 0.75rem 1.25rem;
+    }
+  }
+
+
+  /* ---------- The board ---------- */
+  .ascii-schematic .sx-board {
+    position: relative;
+    display: grid;
+    gap: var(--sx-gap);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'feed'
+      'timeline'
+      'transport'
+      'audio'
+      'output'
+      'config'
+      'chapters'
+      'foot';
+  }
+
+  /* A faint dashed bus around the whole board, with + marks at its corners. */
+  .ascii-schematic .sx-board::before {
+    content: '';
+    position: absolute;
+    inset: -1.25rem -0.75rem -0.5rem;
+    border: 1px dashed rgb(255 178 46 / 0.14);
+    pointer-events: none;
+  }
+
+  @container media-root (width >= 18rem) {
+    .ascii-schematic .sx-board {
+      column-gap: 0.75rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-areas:
+        'head head'
+        'audio output'
+        'feed feed'
+        'timeline timeline'
+        'transport transport'
+        'config config'
+        'chapters chapters'
+        'foot foot';
+    }
+  }
+
+  @container media-root (width >= 60rem) {
+    .ascii-schematic .sx-board {
+      column-gap: 3rem;
+      row-gap: 2rem;
+      grid-template-columns: minmax(14rem, 1.15fr) minmax(0, 2.5fr) minmax(14rem, 1.15fr);
+      /* Like the design: transport straddles the header and the top of the feed, audio sits beside the feed's lower
+         half, chapters beside the timeline; config faces transport and output faces audio and the timeline. */
+      grid-template-areas:
+        'transport head     config'
+        'transport feed     config'
+        'audio     feed     output'
+        'chapters  timeline output'
+        'chapters  foot     foot';
+    }
+  }
+
+  .ascii-schematic .sx-head { grid-area: head; }
+  .ascii-schematic .sx-feed { grid-area: feed; }
+  .ascii-schematic .sx-transport { grid-area: transport; }
+  .ascii-schematic .sx-audio { grid-area: audio; }
+  .ascii-schematic .sx-chapters { grid-area: chapters; }
+  .ascii-schematic .sx-timeline { grid-area: timeline; }
+  .ascii-schematic .sx-config { grid-area: config; }
+  .ascii-schematic .sx-output { grid-area: output; }
+  .ascii-schematic .sx-foot { grid-area: foot; }
+
+  /* ---------- Units ---------- */
+  .ascii-schematic .sx-unit {
+    position: relative;
+    min-width: 0;
+    align-self: start;
+    border: 1px solid var(--ax-dim);
+    background-color: var(--sx-panel);
+    box-shadow:
+      -3px 0 0 rgb(255 98 54 / 0.3),
+      3px 0 0 rgb(255 178 46 / 0.16);
+  }
+
+  .ascii-schematic .sx-unit-title {
+    margin: 0;
+    height: 24px;
+    padding: 0 8px;
+    overflow: hidden;
+    background-color: var(--sx-ochre);
+    color: var(--sx-on-ochre);
+    font: 800 12px/24px var(--ax-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-shadow: none;
+    box-shadow: -2px 0 0 var(--sx-terra);
+  }
+
+  .ascii-schematic .sx-unit-body {
+    padding: 10px;
+  }
+
+  /* ---------- Wires: each unit's ::after runs to its neighbour, its ::before is the label on the wire ---------- */
+  .ascii-schematic :where(.sx-unit, .sx-unit-bare):not(.sx-feed)::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    height: var(--sx-gap);
+    border-left: 1px dashed var(--ax-dim);
+    pointer-events: none;
+  }
+
+  .ascii-schematic :where(.sx-unit, .sx-unit-bare)[data-chip]::before {
+    content: '[' attr(data-chip) ']';
+    position: absolute;
+    left: calc(50% + 6px);
+    top: calc(100% + var(--sx-gap) / 2 - 7px);
+    color: var(--sx-ochre);
+    font: 600 10px/14px var(--ax-mono);
+    letter-spacing: 0.04em;
+    text-shadow: var(--ax-split-text);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  /* Stacked layouts: the last unit has nothing below it. */
+  .ascii-schematic .sx-chapters::after,
+  .ascii-schematic .sx-chapters::before {
+    content: none;
+  }
+
+  @container media-root (width >= 60rem) {
+    .ascii-schematic :is(.sx-transport, .sx-config, .sx-audio, .sx-output) {
+      align-self: center;
+    }
+
+    .ascii-schematic .sx-chapters {
+      align-self: start;
+    }
+
+    /* One line per chapter beside the timeline; the full title is on the row's tooltip. */
+    .ascii-schematic .sx-board .sx-chapter-list .sx-row-label {
+      white-space: nowrap;
+    }
+
+    .ascii-schematic .sx-foot {
+      align-self: start;
+    }
+
+    /* Left column: wires run right, into the feed or the timeline. */
+    .ascii-schematic :is(.sx-transport, .sx-audio, .sx-chapters)::after {
+      content: '';
+      left: 100%;
+      top: 50%;
+      width: 3rem;
+      height: 0;
+      border-left: 0;
+      border-top: 1px dashed var(--ax-dim);
+    }
+
+    .ascii-schematic :is(.sx-transport, .sx-audio, .sx-chapters)[data-chip]::before {
+      content: '[' attr(data-chip) ']';
+      left: calc(100% + 4px);
+      top: calc(50% - 18px);
+    }
+
+    /* Right column: wires run left. */
+    .ascii-schematic :is(.sx-config, .sx-output)::after {
+      content: '';
+      left: auto;
+      right: 100%;
+      top: 50%;
+      width: 3rem;
+      height: 0;
+      border-left: 0;
+      border-top: 1px dashed var(--ax-dim);
+    }
+
+    .ascii-schematic :is(.sx-config, .sx-output)[data-chip]::before {
+      content: '[' attr(data-chip) ']';
+      left: auto;
+      right: calc(100% + 4px);
+      top: calc(50% - 18px);
+    }
+
+    /* The header wires down into the feed; the timeline wires up into it. */
+    .ascii-schematic .sx-head::after {
+      height: 2rem;
+    }
+
+    .ascii-schematic .sx-head[data-chip]::before {
+      top: calc(100% + 0.5rem);
+    }
+
+    .ascii-schematic .sx-timeline::after {
+      top: auto;
+      bottom: 100%;
+      left: 30%;
+      height: 2rem;
+    }
+
+    .ascii-schematic .sx-timeline[data-chip]::before {
+      top: auto;
+      bottom: calc(100% + 0.5rem);
+      left: calc(30% + 6px);
+    }
+  }
+
+  /* ---------- Header ---------- */
+  .ascii-schematic .sx-unit-bare {
+    position: relative;
+    min-width: 0;
+  }
+
+  .ascii-schematic .sx-head p {
+    margin: 0;
+  }
+
+  .ascii-schematic .sx-title {
+    font: 800 clamp(1.25rem, 3.4cqi, 1.75rem) / 1 var(--ax-mono);
+    letter-spacing: 0.12em;
+    color: var(--sx-cream);
+    text-shadow:
+      -3px 0 rgb(255 178 46 / 0.9),
+      3px 0 rgb(255 98 54 / 0.9);
+  }
+
+  .ascii-schematic .sx-title .ax-cursor {
+    color: var(--sx-ochre);
+  }
+
+  .ascii-schematic .sx-head .sx-sub {
+    margin-top: 6px;
+    color: var(--sx-ochre);
+    font: 12px/1.4 var(--ax-mono);
+    text-shadow: var(--ax-split-text);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .ascii-schematic .sx-head .sx-status {
+    margin-top: 4px;
+    color: var(--sx-cream);
+    font: 11px/1.4 var(--ax-mono);
+    opacity: 0.85;
+  }
+
+  .ascii-schematic .sx-st-play {
+    color: var(--sx-sage);
+  }
+
+  .ascii-schematic .sx-st-pause {
+    display: none;
+    color: var(--sx-terra);
+  }
+
+  .ascii-schematic:has(.sx-main-play[data-paused]) .sx-st-play {
+    display: none;
+  }
+
+  .ascii-schematic:has(.sx-main-play[data-paused]) .sx-st-pause {
+    display: inline;
+  }
+
+  /* ---------- The feed ---------- */
+  .ascii-schematic .sx-feed {
+    border-color: var(--sx-ochre);
+    align-self: stretch;
+  }
+
+  .ascii-schematic .sx-screen {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background-color: #000;
+    container: sx-feed / inline-size;
+  }
+
+  .ascii-schematic .sx-screen video {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Click the picture to play or pause. */
+  .ascii-schematic .sx-surface {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  /* The prompt and skip keys live in the transport unit here; the centre keeps only [ ▶ RUN ] and > EOF_. */
+  .ascii-schematic .ax-stage-seek {
+    display: none;
+  }
+
+  .ascii-schematic .ax-big-play,
+  .ascii-schematic .ax-stage-seek {
+    font-size: clamp(0.9rem, 3.2cqi, 1.4rem);
+  }
+
+  .ascii-schematic .ax-end-banner {
+    font-size: clamp(1.75rem, 9cqi, 4.5rem);
+  }
+
+  /* [ ▶ RUN ] and [ ↺ REPLAY ]: the board's [ ] key brackets would replace the prompt's own, so put them back. */
+  .ascii-schematic .sx-board .ax-big-play::before,
+  .ascii-schematic .sx-board .ax-big-play::after {
+    position: static;
+    translate: none;
+    opacity: 1;
+    font-size: inherit;
+    line-height: inherit;
+    color: var(--sx-ochre);
+  }
+
+  .ascii-schematic .sx-board .ax-big-play::before {
+    content: '[';
+  }
+
+  .ascii-schematic .sx-board .ax-big-play::after {
+    content: 'RUN ]';
+  }
+
+  .ascii-schematic .sx-board .ax-big-play[data-ended]::after {
+    content: 'REPLAY ]';
+  }
+
+  @media (hover: hover) {
+    .ascii-schematic .sx-board .ax-big-play[data-paused]:hover::before,
+    .ascii-schematic .sx-board .ax-big-play[data-paused]:hover::after {
+      color: var(--sx-on-ochre);
+    }
+  }
+
+  /* Captions sit just above the bottom edge of the feed. */
+  .ascii-schematic .ax-cue-layer {
+    bottom: 0.75rem;
+    translate: none;
+  }
+
+  .ascii-schematic:not([data-controls-visible]) .ax-cue-layer {
+    translate: none;
+  }
+
+  .ascii-schematic .ax-cue {
+    font-size: clamp(0.8rem, 2.6cqi, 1.2rem);
+  }
+
+  /* While the real picture plays, its own captions show; style them in the board's type. */
+  .ascii-schematic video::cue {
+    font-family: var(--ax-mono);
+    background-color: rgb(21 13 8 / 0.85);
+    color: var(--sx-cream);
+  }
+
+  .ascii-schematic video::-webkit-media-text-track-container {
+    translate: 0 -0.25rem;
+  }
+
+  /* ---------- Buttons and rows ---------- */
+  .ascii-schematic .sx-board .media-button {
+    color: var(--sx-cream);
+  }
+
+  .ascii-schematic .sx-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 10px;
+    border: 0;
+    border-bottom: 1px dashed var(--ax-faint);
+    border-radius: 0;
+    background: transparent;
+    color: var(--sx-cream);
+    font: 13px var(--ax-mono);
+    text-align: left;
+    text-shadow: var(--ax-split-text);
+    cursor: pointer;
+  }
+
+  .ascii-schematic .sx-row:last-child {
+    border-bottom: 0;
+  }
+
+  @media (hover: hover) {
+    .ascii-schematic button.sx-row:hover,
+    .ascii-schematic .sx-board .sx-row.media-button:not([aria-disabled='true']):hover {
+      background-color: var(--sx-ochre);
+      color: var(--sx-on-ochre);
+      text-shadow: none;
+    }
+  }
+
+  .ascii-schematic .sx-row:focus-visible {
+    outline: 1px solid var(--sx-ochre);
+    outline-offset: -2px;
+  }
+
+  /* Rows are wide: no [ ] brackets around them, the inverted fill is the selection. */
+  .ascii-schematic .sx-board .sx-row::before,
+  .ascii-schematic .sx-board .sx-row::after {
+    content: none;
+  }
+
+  .ascii-schematic .sx-row-label {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .ascii-schematic .sx-row-value {
+    flex: none;
+    color: var(--sx-ochre);
+  }
+
+  .ascii-schematic .sx-row:hover .sx-row-value,
+  .ascii-schematic .sx-row.is-active:hover .sx-row-value {
+    color: inherit;
+  }
+
+  .ascii-schematic .sx-cc-row .sx-cc-on {
+    display: none;
+    color: var(--sx-sage);
+  }
+
+  .ascii-schematic .sx-cc-row[data-active] .sx-cc-on {
+    display: inline;
+  }
+
+  .ascii-schematic .sx-cc-row[data-active] .sx-cc-off {
+    display: none;
+  }
+
+  .ascii-schematic .sx-cc-row[data-hidden],
+  .ascii-schematic .sx-cc-row[data-availability='unavailable'] {
+    opacity: 0.5;
+  }
+
+  .ascii-schematic .sx-more-row {
+    cursor: default;
+    padding-right: 0;
+  }
+
+  .ascii-schematic .sx-more-row:hover {
+    background: transparent;
+  }
+
+  /* ---------- Transport ---------- */
+  .ascii-schematic .sx-transport-keys {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding-block: 0.5rem;
+  }
+
+  .ascii-schematic .sx-main-play {
+    width: 72px;
+    height: 72px;
+    border: 1px solid var(--sx-ochre);
+    background-color: rgb(255 178 46 / 0.08);
+  }
+
+  .ascii-schematic .sx-main-play .media-button-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .ascii-schematic .sx-hint {
+    margin: 4px 0 0;
+    color: var(--sx-ochre);
+    font: 10px/1.4 var(--ax-mono);
+    text-align: center;
+    opacity: 0.9;
+  }
+
+  /* ---------- Audio ---------- */
+  .ascii-schematic .sx-audio-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .ascii-schematic .sx-audio .media-volume-slider {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+  }
+
+  .ascii-schematic .sx-meter {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 18px;
+    margin-top: 6px;
+  }
+
+  .ascii-schematic .sx-meter i {
+    flex: 1;
+    height: 25%;
+    background-color: var(--sx-ochre);
+    animation: sx-meter 0.5s steps(3) infinite alternate;
+    animation-play-state: paused;
+  }
+
+  .ascii-schematic .sx-meter i:nth-child(3n) { background-color: var(--sx-terra); animation-duration: 0.37s; }
+  .ascii-schematic .sx-meter i:nth-child(4n) { animation-duration: 0.61s; }
+  .ascii-schematic .sx-meter i:nth-child(5n) { background-color: var(--sx-sage); animation-duration: 0.43s; }
+  .ascii-schematic .sx-meter i:nth-child(2) { animation-delay: -0.2s; }
+  .ascii-schematic .sx-meter i:nth-child(7) { animation-delay: -0.35s; }
+  .ascii-schematic .sx-meter i:nth-child(9) { animation-delay: -0.1s; }
+
+  .ascii-schematic:has(.sx-main-play:not([data-paused])) .sx-meter i {
+    animation-play-state: running;
+  }
+
+  .ascii-schematic:has(.sx-audio .media-mute-button[data-muted]) .sx-meter i {
+    height: 8%;
+    animation: none;
+  }
+
+  @keyframes sx-meter {
+    from {
+      height: 15%;
+    }
+    to {
+      height: 100%;
+    }
+  }
+
+  /* ---------- Chapters ---------- */
+  .ascii-schematic .sx-chapters .sx-unit-body {
+    padding: 4px 0;
+  }
+
+  .ascii-schematic .sx-chapter-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ascii-schematic .sx-chapter-list .sx-row {
+    padding-block: 6px;
+  }
+
+  .ascii-schematic .sx-chapter-list .sx-row-label {
+    white-space: normal;
+    line-height: 1.3;
+  }
+
+  .ascii-schematic .sx-chapter-list li:last-child .sx-row {
+    border-bottom: 0;
+  }
+
+  .ascii-schematic .sx-row.is-active {
+    color: var(--sx-ochre);
+  }
+
+  .ascii-schematic .sx-row.is-active .sx-row-value {
+    color: var(--sx-sage);
+  }
+
+  .ascii-schematic .sx-empty {
+    margin: 0;
+    padding: 10px;
+    color: var(--sx-ochre);
+    font: 12px var(--ax-mono);
+  }
+
+  /* ---------- Timeline ---------- */
+  .ascii-schematic .sx-timeline-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .ascii-schematic .sx-time {
+    font-size: 1.05rem;
+  }
+
+  .ascii-schematic .sx-timeline .media-time-slider {
+    width: 100%;
+  }
+
+  /* ---------- Config and output ---------- */
+  .ascii-schematic .sx-config .sx-unit-body {
+    padding: 0;
+  }
+
+  .ascii-schematic .sx-output-keys {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 0.25rem;
+  }
+
+  /* ---------- Footer ---------- */
+  .ascii-schematic .sx-foot {
+    margin: 0;
+    justify-self: end;
+    color: var(--sx-cream);
+    font: 11px/1.4 var(--ax-mono);
+    text-shadow: var(--ax-split-text);
+    opacity: 0.85;
+  }
+
+  /* ---------- Earthy versions of the ASCII skin's green-and-magenta details ---------- */
+  .ascii-schematic .media-slider-buffer::before {
+    background-image: repeating-linear-gradient(90deg, rgb(255 98 54 / 0.4) 0 3px, transparent 3px 5px);
+  }
+
+  .ascii-schematic .media-slider-fill::before {
+    filter: drop-shadow(0 0 3px rgb(255 178 46 / 0.55));
+  }
+
+  .ascii-schematic .media-time-slider-thumb,
+  .ascii-schematic .media-volume-slider-thumb {
+    box-shadow:
+      -2px 0 0 rgb(255 178 46 / 0.9),
+      2px 0 0 rgb(255 98 54 / 0.9);
+  }
+
+  .ascii-schematic .media-time-slider .media-slider-thumbnail {
+    box-shadow:
+      0 0 0 1px var(--sx-ochre),
+      -3px 0 0 1px rgb(255 98 54 / 0.6);
+  }
+
+  .ascii-schematic .media-popup-surface {
+    box-shadow:
+      0 0 0 1px var(--ax-dim),
+      -3px 3px 0 0 rgb(255 98 54 / 0.35),
+      3px -3px 0 0 rgb(255 178 46 / 0.2);
+  }
+
+  .ascii-schematic .media-tooltip {
+    box-shadow:
+      -2px 0 0 rgb(255 178 46 / 0.9),
+      2px 0 0 rgb(255 98 54 / 0.9);
+  }
+
+  .ascii-schematic .media-menu-content [role^='menuitem'][data-highlighted] {
+    color: var(--sx-on-ochre);
+  }
+
+  /* ---------- Phone-fullscreen-only pieces: hidden everywhere else ---------- */
+  .ascii-schematic .sx-fs-keys,
+  .ascii-schematic .sx-ch-key,
+  .ascii-schematic .sx-rotate-hint {
+    display: none;
+  }
+
+  .ascii-schematic .sx-ch-key {
+    place-items: center;
+    height: 44px;
+    padding: 0 10px;
+    border: 1px solid var(--ax-dim);
+    background-color: rgb(21 13 8 / 0.75);
+    color: var(--sx-cream);
+    font: 700 12px var(--ax-mono);
+    cursor: pointer;
+  }
+
+  .ascii-schematic .sx-ch-key.is-open {
+    border-color: var(--sx-ochre);
+    background-color: var(--sx-ochre);
+    color: var(--sx-on-ochre);
+  }
+
+  .ascii-schematic .sx-ch-key:focus-visible {
+    outline: 1px solid var(--sx-ochre);
+    outline-offset: 2px;
+  }
+
+  .ascii-schematic .sx-rotate-hint {
+    margin: 4px 0 0;
+    color: var(--sx-ochre);
+    font: 10px/1.3 var(--ax-mono);
+  }
+
+  /* ---------- Immersive (iPhone): no element fullscreen, so the player covers the viewport itself ---------- */
+  .ascii-schematic[data-immersive] {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  /* ---------- Fullscreen: the video fills the screen, the board floats over it ----------
+     The feed leaves the grid and covers the whole screen; the other units stay in a schematic arrangement on top,
+     translucent, with their wires. They show while the video is paused or the pointer is moving (the Container's
+     data-controls-visible, which Video.js drops after 2s idle while playing) or while a control has keyboard focus,
+     and fade out otherwise, taking the cursor with them. */
+  .ascii-schematic:is(:fullscreen, [data-immersive]) {
+    --ax-columns: 220;
+    padding: 0;
+    border-radius: 0;
+    background: #000;
+    overflow: hidden;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-board {
+    position: absolute;
+    inset: 0;
+    padding: max(1.5rem, var(--sx-safe-top)) max(1.75rem, var(--sx-safe-right)) max(1.5rem, var(--sx-safe-bottom))
+      max(1.75rem, var(--sx-safe-left));
+    gap: 1.25rem 3rem;
+    pointer-events: none;
+    grid-template-columns: minmax(14rem, 17rem) minmax(0, 1fr) minmax(14rem, 17rem);
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'transport head   config'
+      'audio     .      .'
+      'chapters  .      output'
+      'timeline  timeline timeline';
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-board::before {
+    inset: 0.75rem;
+  }
+
+  /* The feed: the whole screen, under everything. */
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-feed {
+    grid-area: auto;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border: 0;
+    box-shadow: none;
+    background: #000;
+    pointer-events: auto;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-feed > .sx-unit-title {
+    display: none;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-screen {
+    aspect-ratio: auto;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* The units: translucent panels over the picture. */
+  .ascii-schematic:is(:fullscreen, [data-immersive]) :where(.sx-unit:not(.sx-feed), .sx-head) {
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+    transition:
+      opacity var(--media-duration-controls, 0.25s) steps(4),
+      translate var(--media-duration-controls, 0.25s) steps(4);
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-unit:not(.sx-feed) {
+    background-color: rgb(21 13 8 / 0.72);
+    backdrop-filter: blur(3px);
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-head {
+    justify-self: center;
+    padding: 0.5rem 1rem;
+    background-color: rgb(21 13 8 / 0.6);
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) :is(.sx-transport, .sx-config, .sx-head) {
+    align-self: start;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-audio {
+    align-self: center;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) :is(.sx-chapters, .sx-output) {
+    align-self: end;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-timeline {
+    align-self: end;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-foot {
+    display: none;
+  }
+
+  /* Wires: the side units wire inwards towards the picture; the header and timeline keep their stubs. */
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-head::after {
+    height: 1.25rem;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-timeline::after,
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-timeline::before {
+    content: none;
+  }
+
+  /* Hidden: idle while playing, and no control has keyboard focus. */
+  .ascii-schematic:is(:fullscreen, [data-immersive]):not([data-controls-visible]):not(:has(.sx-board :focus-visible))
+    :is(.sx-unit:not(.sx-feed), .sx-head) {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]):not([data-controls-visible]):not(:has(.sx-board :focus-visible))
+    :is(.sx-transport, .sx-audio, .sx-chapters) {
+    translate: -1.5rem 0;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]):not([data-controls-visible]):not(:has(.sx-board :focus-visible))
+    :is(.sx-config, .sx-output) {
+    translate: 1.5rem 0;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]):not([data-controls-visible]):not(:has(.sx-board :focus-visible)) .sx-timeline {
+    translate: 0 1.5rem;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]):not([data-controls-visible]):not(:has(.sx-board :focus-visible)) .sx-board::before {
+    opacity: 0;
+  }
+
+  @media (pointer: fine) {
+    .ascii-schematic:is(:fullscreen, [data-immersive]):not([data-controls-visible]) {
+      cursor: none;
+    }
+  }
+
+  /* Captions clear the timeline while the board shows, and drop to the bottom when it hides. */
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .ax-cue-layer {
+    bottom: 2.5rem;
+    transition: bottom var(--media-duration-controls, 0.25s) steps(4);
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive])[data-controls-visible] .ax-cue-layer {
+    bottom: 9rem;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) video::-webkit-media-text-track-container {
+    translate: 0 -1.5rem;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive])[data-controls-visible] video::-webkit-media-text-track-container {
+    translate: 0 -8rem;
+  }
+
+  .ascii-schematic:is(:fullscreen, [data-immersive]) .ax-cue {
+    font-size: clamp(1.1rem, 2.2cqi, 2rem);
+  }
+
+  /* Touch in fullscreen: a tap on the picture shows or hides the overlay (the Gesture layer) instead of pausing. */
+  @media (pointer: coarse) {
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-surface {
+      pointer-events: none;
+    }
+  }
+
+  /* ---------- Phone fullscreen (a narrow fullscreen, usually a phone on its side) ----------
+     Nothing can scroll, so it's edges only: title, chapter and status top-left; option keys (captions, settings, PiP,
+     exit) top-right; the timeline along the bottom with a ≡ CH key; transport in the middle, only while the overlay
+     shows. Audio is the phone's own buttons. Chapters and settings open drawers from the right that scroll inside
+     themselves. Everything keeps inside the safe area (notch, home indicator). */
+  @container media-root (width < 60rem) {
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-board {
+      display: block;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) :is(.sx-audio, .sx-chapters, .sx-config, .sx-output, .sx-foot) {
+      display: none;
+    }
+
+    /* No wires in this layout: the edges are the board. */
+    .ascii-schematic:is(:fullscreen, [data-immersive]) :where(.sx-unit, .sx-unit-bare)::after,
+    .ascii-schematic:is(:fullscreen, [data-immersive]) :where(.sx-unit, .sx-unit-bare)::before {
+      content: none;
+    }
+
+    /* Top-left: title, chapter, status. */
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-head {
+      position: absolute;
+      top: var(--sx-safe-top);
+      left: var(--sx-safe-left);
+      max-width: min(26rem, 46%);
+      padding: 0.35rem 0.6rem;
+      background-color: rgb(21 13 8 / 0.62);
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-title {
+      font-size: 1rem;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-head .sx-sub {
+      margin-top: 3px;
+      font-size: 11px;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-head .sx-status {
+      margin-top: 2px;
+      font-size: 9px;
+    }
+
+    /* Top-right: the option keys. */
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-fs-keys {
+      position: absolute;
+      top: var(--sx-safe-top);
+      right: var(--sx-safe-right);
+      z-index: 1;
+      display: flex;
+      gap: 6px;
+      pointer-events: auto;
+      transition:
+        opacity var(--media-duration-controls, 0.25s) steps(4),
+        translate var(--media-duration-controls, 0.25s) steps(4);
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-fs-keys .media-button {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--ax-dim);
+      background-color: rgb(21 13 8 / 0.75);
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-fs-keys .media-button::before,
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-fs-keys .media-button::after {
+      content: none;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-fs-keys :is(.media-captions-button[data-active], .sx-key.is-open) {
+      border-color: var(--sx-ochre);
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-fs-keys .sx-key.is-open {
+      background-color: var(--sx-ochre);
+      color: var(--sx-on-ochre);
+    }
+
+    /* Centre: transport, only while the overlay shows (the idle rule above fades it with the rest). */
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-transport {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -55%);
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-transport > .sx-unit-title,
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-hint {
+      display: none;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-transport .sx-unit-body {
+      padding: 0;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-transport-keys {
+      gap: 14px;
+      padding: 0;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-transport .media-seek-button {
+      width: 60px;
+      height: 52px;
+      border: 1px solid var(--ax-dim);
+      background-color: rgb(21 13 8 / 0.75);
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-main-play {
+      width: 68px;
+      height: 68px;
+      background-color: rgb(21 13 8 / 0.82);
+    }
+
+    /* Paused: the middle key reads [ ▶ RUN ], and stands in for the stage's own prompt. */
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-main-play[data-paused] {
+      width: auto;
+      padding: 0 18px;
+      gap: 0.6ch;
+      display: inline-flex;
+      align-items: center;
+      font: 800 18px var(--ax-mono);
+      letter-spacing: 0.12em;
+      text-shadow: var(--ax-split-text);
+      box-shadow: -4px 0 0 1px rgb(255 98 54 / 0.45);
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-main-play[data-paused] .media-button-icon {
+      position: static;
+      width: 22px;
+      height: 22px;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-main-play[data-paused]::before,
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-main-play[data-paused]::after {
+      position: static;
+      translate: none;
+      opacity: 1;
+      color: var(--sx-ochre);
+      font-size: inherit;
+      line-height: 1;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-main-play[data-paused]::before {
+      content: '[';
+      order: -1;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-main-play[data-paused]::after {
+      content: 'RUN ]';
+      color: var(--sx-cream);
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-main-play[data-ended]::after {
+      content: 'REPLAY ]';
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .ax-stage-row {
+      display: none;
+    }
+
+    /* Bottom: the timeline strip, with its title as a small tab and the ≡ CH key at the end. */
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-timeline {
+      position: absolute;
+      left: var(--sx-safe-left);
+      right: var(--sx-safe-right);
+      bottom: var(--sx-safe-bottom);
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-timeline > .sx-unit-title {
+      position: absolute;
+      left: -1px;
+      bottom: 100%;
+      height: 16px;
+      padding: 0 6px;
+      font-size: 9px;
+      line-height: 16px;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-timeline .sx-unit-body {
+      padding: 2px 4px 2px 10px;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-timeline-row {
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      gap: 10px;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-time {
+      font-size: 0.9rem;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-ch-key {
+      display: inline-grid;
+    }
+
+    /* Captions sit above the timeline strip and the transport keys while the overlay shows. */
+    .ascii-schematic:is(:fullscreen, [data-immersive])[data-controls-visible] .ax-cue-layer {
+      bottom: 5.5rem;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive])[data-controls-visible] video::-webkit-media-text-track-container {
+      translate: 0 -4.5rem;
+    }
+
+    /* Hidden overlay: the keys slide up out of the way like the rest. */
+    .ascii-schematic:is(:fullscreen, [data-immersive]):not([data-controls-visible]):not(:has(.sx-board :focus-visible)) .sx-fs-keys {
+      opacity: 0;
+      pointer-events: none;
+      translate: 0 -1.5rem;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]):not([data-controls-visible]):not(:has(.sx-board :focus-visible)) .sx-transport {
+      translate: 0 0;
+    }
+
+    /* While a drawer is open, the centre transport steps aside. */
+    .ascii-schematic:is(:fullscreen, [data-immersive])[data-drawer] .sx-transport {
+      display: none;
+    }
+
+    /* Held upright: a hint to turn the phone (the picture still letterboxes in the middle). */
+    @media (orientation: portrait) {
+      .ascii-schematic:is(:fullscreen, [data-immersive]) .sx-rotate-hint {
+        display: block;
+      }
+    }
+  }
+
+  /* ---------- Drawers (phone fullscreen): from the right edge, the only things that scroll ---------- */
+  .ascii-schematic .sx-drawer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    width: min(400px, 58%);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    padding: var(--sx-safe-top) var(--sx-safe-right) 0 0;
+    background-color: rgb(21 13 8 / 0.95);
+    border-left: 1px solid var(--sx-ochre);
+    box-shadow: -4px 0 0 rgb(255 98 54 / 0.35);
+    color: var(--sx-cream);
+  }
+
+  .ascii-schematic .sx-drawer[hidden] {
+    display: none;
+  }
+
+  .ascii-schematic .sx-drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0 0 10px 14px;
+  }
+
+  .ascii-schematic .sx-drawer-head .sx-unit-title {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .ascii-schematic .sx-drawer-close {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--ax-dim);
+    background: transparent;
+    color: var(--sx-cream);
+    font: 700 16px var(--ax-mono);
+    cursor: pointer;
+  }
+
+  .ascii-schematic .sx-drawer-close:focus-visible {
+    outline: 1px solid var(--sx-ochre);
+    outline-offset: 2px;
+  }
+
+  .ascii-schematic .sx-drawer-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 0 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .ascii-schematic .sx-drawer-body .sx-chapter-list .sx-row {
+    min-height: 56px;
+  }
+
+  .ascii-schematic .sx-drawer-body .sx-chapter-list .sx-row-label {
+    white-space: normal;
+  }
+
+  .ascii-schematic .sx-drawer-hint {
+    margin: 0;
+    padding: 8px 14px max(12px, var(--sx-safe-bottom));
+    color: rgb(255 240 214 / 0.55);
+    font: 10px var(--ax-mono);
+  }
+
+  .ascii-schematic .sx-option-title {
+    margin: 0 0 6px;
+    color: var(--sx-ochre);
+    font: 700 11px var(--ax-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-shadow: var(--ax-split-text);
+  }
+
+  .ascii-schematic .sx-option-keys {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .ascii-schematic .sx-option {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 10px;
+    border: 1px solid rgb(255 178 46 / 0.35);
+    background: transparent;
+    color: var(--sx-cream);
+    font: 600 12px var(--ax-mono);
+    cursor: pointer;
+  }
+
+  .ascii-schematic .sx-option[aria-pressed='true'] {
+    border-color: var(--sx-ochre);
+    background-color: var(--sx-ochre);
+    color: var(--sx-on-ochre);
+  }
+
+  .ascii-schematic .sx-option:focus-visible {
+    outline: 1px solid var(--sx-cream);
+    outline-offset: 2px;
+  }
+
+  .ascii-schematic .sx-option:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Tapping the picture beside an open drawer closes it. */
+  .ascii-schematic .sx-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 35;
+    padding: 0;
+    border: 0;
+    background: rgb(10 6 4 / 0.35);
+    cursor: pointer;
+  }
+
+  /* ---------- Preferences ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .ascii-schematic .sx-meter i {
+      animation: none;
+    }
+
+    .ascii-schematic:is(:fullscreen, [data-immersive]) :is(.sx-unit, .sx-head) {
+      translate: none !important;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .ascii-schematic .sx-unit {
+      forced-color-adjust: none;
+      background-color: Canvas;
+      color: CanvasText;
+      border-color: CanvasText;
+    }
+  }
+}

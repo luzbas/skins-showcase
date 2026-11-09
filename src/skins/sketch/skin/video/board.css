@@ -1,0 +1,1578 @@
+/*
+ * Schematic: lays the board out for the three layouts the skin picks from (src/video/sketch/layout.ts),
+ * following the Claude Design boards (Schematic, PhonePortrait, FSDark).
+ *
+ *  board    The video is a chip in the middle of a paper board; parts are wired around it. Sizes are in
+ *           `--u`, 1/1280 of the player width, so the board scales as one drawing (1280 × 800).
+ *  stack    Narrow players: the board continues under the video; sizes in pixels.
+ *  overlay  Fullscreen: the video fills the screen and the parts lie over it on paper tags, hiding when
+ *           idle. Every line gets a paper halo and an edge wash follows the frame's tone (data-tone).
+ */
+
+@property --sketch-wash {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgb(8 10 16 / 0.5);
+}
+
+@layer sketch {
+  @scope (.media-skin[data-theme="scaffold"][data-preset="video"]) {
+    /* ================================================================ shared parts */
+
+    .media-sketch-lead,
+    .media-sketch-frame {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .media-sketch-lead > svg,
+    .media-sketch-frame > svg,
+    .media-sketch-pins > svg,
+    .sketch-chapter-pins > svg {
+      position: absolute;
+      inset: 0;
+      overflow: visible;
+      max-width: none;
+    }
+
+    .media-sketch-frame-overlay {
+      display: none;
+    }
+
+    .media-sketch-pins {
+      position: absolute;
+      inset-inline: 0;
+      top: 50%;
+      height: var(--sketch-pin-h, 18px);
+      translate: 0 -50%;
+      pointer-events: none;
+    }
+
+    .media-sketch-pins-hatch {
+      fill: var(--sketch-graphite-faint);
+    }
+
+    .media-sketch-pins-red,
+    .media-sketch-pins-red-ink {
+      fill: var(--media-accent);
+    }
+
+    .media-sketch-pins-buffer {
+      clip-path: inset(-4px calc(100% - var(--media-slider-buffer, 0%)) -4px -4px);
+    }
+
+    .media-sketch-pins-played {
+      clip-path: inset(-4px calc(100% - var(--media-slider-fill, 0%)) -4px -4px);
+    }
+
+    /* The timeline's pencil layers are revealed by clips that move on every frame of playback. On their own compositor
+       layers the browser only moves the clip, instead of repainting the dense hatching each frame (slow on phones). */
+    .media-sketch-pins > svg,
+    .media-sketch-track > svg {
+      will-change: transform;
+    }
+
+    .media-time-slider[data-dragging] .media-sketch-pins-played {
+      clip-path: inset(-4px calc(100% - var(--media-slider-pointer, 0%)) -4px -4px);
+    }
+
+    .sketch-board {
+      --sketch-label-size: 11px;
+      color: var(--sketch-graphite);
+      font-size: 12px;
+    }
+
+    .sketch-board > :not(.media-sketch-lead, .media-sketch-frame, .sketch-art, .sketch-timecode) {
+      pointer-events: auto;
+    }
+
+    .sketch-board > * {
+      position: absolute;
+    }
+
+    /* Silkscreen: the small printed labels beside every part. */
+    .sketch-label,
+    .sketch-tick,
+    .sketch-subtitle,
+        .sketch-ic-ref {
+      font-size: var(--sketch-label-size);
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      line-height: 1.2;
+      color: var(--sketch-graphite-soft);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .sketch-label {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    /* The board's drawing (wide board only). */
+    .sketch-art {
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .sketch-art-soft {
+      fill: var(--sketch-graphite-faint);
+    }
+
+    /* Burn-in timecode in the video's corner. */
+    .sketch-timecode {
+      z-index: 1;
+      font-size: var(--sketch-label-size);
+      letter-spacing: 0.08em;
+      color: #f4efe2;
+      text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
+      font-variant-numeric: tabular-nums;
+      pointer-events: none;
+    }
+
+    /* ---------------------------------------------------------------- title */
+
+    .sketch-title {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.35em;
+      max-width: 60%;
+    }
+
+    .sketch-title .media-title-tag {
+      rotate: none;
+      margin: 0;
+    }
+
+    .sketch-title .media-title {
+      padding: 0;
+      font-size: var(--sketch-title-size, 26px);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      line-height: 1.15;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sketch-title .media-title::before {
+      content: "U1 · ";
+    }
+
+    .sketch-subtitle {
+      margin: 0;
+      padding-inline-start: 2px;
+    }
+
+    /* ---------------------------------------------------------------- chapters */
+
+    .sketch-chapter {
+      position: absolute;
+      top: 0;
+      height: var(--sketch-chapter-label-h, 24px);
+      max-width: max(2.5em, calc(var(--sketch-chapter-width) - 6px));
+      margin: 0;
+      margin-inline-start: -4px;
+      padding: 0 4px;
+      border: 0;
+      background: none;
+      color: var(--sketch-graphite);
+      font: inherit;
+      font-size: var(--sketch-label-size);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: start;
+      cursor: pointer;
+    }
+
+    .sketch-chapter[aria-current] {
+      z-index: 1;
+      max-width: none;
+      color: var(--media-accent);
+      background-color: var(--sketch-paper);
+    }
+
+    .sketch-chapter:focus-visible {
+      z-index: 2;
+      max-width: none;
+      outline: 2px solid var(--media-accent);
+      outline-offset: 2px;
+      background-color: var(--sketch-paper);
+    }
+
+    @media (hover: hover) {
+      .sketch-chapter:hover {
+        z-index: 2;
+        max-width: none;
+        background-color: var(--sketch-paper);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+    }
+
+    .sketch-chapter-pins {
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      height: var(--sketch-pin-h, 20px);
+      pointer-events: none;
+    }
+
+    .sketch-chapter-pins-current {
+      fill: var(--media-accent);
+    }
+
+    /* ---------------------------------------------------------------- chapter list (board, stack) */
+
+    .sketch-chapter-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sketch-chapter-list > .sketch-label {
+      position: static;
+    }
+
+    .sketch-chapter-items {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--sketch-chapter-gap, 32px);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .sketch-chapter-item {
+      position: relative;
+      display: flex;
+      align-items: baseline;
+      gap: 0.6em;
+      width: 100%;
+      height: var(--sketch-chapter-row, 26px);
+      margin: 0;
+      padding: 0 2px;
+      border: 0;
+      background: none;
+      color: var(--sketch-graphite);
+      font: inherit;
+      font-size: var(--sketch-chapter-size, 13px);
+      line-height: var(--sketch-chapter-row, 26px);
+      text-align: start;
+      cursor: pointer;
+    }
+
+    .sketch-chapter-item-number,
+    .sketch-chapter-item-time {
+      flex: none;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sketch-chapter-item-number {
+      color: var(--sketch-graphite-soft);
+    }
+
+    .sketch-chapter-item-title {
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sketch-chapter-item[aria-current],
+    .sketch-chapter-item[aria-current] .sketch-chapter-item-number {
+      color: var(--media-accent);
+    }
+
+    .sketch-chapter-item-underline {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 6px;
+    }
+
+    .sketch-chapter-item-underline .media-sketch-ink {
+      fill: var(--media-accent);
+    }
+
+    .sketch-chapter-item:focus-visible {
+      outline: 2px solid var(--media-accent);
+      outline-offset: 2px;
+    }
+
+    @media (hover: hover) {
+      .sketch-chapter-item:hover .sketch-chapter-item-title {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+    }
+
+    /* Chapter titles are printed in the list; the pin row keeps only the groups. */
+    :scope .sketch-chapter {
+      display: none;
+    }
+
+    /* In fullscreen the list hangs under the settings chips, on the right. */
+    :scope[data-layout="overlay"] .sketch-board > .sketch-chapter-list {
+      display: none;
+    }
+
+    /* ---------------------------------------------------------------- pads */
+
+    .sketch-pad-slot > .sketch-pad {
+      width: 100%;
+      height: 100%;
+    }
+
+    .sketch-pad-text {
+      position: relative;
+      font-size: var(--sketch-pad-text, 12px);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sketch-pad-play-icon {
+      width: 40% !important;
+      height: 40% !important;
+    }
+
+    .sketch-pad-play .media-play-button-play-icon {
+      translate: 7% 0;
+    }
+
+    .sketch-pad-slot .sketch-label {
+      left: 50%;
+      translate: -50% 0;
+    }
+
+    .sketch-label-pause,
+    .sketch-label-exit,
+    .sketch-pad-lead {
+      display: none;
+    }
+
+    .sketch-pad-slot-play:has(.media-play-button:not([data-paused])) .sketch-label-play {
+      display: none;
+    }
+
+    .sketch-pad-slot-play:has(.media-play-button:not([data-paused])) .sketch-label-pause {
+      display: inline;
+    }
+
+    /* ---------------------------------------------------------------- connectors */
+
+    .sketch-connectors {
+      display: flex;
+      gap: var(--sketch-jack-gap, 24px);
+      counter-reset: jack;
+    }
+
+    .sketch-jack {
+      position: relative;
+      flex: none;
+      width: var(--sketch-jack, 52px);
+      height: var(--sketch-jack, 52px);
+      counter-increment: jack;
+    }
+
+    .sketch-jack:has([data-hidden]),
+    .sketch-jack:not(:has(button)),
+    .sketch-jack[data-jack="captions"],
+    .sketch-jack[data-jack="mute"] {
+      display: none;
+    }
+
+    .sketch-jack .media-button {
+      width: 100%;
+      height: 100%;
+    }
+
+    .sketch-jack .sketch-label {
+      left: 50%;
+      top: calc(100% + var(--sketch-jack-label-gap, 6px));
+      translate: -50% 0;
+    }
+
+    :scope[data-layout="board"] .sketch-jack .sketch-label {
+      letter-spacing: 0.02em;
+    }
+
+    .sketch-jack .sketch-label::before {
+      content: "J" counter(jack) " · ";
+    }
+
+    .sketch-jack-stem {
+      left: calc(50% - 4px);
+      width: 8px;
+    }
+
+    /* ---------------------------------------------------------------- settings chips */
+
+    .sketch-settings {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sketch-ic-gap, 16px);
+      counter-reset: ic 1;
+    }
+
+    .sketch-settings > .sketch-label {
+      position: static;
+      margin-block-end: calc(var(--sketch-ic-gap, 16px) * -0.5);
+    }
+
+    .sketch-ic {
+      position: relative;
+      height: var(--sketch-ic-h, 44px);
+      counter-increment: ic;
+    }
+
+    .sketch-ic-lead {
+      top: calc(50% - 4px);
+      height: 8px;
+      right: calc(100% + 8px);
+      width: var(--sketch-ic-lead, 64px);
+    }
+
+    .sketch-ic-button.media-button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      height: 100%;
+      padding-inline: 12px;
+      font-size: var(--sketch-ic-size, 13px);
+      color: var(--sketch-graphite);
+      text-transform: uppercase;
+    }
+
+    .sketch-ic-ref {
+      position: relative;
+      flex: none;
+      font-size: max(8px, calc(var(--sketch-label-size) - 1px));
+      letter-spacing: 0.02em;
+    }
+
+    .sketch-ic-ref::before {
+      content: "U" counter(ic);
+    }
+
+    .sketch-ic-name {
+      position: relative;
+      flex: 1 0 auto;
+      text-align: start;
+      white-space: nowrap;
+    }
+
+    .sketch-ic[data-setting="captions"] .sketch-ic-name::after {
+      content: " (C)";
+    }
+
+    .sketch-ic-value {
+      position: relative;
+      flex: 0 1 auto;
+      min-width: 0;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sketch-ic-on,
+    .sketch-ic-button[data-active] .sketch-ic-off {
+      display: none;
+    }
+
+    .sketch-ic-button[data-active] .sketch-ic-on {
+      display: inline;
+    }
+
+    .sketch-ic-button[data-active],
+    .sketch-ic-button[data-active] .sketch-ic-ref {
+      color: var(--media-accent);
+    }
+
+    .sketch-ic-button[data-active] > .media-sketch-surface .media-sketch-ink {
+      fill: var(--media-accent);
+    }
+
+    /* ---------------------------------------------------------------- pin row, time */
+
+    .sketch-timeline .video-controls-slider-row,
+    .sketch-timeline .media-time-slider {
+      width: 100%;
+      height: 100%;
+    }
+
+    .sketch-timeline .media-time-slider-thumb {
+      width: 14px;
+      height: calc(var(--sketch-pin-h, 20px) + 6px);
+    }
+
+    .sketch-playhead {
+      position: absolute;
+      left: 50%;
+      top: calc(100% - 2px);
+      width: var(--sketch-playhead-w, 16px);
+      height: var(--sketch-playhead-h, 30px);
+      translate: -50% 0;
+      overflow: visible;
+      fill: var(--media-accent);
+      pointer-events: none;
+    }
+
+    .sketch-ticks {
+      position: absolute;
+      inset-inline: 0;
+      top: calc(100% + 2px);
+      pointer-events: none;
+    }
+
+    .sketch-tick {
+      position: absolute;
+      top: 0;
+      translate: -50% 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sketch-time {
+      display: flex;
+      align-items: baseline;
+      white-space: nowrap;
+      color: var(--media-accent);
+      font-size: var(--sketch-time-size, 14px);
+      font-weight: 600;
+    }
+
+    .sketch-time .media-time-group {
+      font-size: inherit;
+      gap: 0.4em;
+    }
+
+    .sketch-time .media-time-current-value,
+    .sketch-time .media-time-toggle {
+      color: var(--media-accent);
+      font-weight: 600;
+    }
+
+    .sketch-time .media-time-separator,
+    .sketch-time .media-time-duration-value {
+      color: var(--sketch-graphite-soft);
+      font-weight: 400;
+    }
+
+    /* ---------------------------------------------------------------- volume */
+
+    .sketch-volume > * {
+      position: absolute;
+    }
+
+    .sketch-volume-value {
+      position: static;
+    }
+
+    .sketch-ladder.media-volume-slider {
+      --sketch-pin-h: var(--sketch-ladder-h, 26px);
+    }
+
+    /* The ladder runs sideways; its handle is only the focus loop, following the fill. */
+    .sketch-ladder .media-volume-slider-thumb {
+      left: var(--media-slider-fill, 0%);
+      bottom: auto;
+      top: 50%;
+      width: 16px;
+      height: calc(var(--sketch-pin-h) + 8px);
+      transform: translate(-50%, -50%);
+    }
+
+    .sketch-ladder[data-dragging] .media-volume-slider-thumb {
+      left: var(--media-slider-pointer, var(--media-slider-fill, 0%));
+    }
+
+    .sketch-mute.media-button {
+      width: var(--sketch-mute, 48px);
+      height: var(--sketch-mute, 48px);
+    }
+
+    /* ---------------------------------------------------------------- captions, over the picture */
+
+    /* A box the size of the video; the current cue sits centred at its bottom. */
+    .sketch-captions {
+      z-index: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: var(--sketch-caption-bottom, 5%);
+      pointer-events: none !important;
+    }
+
+    .sketch-captions[data-empty] {
+      display: none;
+    }
+
+    .sketch-captions-text {
+      max-width: 88%;
+      padding: 0.1em 0.55em;
+      border-radius: var(--sketch-cut-small);
+      background-color: rgb(238 235 227 / 0.92);
+      color: var(--sketch-graphite);
+      font-size: var(--sketch-caption-size, 16px);
+      line-height: 1.45;
+      text-align: center;
+      white-space: pre-line;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
+    /* ================================================================ board and stack: a paper board */
+
+    :scope:is([data-layout="board"], [data-layout="stack"]) {
+      background-color: var(--sketch-paper);
+      background-image: radial-gradient(var(--sketch-dots) 1px, transparent 1.3px);
+      background-size: var(--sketch-dot-grid, 16px) var(--sketch-dot-grid, 16px);
+      border-radius: 8px;
+    }
+
+    :scope:is([data-layout="board"], [data-layout="stack"]) > video {
+      position: absolute;
+      background-color: #000;
+      border-radius: 0;
+    }
+
+    :scope:is([data-layout="board"], [data-layout="stack"]) .sketch-wash {
+      display: none;
+    }
+
+    /* A flat drawing: no paper shadows, and no paper under the title. */
+    :scope:is([data-layout="board"], [data-layout="stack"]) .media-sketch-surface {
+      filter: none;
+    }
+
+    :scope:is([data-layout="board"], [data-layout="stack"]) .sketch-title .media-sketch-surface {
+      display: none;
+    }
+
+    /* ================================================================ board */
+
+    :scope[data-layout="board"] {
+      aspect-ratio: 16 / 10 !important;
+      height: auto !important;
+      --u: calc(100cqw / 1280);
+      --sketch-dot-grid: calc(16 * var(--u));
+      --sketch-label-size: max(9px, calc(11 * var(--u)));
+      --sketch-title-size: calc(26 * var(--u));
+      --sketch-pin-h: calc(20 * var(--u));
+      --sketch-pad-text: max(10px, calc(12 * var(--u)));
+      --sketch-jack: calc(52 * var(--u));
+      --sketch-jack-gap: calc(24 * var(--u));
+      --sketch-jack-label-gap: calc(6 * var(--u));
+      --sketch-ic-h: calc(44 * var(--u));
+      --sketch-ic-gap: calc(16 * var(--u));
+      --sketch-ic-lead: calc(64 * var(--u));
+      --sketch-ic-size: max(11px, calc(13 * var(--u)));
+      --sketch-time-size: max(12px, calc(14 * var(--u)));
+      --sketch-ladder-h: calc(26 * var(--u));
+      --sketch-mute: calc(48 * var(--u));
+      --sketch-caption-size: max(13px, calc(17 * var(--u)));
+      --sketch-playhead-w: calc(16 * var(--u));
+      --sketch-playhead-h: calc(30 * var(--u));
+    }
+
+    :scope[data-layout="board"] > video,
+    :scope[data-layout="board"] > .media-poster,
+    :scope[data-layout="board"] > .media-buffering-indicator-controls {
+      left: calc(340 * var(--u));
+      top: calc(200 * var(--u));
+      width: calc(600 * var(--u));
+      height: calc(338 * var(--u));
+      inset-inline-end: auto;
+      bottom: auto;
+    }
+
+    /* The board's drawing draws the chip and the traces. */
+    :scope[data-layout="board"] :is(.sketch-chip, .sketch-lead) {
+      display: none;
+    }
+
+    :scope[data-layout="board"] .sketch-timecode {
+      left: calc(352 * var(--u));
+      top: calc(208 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-title {
+      left: calc(344 * var(--u));
+      top: calc(56 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-chapter-list {
+      left: calc(390 * var(--u));
+      top: calc(650 * var(--u));
+      width: calc(840 * var(--u));
+      --sketch-chapter-size: max(11px, calc(13 * var(--u)));
+      --sketch-chapter-row: calc(26 * var(--u));
+      --sketch-chapter-gap: calc(40 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-chapters {
+      left: calc(344 * var(--u));
+      top: calc(132 * var(--u));
+      width: calc(600 * var(--u));
+      height: calc(48 * var(--u));
+      --sketch-chapter-label-h: calc(24 * var(--u));
+    }
+
+    /* Pads: −10 above, play, +10 below; references printed above and below them. */
+    :scope[data-layout="board"] .sketch-pad-slot-back {
+      left: calc(148 * var(--u));
+      top: calc(208 * var(--u));
+      width: calc(56 * var(--u));
+      height: calc(56 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-pad-slot-play {
+      left: calc(104 * var(--u));
+      top: calc(323 * var(--u));
+      width: calc(92 * var(--u));
+      height: calc(92 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-pad-slot-forward {
+      left: calc(148 * var(--u));
+      top: calc(474 * var(--u));
+      width: calc(56 * var(--u));
+      height: calc(56 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-pad-slot-back .sketch-label {
+      bottom: calc(100% + 4 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-pad-slot-play .sketch-label {
+      top: calc(100% + 9 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-pad-slot-forward .sketch-label {
+      top: calc(100% + 6 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-connectors {
+      left: calc(1000 * var(--u));
+      top: calc(60 * var(--u));
+    }
+
+    /* Stems drop from each label to the bus, which runs between the outer stems. */
+    :scope[data-layout="board"] .sketch-jack-stem {
+      top: calc(70 * var(--u));
+      height: calc(20 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-connectors > .sketch-lead-bus {
+      display: block;
+      left: calc(26 * var(--u));
+      right: calc(26 * var(--u));
+      top: calc(90 * var(--u) - 4px);
+      height: 8px;
+    }
+
+    :scope[data-layout="board"] .sketch-settings {
+      left: calc(1030 * var(--u));
+      top: calc(196 * var(--u));
+      width: calc(200 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-timeline {
+      left: calc(340 * var(--u));
+      top: calc(552 * var(--u));
+      width: calc(604 * var(--u));
+      height: calc(30 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-ticks {
+      top: calc(100% + 2 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-time {
+      top: calc(612 * var(--u));
+      left: calc((326 + 600 * var(--sketch-p, 0)) * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-volume {
+      left: calc(22 * var(--u));
+      top: calc(612 * var(--u));
+      width: calc(330 * var(--u));
+      height: calc(90 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-volume-label {
+      left: calc(88 * var(--u));
+      top: 0;
+    }
+
+    :scope[data-layout="board"] .sketch-mute {
+      left: calc(24 * var(--u));
+      top: calc(17 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-mute-label {
+      left: 0;
+      top: calc(74 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-ladder {
+      left: calc(84 * var(--u));
+      top: calc(24 * var(--u));
+      width: calc(246 * var(--u));
+      height: calc(34 * var(--u));
+    }
+
+    :scope[data-layout="board"] .sketch-captions {
+      left: calc(340 * var(--u));
+      top: calc(200 * var(--u));
+      width: calc(600 * var(--u));
+      height: calc(338 * var(--u));
+      --sketch-caption-bottom: calc(18 * var(--u));
+    }
+
+    /* ================================================================ stack (phones, narrow players) */
+
+    :scope[data-layout="stack"] {
+      --vh: calc((100cqw - 56px) * 0.5625);
+      --sb: calc(var(--vh) + 80px);
+      --sketch-label-size: 10px;
+      --sketch-title-size: 18px;
+      --sketch-pin-h: 16px;
+      --sketch-pad-text: 13px;
+      --sketch-jack: min(52px, calc((100cqw - 72px) / 5));
+      --sketch-ic-h: 52px;
+      --sketch-ic-size: 15px;
+      --sketch-time-size: 13px;
+      --sketch-caption-size: 14px;
+    }
+
+    :scope[data-layout="stack"] > video,
+    :scope[data-layout="stack"] > .media-poster,
+    :scope[data-layout="stack"] > .media-buffering-indicator-controls {
+      left: 28px;
+      top: 72px;
+      width: calc(100% - 56px);
+      height: var(--vh);
+      inset-inline-end: auto;
+      bottom: auto;
+    }
+
+    :scope[data-layout="stack"] .sketch-chip {
+      left: 20px;
+      top: 64px;
+      width: calc(100% - 40px);
+      height: calc(var(--vh) + 16px);
+    }
+
+    /* The chapter pins replace the frame's decorative pins here. */
+    :scope[data-layout="stack"] .media-sketch-frame-pins {
+      display: none;
+    }
+
+    :scope[data-layout="stack"] .sketch-timecode {
+      left: 36px;
+      top: 78px;
+    }
+
+    :scope[data-layout="stack"] .sketch-title {
+      left: 20px;
+      top: 14px;
+      max-width: calc(100% - 40px);
+    }
+
+    :scope[data-layout="stack"] .sketch-chapters {
+      left: 28px;
+      right: 28px;
+      top: 64px;
+      height: 38px;
+      --sketch-chapter-label-h: 18px;
+    }
+
+    :scope[data-layout="stack"] .sketch-timeline {
+      left: 28px;
+      right: 28px;
+      top: var(--sb);
+      height: 24px;
+    }
+
+    :scope[data-layout="stack"] .sketch-ticks {
+      display: none;
+    }
+
+    :scope[data-layout="stack"] .sketch-time {
+      top: calc(var(--sb) + 46px);
+      left: clamp(20px, calc(28px + (100% - 56px) * var(--sketch-p, 0) - 18px), calc(100% - 150px));
+    }
+
+    /* Pads in a row, wired together and down from the chip's sides. */
+    :scope[data-layout="stack"] .sketch-pad-slot-play {
+      left: calc(50% - 44px);
+      top: calc(var(--sb) + 98px);
+      width: 88px;
+      height: 88px;
+    }
+
+    :scope[data-layout="stack"] :is(.sketch-pad-slot-back, .sketch-pad-slot-forward) {
+      top: calc(var(--sb) + 112px);
+      width: 60px;
+      height: 60px;
+    }
+
+    :scope[data-layout="stack"] .sketch-pad-slot-back {
+      left: calc(50% - 146px);
+    }
+
+    :scope[data-layout="stack"] .sketch-pad-slot-forward {
+      left: calc(50% + 86px);
+    }
+
+    :scope[data-layout="stack"] .sketch-pad-slot .sketch-label {
+      top: calc(100% + 8px);
+    }
+
+    :scope[data-layout="stack"] .sketch-key {
+      display: none;
+    }
+
+    :scope[data-layout="stack"] .sketch-lead-pads {
+      left: 10px;
+      right: 10px;
+      top: calc(var(--sb) + 138px);
+      height: 8px;
+    }
+
+    :scope[data-layout="stack"] :is(.sketch-lead-left, .sketch-lead-right) {
+      top: calc(72px + var(--vh) / 2);
+      width: 8px;
+    }
+
+    :scope[data-layout="stack"] .sketch-lead-left {
+      left: 6px;
+      height: calc(var(--sb) + 142px - 72px - var(--vh) / 2);
+    }
+
+    :scope[data-layout="stack"] .sketch-lead-right {
+      right: 6px;
+      height: calc(var(--sb) + 226px - 72px - var(--vh) / 2);
+    }
+
+    /* Connectors: captions and mute join the row on phones (the hardware buttons set volume). */
+    :scope[data-layout="stack"] .sketch-connectors {
+      left: 20px;
+      right: 20px;
+      top: calc(var(--sb) + 238px);
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    :scope[data-layout="stack"] .sketch-jack[data-jack="captions"]:not(:has([data-hidden])),
+    :scope[data-layout="stack"] .sketch-jack[data-jack="mute"] {
+      display: block;
+    }
+
+    :scope[data-layout="stack"] .sketch-jack .sketch-label {
+      top: calc(100% + 10px);
+      font-size: 9px;
+      letter-spacing: 0.02em;
+    }
+
+    :scope[data-layout="stack"] .sketch-jack-stem {
+      top: -12px;
+      height: 12px;
+    }
+
+    :scope[data-layout="stack"] .sketch-connectors > .sketch-lead-bus {
+      left: calc(var(--sketch-jack) / 2);
+      right: -14px;
+      top: -16px;
+      height: 8px;
+    }
+
+    :scope[data-layout="stack"] .sketch-settings {
+      left: 20px;
+      right: 20px;
+      top: calc(var(--sb) + 320px);
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    :scope[data-layout="stack"] .sketch-settings > .sketch-label {
+      flex: 0 0 100%;
+      margin: 0 0 -4px;
+    }
+
+    :scope[data-layout="stack"] .sketch-ic {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    :scope[data-layout="stack"] :is(.sketch-ic[data-setting="captions"], .sketch-ic-lead) {
+      display: none;
+    }
+
+    /* Two lines on the chip: its reference and name, then its value. */
+    :scope[data-layout="stack"] .sketch-ic-button.media-button {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-content: center;
+      justify-items: start;
+      column-gap: 0.5em;
+      row-gap: 2px;
+      padding-inline: 10px;
+    }
+
+    /* Phones show just the setting's name and value, without the chip references (U2, U3, U4). */
+    :scope[data-layout="stack"] .sketch-ic-ref {
+      display: none;
+    }
+
+    :scope[data-layout="stack"] .sketch-ic-name {
+      font-size: var(--sketch-label-size);
+      letter-spacing: 0.08em;
+      color: var(--sketch-graphite-soft);
+    }
+
+    :scope[data-layout="stack"] .sketch-ic-value {
+      grid-column: 1 / -1;
+      max-width: 100%;
+    }
+
+    :scope[data-layout="stack"] .sketch-volume {
+      display: none;
+    }
+
+    :scope[data-layout="stack"] .sketch-chapter-list {
+      left: 20px;
+      right: 0;
+      top: calc(var(--sb) + 404px);
+      --sketch-chapter-size: 12px;
+      --sketch-chapter-row: 28px;
+    }
+
+    :scope[data-layout="stack"] .sketch-chapter-items {
+      display: flex;
+      gap: 18px;
+      padding-inline-end: 20px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    :scope[data-layout="stack"] .sketch-chapter-items > li {
+      flex: none;
+      max-width: 75%;
+    }
+
+    :scope[data-layout="stack"] .sketch-captions {
+      left: 28px;
+      top: 72px;
+      width: calc(100% - 56px);
+      height: var(--vh);
+      --sketch-caption-bottom: 8px;
+    }
+
+    /* ================================================================ overlay (fullscreen) */
+
+    :scope[data-layout="overlay"] {
+      --sketch-edge-x: max(24px, env(safe-area-inset-left), env(safe-area-inset-right));
+      --sketch-edge-y: max(20px, env(safe-area-inset-bottom));
+      --sketch-side: calc(var(--sketch-edge-x) + 24px);
+      --sketch-pin-h: 16px;
+      --sketch-label-size: 11px;
+      --sketch-title-size: 15px;
+      --sketch-ic-h: 46px;
+      --sketch-ic-gap: 10px;
+      --sketch-ic-lead: 28px;
+      --sketch-time-size: 13px;
+      --sketch-ladder-h: 24px;
+      --sketch-mute: 46px;
+      --sketch-caption-size: clamp(16px, 1.7vw, 26px);
+    }
+
+    :scope[data-layout="overlay"][data-tone="light"] {
+      --sketch-wash: rgb(238 235 227 / 0.55);
+    }
+
+    :scope[data-layout="overlay"] .sketch-wash {
+      background: linear-gradient(to right, var(--sketch-wash), transparent 24%, transparent 76%, var(--sketch-wash)),
+        linear-gradient(to top, var(--sketch-wash), transparent 26%, transparent 84%, var(--sketch-wash));
+      transition:
+        --sketch-wash 600ms ease,
+        opacity var(--media-duration-controls, 200ms) ease-out;
+    }
+
+    /* Map-label halos: every pencil line gets a thin paper edge so it reads on any frame. */
+    :scope[data-layout="overlay"] :is(.media-sketch-ink, .media-sketch-scribble-ink, .sketch-chapter-pins-current, .media-sketch-pins-red-ink) {
+      stroke: var(--sketch-paper);
+      stroke-width: 2.6px;
+      stroke-linejoin: round;
+      paint-order: stroke;
+    }
+
+    /* Paper tags: every printed label sits on a small scrap so it reads over the picture. */
+    :scope[data-layout="overlay"] :is(.sketch-label, .sketch-tick, .sketch-chapter, .sketch-time) {
+      padding: 2px 7px;
+      background-color: var(--sketch-paper);
+      border: 1px solid var(--sketch-graphite);
+      border-radius: var(--sketch-cut-small);
+      box-shadow: 2px 2px 0 var(--sketch-shadow);
+      line-height: 1.3;
+    }
+
+    :scope[data-layout="overlay"] :is(.sketch-subtitle, .sketch-timecode, .sketch-lead-left, .sketch-lead-right, .sketch-lead-pads, .sketch-lead-bus) {
+      display: none;
+    }
+
+    :scope[data-layout="overlay"] .media-sketch-frame-chip {
+      display: none;
+    }
+
+    :scope[data-layout="overlay"] .media-sketch-frame-overlay {
+      display: inline;
+    }
+
+    :scope[data-layout="overlay"] .sketch-chip {
+      inset: var(--sketch-edge-y) var(--sketch-edge-x);
+    }
+
+    :scope[data-layout="overlay"] .sketch-title {
+      left: var(--sketch-side);
+      top: calc(var(--sketch-edge-y) + 18px);
+    }
+
+    :scope[data-layout="overlay"] .sketch-title .media-title {
+      padding: 8px 16px;
+    }
+
+    /* Chapter pins sit on the frame's top edge, their labels hang below as tags. */
+    :scope[data-layout="overlay"] .sketch-chapters {
+      left: 28%;
+      right: 28%;
+      top: calc(var(--sketch-edge-y) - var(--sketch-pin-h));
+      height: calc(var(--sketch-pin-h) + 30px);
+      --sketch-chapter-label-h: auto;
+    }
+
+    :scope[data-layout="overlay"] .sketch-chapter {
+      top: calc(var(--sketch-pin-h) + 6px);
+      margin-inline-start: 0;
+    }
+
+    :scope[data-layout="overlay"] .sketch-chapter-pins {
+      top: 0;
+      bottom: auto;
+    }
+
+    :scope[data-layout="overlay"] .sketch-connectors {
+      right: var(--sketch-side);
+      top: calc(var(--sketch-edge-y) + 16px);
+      gap: 30px;
+    }
+
+    :scope[data-layout="overlay"] .sketch-jack-stem {
+      top: -16px;
+      height: 16px;
+    }
+
+    :scope[data-layout="overlay"] .sketch-playhead {
+      display: none;
+    }
+
+    :scope[data-layout="overlay"] .sketch-label-enter {
+      display: none;
+    }
+
+    :scope[data-layout="overlay"] .sketch-label-exit {
+      display: inline;
+    }
+
+    /* Pads down the left side, wired to the frame, references on tags to their right. */
+    :scope[data-layout="overlay"] .sketch-pad-slot-play {
+      left: calc(var(--sketch-edge-x) + 24px);
+      top: calc(50% - 44px);
+      width: 88px;
+      height: 88px;
+    }
+
+    :scope[data-layout="overlay"] :is(.sketch-pad-slot-back, .sketch-pad-slot-forward) {
+      left: calc(var(--sketch-edge-x) + 40px);
+      width: 56px;
+      height: 56px;
+    }
+
+    :scope[data-layout="overlay"] .sketch-pad-slot-back {
+      top: calc(50% - 136px);
+    }
+
+    :scope[data-layout="overlay"] .sketch-pad-slot-forward {
+      top: calc(50% + 80px);
+    }
+
+    :scope[data-layout="overlay"] .sketch-pad-slot .sketch-label {
+      left: calc(100% + 8px);
+      top: 50%;
+      translate: 0 -50%;
+    }
+
+    :scope[data-layout="overlay"] .sketch-pad-lead {
+      display: block;
+      right: 100%;
+      top: calc(50% - 4px);
+      height: 8px;
+    }
+
+    :scope[data-layout="overlay"] .sketch-pad-slot-play .sketch-pad-lead {
+      width: 24px;
+    }
+
+    :scope[data-layout="overlay"] :is(.sketch-pad-slot-back, .sketch-pad-slot-forward) .sketch-pad-lead {
+      width: 40px;
+    }
+
+    /* Settings chips down the right side, traced into the frame. */
+    :scope[data-layout="overlay"] .sketch-settings {
+      right: calc(var(--sketch-edge-x) + 28px);
+      top: 50%;
+      translate: 0 -50%;
+      width: 196px;
+      align-items: stretch;
+    }
+
+    :scope[data-layout="overlay"] .sketch-settings > .sketch-label {
+      align-self: flex-start;
+      margin: 0;
+    }
+
+    :scope[data-layout="overlay"] .sketch-settings > .sketch-chapter-list {
+      position: relative;
+      align-self: flex-end;
+      width: 330px;
+      margin-top: 8px;
+      gap: 8px;
+      --sketch-chapter-size: 12px;
+      --sketch-chapter-row: 28px;
+    }
+
+    :scope[data-layout="overlay"] .sketch-settings > .sketch-chapter-list > .sketch-label {
+      align-self: flex-start;
+    }
+
+    :scope[data-layout="overlay"] .sketch-settings .sketch-chapter-items {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 4px 10px;
+      background-color: var(--sketch-paper);
+      border: 1px solid var(--sketch-graphite);
+      border-radius: var(--sketch-cut-small);
+      box-shadow: 2px 2px 0 var(--sketch-shadow);
+    }
+
+    :scope[data-layout="overlay"] .sketch-ic-lead {
+      right: auto;
+      left: 100%;
+      width: 28px;
+      scale: -1 1;
+    }
+
+    :scope[data-layout="overlay"] .sketch-ic-button.media-button {
+      font-size: 13px;
+      padding-inline: 10px;
+    }
+
+    /* Pin row just inside the frame's bottom edge; start and end times on tags at its ends. */
+    :scope[data-layout="overlay"] .sketch-timeline {
+      left: calc(var(--sketch-side) + 56px);
+      right: calc(var(--sketch-side) + 56px);
+      bottom: calc(var(--sketch-edge-y) + 6px);
+      height: 24px;
+    }
+
+    :scope[data-layout="overlay"] .sketch-ticks {
+      top: 50%;
+    }
+
+    :scope[data-layout="overlay"] .sketch-tick:not(:first-child, :last-child) {
+      display: none;
+    }
+
+    :scope[data-layout="overlay"] .sketch-tick:first-child {
+      translate: calc(-100% - 10px) -50%;
+    }
+
+    :scope[data-layout="overlay"] .sketch-tick:last-child {
+      translate: 10px -50%;
+    }
+
+    :scope[data-layout="overlay"] .sketch-time {
+      bottom: calc(var(--sketch-edge-y) + 44px);
+      left: clamp(
+        var(--sketch-side),
+        calc(var(--sketch-side) + 56px + (100% - 2 * var(--sketch-side) - 112px) * var(--sketch-p, 0) - 24px),
+        calc(100% - var(--sketch-side) - 160px)
+      );
+    }
+
+    :scope[data-layout="overlay"] .sketch-time .media-time-group {
+      gap: 0.3em;
+    }
+
+    /* Volume bottom left: the ladder, then the mute switch. */
+    :scope[data-layout="overlay"] .sketch-volume {
+      left: var(--sketch-side);
+      bottom: calc(var(--sketch-edge-y) + 76px);
+      width: 400px;
+      height: 76px;
+    }
+
+    :scope[data-layout="overlay"] .sketch-volume-label {
+      left: 0;
+      top: 0;
+    }
+
+    :scope[data-layout="overlay"] .sketch-ladder {
+      left: 0;
+      top: 30px;
+      width: 220px;
+      height: 32px;
+    }
+
+    :scope[data-layout="overlay"] .sketch-mute {
+      left: 232px;
+      top: 23px;
+    }
+
+    :scope[data-layout="overlay"] .sketch-mute-label {
+      left: 288px;
+      top: 35px;
+    }
+
+    /* Captions over the bottom of the picture, lifted above the pin row while the board shows;
+       they stay while the rest of the board hides. */
+    :scope[data-layout="overlay"] .sketch-captions {
+      inset: 0;
+      --sketch-caption-bottom: calc(var(--sketch-edge-y) + 160px);
+      transition: padding-bottom var(--media-duration-controls, 200ms) ease-out;
+    }
+
+    /* The board fades when the viewer goes idle, and draws back in on any movement or tap. */
+    :scope[data-layout="overlay"] .sketch-board > * {
+      transition: opacity var(--media-duration-controls, 200ms) ease-out;
+    }
+
+    :scope[data-layout="overlay"] .sketch-board:not([data-visible]) > :not(.sketch-captions) {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    :scope[data-layout="overlay"] .sketch-captions-text {
+      max-width: min(70%, 34em);
+    }
+
+    :scope[data-layout="overlay"] .sketch-board:not([data-visible]) > .sketch-captions {
+      --sketch-caption-bottom: calc(var(--sketch-edge-y) + 24px);
+    }
+
+    /* While the board is hidden, the pin row sleeps as one pencil hairline along the bottom edge. */
+    .sketch-hairline {
+      position: absolute;
+      inset-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+      bottom: max(2px, env(safe-area-inset-bottom, 0px));
+      height: 8px;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity var(--media-duration-controls, 200ms) ease-out;
+    }
+
+    :scope[data-layout="overlay"]:has(.sketch-board:not([data-visible])) .sketch-hairline {
+      opacity: 1;
+    }
+
+    .sketch-hairline > svg {
+      position: absolute;
+      inset: 0;
+      overflow: visible;
+      max-width: none;
+    }
+
+    .sketch-hairline-rest {
+      fill: color-mix(in oklab, var(--sketch-paper) 60%, transparent);
+      clip-path: inset(-4px -4px -4px var(--sketch-progress, 0%));
+    }
+
+    .sketch-hairline-played {
+      fill: var(--media-accent);
+      clip-path: inset(-4px calc(100% - var(--sketch-progress, 0%)) -4px -4px);
+    }
+
+    /* Phones held sideways: smaller parts in the same places; the hardware buttons set volume. */
+    @media (max-height: 500px) {
+      :scope[data-layout="overlay"] {
+        --sketch-side: calc(var(--sketch-edge-x) + 12px);
+        --sketch-jack: 40px;
+        --sketch-ic-h: 36px;
+        --sketch-ic-gap: 6px;
+        --sketch-label-size: 10px;
+        --sketch-title-size: 13px;
+        --sketch-pin-h: 12px;
+        --sketch-mute: 40px;
+        --sketch-caption-size: 14px;
+      }
+
+      :scope[data-layout="overlay"] .sketch-title .media-title {
+        padding: 5px 12px;
+      }
+
+      :scope[data-layout="overlay"] .sketch-connectors {
+        gap: 10px;
+        top: calc(var(--sketch-edge-y) + 12px);
+      }
+
+      :scope[data-layout="overlay"] .sketch-pad-slot-play {
+        left: calc(var(--sketch-edge-x) + 16px);
+        top: calc(50% - 34px);
+        width: 68px;
+        height: 68px;
+      }
+
+      :scope[data-layout="overlay"] :is(.sketch-pad-slot-back, .sketch-pad-slot-forward) {
+        left: calc(var(--sketch-edge-x) + 28px);
+        width: 44px;
+        height: 44px;
+      }
+
+      :scope[data-layout="overlay"] .sketch-pad-slot-back {
+        top: calc(50% - 94px);
+      }
+
+      :scope[data-layout="overlay"] .sketch-pad-slot-forward {
+        top: calc(50% + 50px);
+      }
+
+      :scope[data-layout="overlay"] .sketch-pad-slot-play .sketch-pad-lead {
+        width: 16px;
+      }
+
+      :scope[data-layout="overlay"] :is(.sketch-pad-slot-back, .sketch-pad-slot-forward) .sketch-pad-lead {
+        width: 28px;
+      }
+
+      :scope[data-layout="overlay"] .sketch-pad-slot :is(.sketch-key, .sketch-label) {
+        display: none;
+      }
+
+      :scope[data-layout="overlay"] .sketch-settings {
+        right: calc(var(--sketch-edge-x) + 20px);
+        width: 176px;
+      }
+
+      :scope[data-layout="overlay"] .sketch-settings > :is(.sketch-label, .sketch-chapter-list) {
+        display: none;
+      }
+
+      :scope[data-layout="overlay"] .sketch-settings > .sketch-chapter-list {
+      position: relative;
+      align-self: flex-end;
+      width: 330px;
+      margin-top: 8px;
+      gap: 8px;
+      --sketch-chapter-size: 12px;
+      --sketch-chapter-row: 28px;
+    }
+
+    :scope[data-layout="overlay"] .sketch-settings > .sketch-chapter-list > .sketch-label {
+      align-self: flex-start;
+    }
+
+    :scope[data-layout="overlay"] .sketch-settings .sketch-chapter-items {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 4px 10px;
+      background-color: var(--sketch-paper);
+      border: 1px solid var(--sketch-graphite);
+      border-radius: var(--sketch-cut-small);
+      box-shadow: 2px 2px 0 var(--sketch-shadow);
+    }
+
+    :scope[data-layout="overlay"] .sketch-ic-lead {
+        width: 20px;
+      }
+
+      :scope[data-layout="overlay"] .sketch-ic-button.media-button {
+        font-size: 11px;
+        gap: 6px;
+      }
+
+      /* No chip references (U2, U3, U4) on phones. */
+      :scope[data-layout="overlay"] .sketch-ic-ref {
+        display: none;
+      }
+
+      :scope[data-layout="overlay"] .sketch-jack .sketch-label {
+        display: none;
+      }
+
+      :scope[data-layout="overlay"] .sketch-timeline {
+        left: calc(var(--sketch-side) + 52px);
+        right: calc(var(--sketch-side) + 52px);
+        bottom: calc(var(--sketch-edge-y) + 4px);
+        height: 18px;
+      }
+
+      :scope[data-layout="overlay"] .sketch-time {
+        bottom: calc(var(--sketch-edge-y) + 32px);
+        left: clamp(
+          calc(var(--sketch-side) + 56px),
+          calc(var(--sketch-side) + 52px + (100% - 2 * var(--sketch-side) - 104px) * var(--sketch-p, 0) - 24px),
+          calc(100% - var(--sketch-side) - 150px)
+        );
+      }
+
+      :scope[data-layout="overlay"] .sketch-volume {
+        bottom: calc(var(--sketch-edge-y) + 30px);
+        width: 48px;
+        height: 48px;
+      }
+
+      :scope[data-layout="overlay"] :is(.sketch-volume-label, .sketch-ladder, .sketch-mute-label) {
+        display: none;
+      }
+
+      :scope[data-layout="overlay"] .sketch-mute {
+        left: 0;
+        top: 0;
+      }
+
+      :scope[data-layout="overlay"] .sketch-captions {
+        --sketch-caption-bottom: calc(var(--sketch-edge-y) + 64px);
+        --sketch-caption-size: 15px;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .media-sketch-pins-red,
+      .media-sketch-pins-red-ink,
+      .sketch-chapter-pins-current,
+      .sketch-playhead {
+        fill: Highlight;
+      }
+
+      .sketch-chapter[aria-current] {
+        color: Highlight;
+      }
+
+      :scope[data-layout="overlay"] .sketch-wash {
+        background: none;
+      }
+    }
+  }
+}

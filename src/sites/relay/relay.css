@@ -1,0 +1,162 @@
+/* RELAY_07 — broadcast zine in the ASCII Glitch skin's palette: espresso, ochre, terracotta, sage, cream. */
+.rl {
+  --espresso: #150d08;
+  --panel: #2a170c;
+  --ochre: #ffb22e;
+  --terra: #ff6236;
+  --sage: #b9dc5a;
+  --cream: #fff0d6;
+  --on-ochre: #1d1009;
+  --wire: rgb(255 178 46 / 0.35);
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --display: 'Rubik Mono One', 'JetBrains Mono', monospace;
+
+  background: var(--espresso);
+  color: var(--cream);
+  font-family: var(--mono);
+  font-size: 1rem;
+  line-height: 1.6;
+  overflow-x: clip;
+}
+.rl a { color: var(--ochre); }
+.rl a:hover { color: var(--cream); }
+.rl :focus-visible { outline: 2px solid var(--ochre); outline-offset: 3px; }
+
+.rl-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 28px; padding: 20px clamp(16px, 4vw, 40px); }
+.rl .rl-logo { font-family: var(--display); font-size: 1.25rem; text-decoration: none; color: var(--cream); text-shadow: -2px 0 var(--ochre), 2px 0 var(--terra); }
+.rl-nav { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 26px; font-weight: 700; font-size: 0.9375rem; }
+.rl-nav a { text-decoration: none; }
+
+/* ---------- Hero ---------- */
+.rl-hero {
+  position: relative;
+  min-height: 640px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 clamp(16px, 4vw, 40px) 48px;
+  isolation: isolate;
+}
+.rl-hero-img { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; opacity: 0.85; }
+.rl-hero::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(transparent 35%, var(--espresso) 96%); }
+.rl-kicker { margin: 0 0 12px; font-weight: 700; color: var(--ochre); }
+.rl-title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(3.5rem, 11vw, 9.4rem);
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  color: var(--cream);
+  text-shadow: -0.04em 0 var(--ochre), 0.04em 0 var(--terra);
+}
+.rl-title-line { display: block; }
+/* "DAWN" torn across the middle: the top half slides right, the bottom half less. */
+.rl-tear--top { translate: 0.3em 0; clip-path: inset(0 0 52% 0); }
+.rl-tear--bottom { margin-top: -0.88em; translate: 0.12em 0; clip-path: inset(48% 0 0 0); }
+.rl-hero-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px 40px; margin-top: 28px; }
+.rl-lede { flex: 1 1 380px; margin: 0; max-width: 48ch; font-size: 1.125rem; }
+.rl-run {
+  padding: 14px 26px;
+  border: 0;
+  background: var(--ochre);
+  color: var(--on-ochre);
+  font: 800 1rem var(--mono);
+  cursor: pointer;
+  box-shadow: -4px 0 0 var(--terra), 4px 0 0 var(--sage);
+}
+.rl-run:hover { box-shadow: -7px 0 0 var(--terra), 7px 0 0 var(--sage); }
+
+/* ---------- Ticker ---------- */
+.rl-ticker { overflow: hidden; background: var(--terra); color: var(--on-ochre); font-weight: 800; font-size: 0.9375rem; text-transform: uppercase; }
+.rl-ticker-track { display: flex; width: max-content; }
+.rl-ticker-run { display: flex; padding: 12px 0; }
+.rl-ticker-run span { padding-left: 20px; }
+.rl-ticker-run span::after { content: '·'; padding-left: 20px; }
+
+/* ---------- Sections ---------- */
+.rl-section { max-width: 1200px; margin: 0 auto; padding: 72px clamp(16px, 4vw, 40px) 0; }
+#rl-watch { padding-top: 72px; }
+.rl-h2 { margin: 0 0 28px; font-family: var(--display); font-weight: 400; font-size: clamp(2rem, 4vw, 2.75rem); line-height: 1; }
+
+.rl-fragments { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; background: var(--wire); border: 2px solid var(--wire); }
+.rl-fragment {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 28px;
+  border: 0;
+  background: var(--espresso);
+  color: var(--cream);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.rl-fragment:hover, .rl-fragment[aria-current] { background: var(--panel); }
+.rl-fragment-no { font-family: var(--display); font-size: 4rem; line-height: 1; color: var(--ochre); }
+.rl-fragment[aria-current] .rl-fragment-no { text-shadow: -3px 0 var(--terra), 3px 0 var(--sage); }
+.rl-fragment-title { font-weight: 800; font-size: 1.375rem; line-height: 1.2; }
+.rl-fragment-time { margin-top: auto; padding-top: 6px; font-weight: 700; color: var(--ochre); }
+.rl-fragment[aria-current] .rl-fragment-time { color: var(--terra); }
+
+.rl-quote { margin: 0; padding: 40px 0; border-top: 2px solid var(--ochre); border-bottom: 2px solid var(--ochre); }
+.rl-quote p { margin: 0; font-family: var(--display); font-size: clamp(1.75rem, 4vw, 2.875rem); line-height: 1.1; text-shadow: -3px 0 rgb(255 178 46 / 0.7), 3px 0 rgb(255 98 54 / 0.7); }
+
+.rl-archive { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--wire); }
+.rl-archive li { border-top: 1px solid var(--wire); }
+.rl-archive li > a, .rl-archive li.rl-restoring {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 24px;
+  padding: 20px 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--cream);
+}
+.rl-archive li > a:hover { color: var(--ochre); }
+.rl-no { color: var(--ochre); margin-right: 0.4em; }
+.rl-date { font-weight: 400; font-size: 1rem; }
+.rl-restoring { color: rgb(255 240 214 / 0.6) !important; }
+.rl-meter { width: min(240px, 40%); height: 10px; background: repeating-linear-gradient(90deg, rgb(255 178 46 / 0.25) 0 3px, transparent 3px 6px); }
+.rl-meter span { display: block; height: 100%; background: repeating-linear-gradient(90deg, var(--ochre) 0 3px, transparent 3px 6px); }
+
+/* ---------- Tune in ---------- */
+.rl-tune { margin-top: 72px; padding: 56px clamp(16px, 4vw, 40px); background: var(--terra); color: var(--on-ochre); }
+.rl-tune-inner { max-width: 1120px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 24px 48px; align-items: center; }
+.rl-tune-title { flex: 1 1 380px; margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(1.75rem, 3.5vw, 2.5rem); line-height: 1.05; }
+.rl-form { flex: 1 1 420px; display: flex; flex-wrap: wrap; gap: 10px; }
+.rl-form input { flex: 1 1 260px; min-width: 0; padding: 14px 16px; border: 2px solid var(--on-ochre); background: var(--cream); color: var(--on-ochre); font: 1rem var(--mono); }
+.rl-form input[aria-invalid] { border-color: var(--cream); box-shadow: 0 0 0 2px var(--on-ochre); }
+.rl-form button { padding: 14px 24px; border: 2px solid var(--on-ochre); background: var(--on-ochre); color: var(--cream); font: 800 1rem var(--mono); cursor: pointer; }
+.rl-form button:hover { background: var(--panel); }
+.rl-error { flex-basis: 100%; margin: 0; font-weight: 700; }
+.rl-tuned { flex: 1 1 420px; margin: 0; font-weight: 700; font-size: 1.125rem; }
+.rl .rl-tune :focus-visible { outline-color: var(--on-ochre); }
+
+.rl-foot { padding: 22px clamp(16px, 4vw, 40px) 30px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; font-size: 0.875rem; color: rgb(255 240 214 / 0.75); }
+.rl-signoff { color: var(--ochre); }
+
+@media (max-width: 760px) {
+  .rl-hero { min-height: 520px; }
+  .rl-hero::before { background: linear-gradient(transparent 5%, rgb(21 13 8 / 0.82) 45%, var(--espresso) 92%); }
+  .rl-fragments { grid-template-columns: 1fr; }
+  .rl-fragment-no { font-size: 3rem; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rl-ticker-track { animation: rl-ticker 28s linear infinite; }
+  .rl-title-line.rl-tear--top { animation: rl-tear 6s steps(1) infinite; }
+}
+@keyframes rl-ticker { to { translate: -50% 0; } }
+/* Once every few seconds the torn half jumps, like a frame dropping. */
+@keyframes rl-tear {
+  0%, 92%, 100% { translate: 0.3em 0; }
+  94% { translate: 0.5em 0; }
+  96% { translate: 0.18em 0; }
+}

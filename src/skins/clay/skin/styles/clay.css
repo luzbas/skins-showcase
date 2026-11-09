@@ -1,0 +1,1310 @@
+/*
+ * Clay: a modelling-clay look over the Default skin, after Papercut's structure.
+ * Every piece you see (control bar, button discs, icons, menus, tooltips, sliders, handles, the loading ring) is a
+ * render of real clay from Blender (`blender/clay_player.blend`, scene "ClayAssets", Clay Doh material), saved as
+ * transparent WebP in `../assets`. Only letters and numbers stay live text, in Fredoka.
+ * Everything here sits in its own layer, declared after the Default skin's layers, so it wins without !important.
+ * Rounded pieces that stretch (bar, panels, plates, strips) are drawn with border-image, so their rounded ends keep
+ * their shape at any size.
+ */
+@layer clay {
+  /* ---------- Tokens ---------- */
+  .clay-skin {
+    --clay-ink: #2b2738;
+    --clay-cream: #f3eadb;
+    --clay-yellow: #f5c93a;
+    --clay-sky: #9fc9e8;
+    --clay-pink: #f2a7c3;
+    --clay-hot: #e0457b;
+    --clay-leaf: #7cc66a;
+    --clay-orange: #f7893b;
+    --clay-deep: #2c5e73;
+
+    /* Every clay picture, as a variable, so the thick set can swap them all in one place. */
+    --ca-bar-cream: url('../assets/bar-cream.webp');
+    --ca-disc-big-yellow: url('../assets/disc-big-yellow.webp');
+    --ca-disc-cream: url('../assets/disc-cream.webp');
+    --ca-disc-leaf: url('../assets/disc-leaf.webp');
+    --ca-disc-orange: url('../assets/disc-orange.webp');
+    --ca-disc-pink: url('../assets/disc-pink.webp');
+    --ca-disc-sky: url('../assets/disc-sky.webp');
+    --ca-disc-white: url('../assets/disc-white.webp');
+    --ca-disc-yellow: url('../assets/disc-yellow.webp');
+    --ca-morph-pause-to-play: url('../assets/morph-pause-to-play.webp');
+    --ca-morph-play-to-pause: url('../assets/morph-play-to-pause.webp');
+    --ca-panel-cream: url('../assets/panel-cream.webp');
+    --ca-pill-yellow: url('../assets/pill-yellow.webp');
+    --ca-plate-ink: url('../assets/plate-ink.webp');
+    --ca-spinner: url('../assets/spinner.webp');
+    --ca-strip-buffer: url('../assets/strip-buffer.webp');
+    --ca-strip-played: url('../assets/strip-played.webp');
+    --ca-strip-track: url('../assets/strip-track.webp');
+    --ca-thumb-pink: url('../assets/thumb-pink.webp');
+    --ca-vstrip-fill: url('../assets/vstrip-fill.webp');
+    --ca-vstrip-track: url('../assets/vstrip-track.webp');
+
+    /* Clay pieces cast a soft shadow onto whatever is under them. */
+    --clay-shadow: drop-shadow(0 2px 1px rgb(43 39 56 / 0.35)) drop-shadow(0 5px 8px rgb(43 39 56 / 0.22));
+    --clay-shadow-lifted: drop-shadow(0 4px 2px rgb(43 39 56 / 0.3)) drop-shadow(0 12px 16px rgb(43 39 56 / 0.25));
+    /* An ink rim drawn by four hard shadows: keeps the light pieces visible over any video frame. */
+    --clay-rim: drop-shadow(1.5px 0 0 var(--clay-ink)) drop-shadow(-1.5px 0 0 var(--clay-ink))
+      drop-shadow(0 1.5px 0 var(--clay-ink)) drop-shadow(0 -1.5px 0 var(--clay-ink));
+    --clay-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --clay-bleed: calc(var(--media-spacing) * 4);
+    --clay-hide-slide: 110%;
+    --clay-track-h: calc(var(--media-spacing) * 3);
+
+    --media-default-accent-color: var(--clay-yellow);
+    --media-default-accent-text-color: var(--clay-ink);
+    --media-accent: transparent;
+    --media-accent-foreground: currentColor;
+    --media-font-family: 'Fredoka', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
+    --media-popover: var(--clay-cream);
+    --media-popover-foreground: var(--clay-ink);
+    --media-ring: var(--clay-ink);
+    --media-muted: rgb(43 39 56 / 0.25);
+    --media-muted-foreground: var(--clay-ink);
+    --media-backdrop-filter-surface: none;
+    --media-backdrop-filter-indicator: none;
+    --media-shadow-surface: none;
+    --media-shadow-surface-inset: none;
+    --media-shadow-thumb: none;
+    --media-shadow-current-color: transparent;
+    --media-surface-border: transparent;
+    --media-control-size: calc(var(--media-spacing) * 11);
+    --media-icon-size: calc(var(--media-spacing) * 6);
+    --media-controls-radius: 18px;
+    --media-popup-radius: 18px;
+    --media-menu-item-radius: 999px;
+    --media-video-border-radius: var(--media-border-radius, 18px);
+    --media-caption-controls-y: calc(var(--media-spacing) * -20);
+  }
+
+  /* ---------- Clay icons: a picture of the clay, with the Video.js SVG kept for forced colours ---------- */
+  .clay-skin .clay-icon {
+    display: grid;
+    place-items: center;
+    filter: none;
+  }
+
+  .clay-skin .clay-icon > * {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: 100%;
+  }
+
+  .clay-skin .clay-icon-art {
+    object-fit: contain;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .clay-skin .clay-icon-fallback {
+    display: none;
+  }
+
+  /* ---------- The control bar: a long rolled strip of cream clay along the bottom edge ---------- */
+  .clay-skin .video-controls-content,
+  .clay-skin .video-controls-primary,
+  .clay-skin .video-controls-secondary {
+    isolation: isolate;
+    background-color: transparent;
+    box-shadow: none;
+    color: var(--clay-ink);
+    text-shadow: none;
+  }
+
+  .clay-skin .video-controls-content::after,
+  .clay-skin .video-controls-primary::after,
+  .clay-skin .video-controls-secondary::after {
+    content: none;
+  }
+
+  /* The strip and the panels are stretched renders: the rounded ends stay fixed, only the middle stretches. */
+  .clay-skin .video-controls-content::before,
+  .clay-skin .media-popup-surface::after,
+  .clay-skin .clay-end-banner::before,
+  .clay-skin .media-dialog-popup::after {
+    border-style: solid;
+    border-color: transparent;
+    border-width: 0;
+    border-image-repeat: stretch;
+  }
+
+  @container media-root (width >= 32rem) {
+    .clay-skin .video-controls-content {
+      inset-inline: 0;
+      bottom: 0;
+      border-radius: 0;
+      padding: calc(var(--media-spacing) * 3.5) calc(var(--media-spacing) * 3) calc(var(--media-spacing) * 2);
+    }
+
+    /* Full width; it runs past the bottom, where the player clips it, so it sits flush with no gap. */
+    .clay-skin .video-controls-content::before {
+      content: '';
+      position: absolute;
+      inset: 0 0 calc(var(--clay-bleed) * -1);
+      z-index: -1;
+      border-image-source: var(--ca-bar-cream);
+      border-image-slice: 0 110 fill;
+      border-image-width: 0 calc(var(--media-spacing) * 10);
+      filter: drop-shadow(0 -2px 2px rgb(43 39 56 / 0.18)) drop-shadow(0 -6px 12px rgb(43 39 56 / 0.18));
+    }
+  }
+
+  /* Narrow players split the bar into two clay pieces, bottom and top. */
+  @container media-root (width < 32rem) {
+    .clay-skin .video-controls-primary::before,
+    .clay-skin .video-controls-secondary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-style: solid;
+      border-width: 0;
+      border-image-source: var(--ca-panel-cream);
+      border-image-slice: 80 fill;
+      border-image-width: calc(var(--media-spacing) * 4);
+      filter: var(--clay-shadow);
+    }
+
+    .clay-skin .video-controls-primary {
+      inset-inline: 0;
+      bottom: 0;
+      border-radius: 0;
+      padding: calc(var(--media-spacing) * 2) calc(var(--media-spacing) * 2) calc(var(--media-spacing) * 1.5);
+    }
+
+    .clay-skin .video-controls-primary::before {
+      inset: 0 0 calc(var(--clay-bleed) * -1);
+      border-image-source: var(--ca-bar-cream);
+      border-image-slice: 0 110 fill;
+      border-image-width: 0 calc(var(--media-spacing) * 8);
+    }
+  }
+
+  /* ---------- Buttons: clay discs, one colour each, with a clay icon pressed on top ---------- */
+  .clay-skin .video-controls .media-button {
+    --clay-disc: var(--ca-disc-white);
+    position: relative;
+    isolation: isolate;
+    color: var(--clay-ink);
+    background-color: transparent;
+    border-radius: 50%;
+    margin-inline: 2px;
+    transition-property: color, translate, scale, outline-offset, box-shadow;
+    transition-duration: var(--media-duration-slow);
+    transition-timing-function: var(--clay-spring);
+  }
+
+  .clay-skin .video-controls .media-button::before {
+    content: '';
+    position: absolute;
+    inset: calc(var(--media-spacing) * 0.25);
+    z-index: -1;
+    background: var(--clay-disc) center / contain no-repeat;
+    filter: var(--clay-shadow);
+    transition-property: filter;
+    transition-duration: var(--media-duration);
+  }
+
+  .clay-skin .video-controls .media-play-button {
+    --clay-disc: var(--ca-disc-yellow);
+    width: calc(var(--media-control-size) + var(--media-spacing) * 2);
+    height: calc(var(--media-control-size) + var(--media-spacing) * 2);
+  }
+  .clay-skin .video-controls .media-mute-button {
+    --clay-disc: var(--ca-disc-sky);
+  }
+  .clay-skin .video-controls .media-settings-menu-trigger {
+    --clay-disc: var(--ca-disc-orange);
+  }
+  .clay-skin .video-controls .media-cast-button {
+    --clay-disc: var(--ca-disc-pink);
+  }
+  .clay-skin .video-controls .media-airplay-button {
+    --clay-disc: var(--ca-disc-cream);
+  }
+  .clay-skin .video-controls .media-pip-button {
+    --clay-disc: var(--ca-disc-leaf);
+  }
+
+  @media (hover: hover) {
+    .clay-skin .video-controls .media-button:not([aria-disabled='true']):hover {
+      background-color: transparent;
+      color: var(--clay-ink);
+      translate: 0 -2px;
+      scale: 1.05;
+    }
+
+    /* The mute button opens the volume popover on hover, so it doesn't move under the pointer. */
+    .clay-skin .video-controls .media-mute-button:not([aria-disabled='true']):hover {
+      translate: none;
+      scale: 1;
+    }
+
+    .clay-skin .video-controls .media-button:not([aria-disabled='true']):hover::before {
+      filter: var(--clay-shadow-lifted);
+    }
+  }
+
+  /* Pressing squashes the disc flat and wide; letting go springs it back (the transition overshoots). */
+  .clay-skin .video-controls .media-button:not([aria-disabled='true']):active {
+    translate: 0 1px;
+    scale: 1.1 0.86;
+    transition-duration: 0.08s;
+    transition-timing-function: ease-out;
+  }
+
+  .clay-skin
+    .media-button:where(:focus-visible, [aria-expanded='true'], [data-highlighted]):where(:not([aria-disabled='true'])) {
+    background-color: transparent;
+    color: var(--clay-ink);
+  }
+
+  /* An open menu or popover keeps its button pressed in. */
+  .clay-skin .video-controls .media-button[aria-expanded='true'] {
+    scale: 0.94;
+  }
+
+  /* Focus: a thick ink ring with a yellow clay-coloured halo, round like the discs. Reads on the cream bar and over
+     the video alike. */
+  .clay-skin .media-button:focus-visible,
+  .clay-skin .media-time-toggle:focus-visible,
+  .clay-skin .media-slider-thumb:focus-visible {
+    outline: 3px solid var(--clay-ink);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 7px var(--clay-yellow);
+  }
+
+  .clay-skin .media-time-toggle:focus-visible {
+    border-radius: 999px;
+  }
+
+  .clay-skin.media-container:focus-visible {
+    outline: 3px solid var(--clay-ink);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 10px var(--clay-yellow);
+  }
+
+  /* ---------- Time: live text, ink on the cream strip (about 12:1) ---------- */
+  .clay-skin .media-time-value,
+  .clay-skin .media-time-toggle {
+    color: var(--clay-ink);
+    font-size: 1.3em;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .clay-skin .media-time-toggle {
+    padding-block: calc((var(--media-spacing) * 11 - 1em) / 2);
+    padding-inline: calc(var(--media-spacing) * 1.5);
+  }
+
+  .clay-skin .video-time-slider-group {
+    gap: calc(var(--media-spacing) * 4);
+  }
+
+  /* ---------- Sliders: rolled clay strips and a clay ball for the handle ----------
+     Deep teal track, lighter teal for what's buffered, yellow for what's played (4.8:1 against the track). The strips
+     are drawn on the parts' ::before, which Video.js insets per chapter, so chapter breaks become small gaps. */
+  .clay-skin .media-slider-track {
+    filter: drop-shadow(0 1px 1px rgb(43 39 56 / 0.35));
+  }
+
+  .clay-skin .media-slider-track::before,
+  .clay-skin .media-slider-buffer::before,
+  .clay-skin .media-slider-fill::before {
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    border-style: solid;
+    border-color: transparent;
+    border-width: 0;
+    border-image-repeat: stretch;
+  }
+
+  .clay-skin .media-slider-track[data-orientation='horizontal'] {
+    height: var(--clay-track-h);
+  }
+
+  .clay-skin [data-orientation='horizontal'] > .media-slider-track::before,
+  .clay-skin .media-slider-track[data-orientation='horizontal']::before {
+    border-image-source: var(--ca-strip-track);
+    border-image-slice: 0 30 fill;
+    border-image-width: 0 calc(var(--clay-track-h) / 2);
+  }
+
+  .clay-skin .media-slider-buffer[data-orientation='horizontal']::before {
+    border-image-source: var(--ca-strip-buffer);
+    border-image-slice: 0 30 fill;
+    border-image-width: 0 calc(var(--clay-track-h) / 2);
+  }
+
+  .clay-skin .media-slider-fill[data-orientation='horizontal']::before {
+    border-image-source: var(--ca-strip-played);
+    border-image-slice: 0 30 fill;
+    border-image-width: 0 calc(var(--clay-track-h) / 2);
+  }
+
+  .clay-skin .media-time-slider-chapter {
+    --media-chapter-inset-start: 1;
+    --media-chapter-inset-end: 1;
+  }
+
+  .clay-skin .media-time-slider-chapter:first-of-type {
+    --media-chapter-inset-start: 0;
+  }
+
+  .clay-skin .media-time-slider-chapter:last-of-type {
+    --media-chapter-inset-end: 0;
+  }
+
+  .clay-skin
+    .media-time-slider-chapter[data-highlighted]
+    .media-time-slider-chapter-track[data-orientation='horizontal'] {
+    height: calc(var(--clay-track-h) * 1.35);
+  }
+
+  /* The handle: a ball of pink clay with an ink rim, always visible because it's the playhead. */
+  .clay-skin .media-slider-thumb {
+    background: var(--ca-thumb-pink) center / contain no-repeat;
+    box-shadow: none;
+    border-radius: 50%;
+    filter: var(--clay-rim) var(--clay-shadow);
+  }
+
+  .clay-skin .media-time-slider-thumb {
+    width: calc(var(--media-spacing) * 6.5);
+    height: calc(var(--media-spacing) * 6.5);
+  }
+
+  .clay-skin .media-time-slider-thumb,
+  .clay-skin .media-time-slider-thumb[data-interactive] {
+    opacity: 1;
+    scale: 1;
+  }
+
+  .clay-skin .media-slider-thumb[data-dragging],
+  .clay-skin .media-slider-thumb:active {
+    scale: 1.15 0.9;
+  }
+
+  /* The volume slider stands upright in its popover. */
+  .clay-skin .media-volume-popover .media-slider-track[data-orientation='vertical'] {
+    width: var(--clay-track-h);
+  }
+
+  .clay-skin .media-slider-track[data-orientation='vertical']::before {
+    border-image-source: var(--ca-vstrip-track);
+    border-image-slice: 30 0 fill;
+    border-image-width: calc(var(--clay-track-h) / 2) 0;
+  }
+
+  .clay-skin .media-slider-fill[data-orientation='vertical']::before {
+    border-image-source: var(--ca-vstrip-fill);
+    border-image-slice: 30 0 fill;
+    border-image-width: calc(var(--clay-track-h) / 2) 0;
+  }
+
+  .clay-skin .media-volume-slider-thumb {
+    width: calc(var(--media-spacing) * 5.5);
+    height: calc(var(--media-spacing) * 5.5);
+  }
+
+  /* ---------- Seek preview: the frame is set in a slab of cream clay ---------- */
+  .clay-skin .media-time-slider {
+    --clay-photo-border: calc(var(--media-spacing) * 2);
+    --clay-photo-chin: calc(var(--media-spacing) * 7);
+    --media-slider-preview-offset: calc(var(--media-spacing) * 20);
+    --media-slider-preview-label-offset: calc(var(--media-spacing) * 11);
+  }
+
+  .clay-skin .media-time-slider .media-slider-thumbnail {
+    border-radius: 10px;
+    background-color: var(--clay-cream);
+    box-shadow:
+      0 0 0 var(--clay-photo-border) var(--clay-cream),
+      0 var(--clay-photo-chin) 0 var(--clay-photo-border) var(--clay-cream);
+    filter: var(--clay-shadow-lifted);
+  }
+
+  .clay-skin .media-time-slider .media-slider-thumbnail::after {
+    content: none;
+  }
+
+  .clay-skin .media-slider-preview:has(.media-slider-thumbnail[data-hidden]) {
+    --media-slider-preview-label-offset: calc(var(--media-spacing) * 7);
+  }
+
+  .clay-skin .media-time-slider .media-slider-thumbnail[data-hidden] {
+    background-color: transparent;
+    box-shadow: none;
+    filter: none;
+  }
+
+  .clay-skin .media-time-slider-preview-content {
+    color: var(--clay-ink);
+    text-shadow: none;
+    gap: calc(var(--media-spacing) * 1);
+  }
+
+  .clay-skin .media-time-slider-value {
+    padding: 4px calc(var(--media-spacing) * 2.5) 3px;
+    border-radius: 999px;
+    background-color: var(--clay-cream);
+    font-size: 1.25em;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    filter: drop-shadow(0 1px 1px rgb(43 39 56 / 0.3));
+  }
+
+  .clay-skin .media-time-slider-chapter-title:not(:empty) {
+    padding: 3px calc(var(--media-spacing) * 2.5);
+    border-radius: 999px;
+    background-color: var(--clay-yellow);
+    color: var(--clay-ink);
+    font-weight: 600;
+    filter: drop-shadow(0 1px 1px rgb(43 39 56 / 0.35));
+  }
+
+  /* ---------- Popups, menus and tooltips: slabs of cream clay ----------
+     The popup keeps its own positioning and its ::before, which the volume popover uses as a hover bridge to its
+     trigger. The clay slab is drawn with ::after instead. */
+  .clay-skin .media-popup-surface {
+    --media-popover-foreground: var(--clay-ink);
+    isolation: isolate;
+    background-color: transparent;
+    color: var(--clay-ink);
+    box-shadow: none;
+    font-size: 1.1em;
+    font-weight: 500;
+  }
+
+  .clay-skin .media-popup-surface::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: none;
+    border-image-source: var(--ca-panel-cream);
+    border-image-slice: 80 fill;
+    border-image-width: calc(var(--media-spacing) * 5);
+    filter: var(--clay-shadow-lifted);
+  }
+
+  /* Dividers: a thin rolled line pressed into the slab. */
+  .clay-skin .media-menu-separator {
+    height: 3px;
+    border-radius: 999px;
+    background: rgb(43 39 56 / 0.18);
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.6);
+  }
+
+  /* The highlighted row sits on a yellow clay pill (ink on yellow, about 11:1). */
+  .clay-skin .media-menu-content [role^='menuitem'] {
+    position: relative;
+    isolation: isolate;
+    border-radius: 999px;
+  }
+
+  .clay-skin .media-menu-content [role^='menuitem'][data-highlighted] {
+    background-color: transparent;
+    color: var(--clay-ink);
+  }
+
+  .clay-skin .media-menu-content [role^='menuitem'][data-highlighted]::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-style: solid;
+    border-width: 0;
+    border-image: var(--ca-pill-yellow) 0 70 fill / 0 1.1em / 0 stretch;
+    filter: drop-shadow(0 1px 1px rgb(43 39 56 / 0.3));
+  }
+
+  /* The chosen option: a clay check on a small yellow disc. */
+  .clay-skin .media-menu-item-indicator {
+    display: grid;
+    place-items: center;
+    width: calc(var(--media-spacing) * 7);
+    height: calc(var(--media-spacing) * 7);
+    background: var(--ca-disc-yellow) center / contain no-repeat;
+    filter: drop-shadow(0 1px 1px rgb(43 39 56 / 0.35));
+  }
+
+  .clay-skin .media-menu-radio-item-icon {
+    width: 70%;
+    height: 70%;
+  }
+
+  .clay-skin .media-menu-back-item {
+    font-weight: 600;
+  }
+
+  .clay-skin .media-menu-content [role^='menuitem']:focus-visible {
+    outline: 3px solid var(--clay-ink);
+    outline-offset: -3px;
+  }
+
+  /* Tooltips: a little ink plate with cream lettering (about 13:1). */
+  .clay-skin .media-tooltip {
+    isolation: isolate;
+    background-color: transparent;
+    color: var(--clay-cream);
+    box-shadow: none;
+    font-size: 1.05em;
+    font-weight: 600;
+    border-style: solid;
+    border-color: transparent;
+    border-image: var(--ca-plate-ink) 0 72 fill / 0 1em / 0 stretch;
+    filter: var(--clay-shadow);
+  }
+
+  /* ---------- Motion ----------
+     Durations come from the skin's tokens, which collapse under reduced motion, and --clay-hide-slide drops to 0
+     there so hiding becomes a plain fade. Transitions never run on first load. */
+  @container media-root (width >= 32rem) {
+    .clay-skin .video-controls-content:not([data-visible]) {
+      translate: 0 var(--clay-hide-slide);
+      scale: 1;
+      filter: none;
+    }
+  }
+
+  @container media-root (width < 32rem) {
+    .clay-skin .video-controls-content:not([data-visible]) .video-controls-primary {
+      translate: 0 var(--clay-hide-slide);
+      scale: 1;
+      filter: none;
+    }
+
+    .clay-skin .video-controls-content:not([data-visible]) .video-controls-secondary {
+      translate: 0 calc(var(--clay-hide-slide) * -1);
+      scale: 1;
+      filter: none;
+    }
+  }
+
+  /* Icons swap with a squishy pop. */
+  .clay-skin .media-button .clay-icon {
+    transition-property: opacity, scale;
+    transition-duration: var(--media-duration-slow);
+    transition-timing-function: var(--clay-spring);
+  }
+
+  /* The bar's play button: once the video has started, the play triangle and the pause bars are one piece of clay
+     that pulls apart and squeezes back together (12 rendered frames each way). Before the first play it is the plain
+     play icon, so nothing animates on load; at the end, the replay icon swaps in as usual. */
+  .clay-skin .video-controls .media-play-button::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: var(--media-icon-size);
+    height: var(--media-icon-size);
+    background: var(--ca-morph-pause-to-play) 100% 0 / 1200% 100% no-repeat;
+    pointer-events: none;
+    display: none;
+  }
+
+  .clay-skin .video-controls .media-play-button[data-started]:not([data-ended])::after {
+    display: block;
+  }
+
+  .clay-skin .video-controls .media-play-button[data-started]:not([data-ended]) :is(.media-play-button-play-icon, .media-play-button-pause-icon) {
+    visibility: hidden;
+  }
+
+  .clay-skin .video-controls .media-play-button[data-started]:not([data-ended]):not([data-paused])::after {
+    background-image: var(--ca-morph-play-to-pause);
+    animation: clay-morph 0.5s steps(11, end) both;
+  }
+
+  .clay-skin .video-controls .media-play-button[data-started]:not([data-ended])[data-paused]::after {
+    animation: clay-morph-back 0.5s steps(11, end) both;
+  }
+
+  /* Two names for the same frames, so switching state restarts the animation. */
+  @keyframes clay-morph {
+    from {
+      background-position: 0% 0;
+    }
+    to {
+      background-position: 100% 0;
+    }
+  }
+
+  @keyframes clay-morph-back {
+    from {
+      background-position: 0% 0;
+    }
+    to {
+      background-position: 100% 0;
+    }
+  }
+
+  /* Mute and the volume levels pop in. */
+  .clay-skin .media-mute-button .media-button-icon {
+    scale: 0.6;
+  }
+
+  .clay-skin .media-mute-button:not([data-muted]):not([data-volume-level='low']) .media-mute-button-high-icon,
+  .clay-skin .media-mute-button:not([data-muted])[data-volume-level='low'] .media-mute-button-low-icon,
+  .clay-skin .media-mute-button[data-muted] .media-mute-button-off-icon {
+    scale: 1;
+  }
+
+  /* ---------- Player states: the clay stage in the middle of the video ---------- */
+  .clay-skin .clay-stage {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: calc(var(--media-spacing) * 2);
+    pointer-events: none;
+  }
+
+  .clay-skin .clay-stage-row {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--media-spacing) * 4);
+  }
+
+  /* Skip buttons: cream clay discs either side of the big play button, shown only while paused (not at the end).
+     Unlike the big button they stay in the tab order while shown: they're the only on-screen skip controls. While
+     playing, the arrow keys still skip. The "10" stays live text. */
+  .clay-skin .clay-stage-seek {
+    --clay-seek-size: clamp(calc(var(--media-spacing) * 11), 8cqi, calc(var(--media-spacing) * 15));
+    position: relative;
+    isolation: isolate;
+    width: var(--clay-seek-size);
+    height: var(--clay-seek-size);
+    border-radius: 50%;
+    color: var(--clay-ink);
+    background-color: transparent;
+    pointer-events: auto;
+    opacity: 0;
+    scale: 0.6;
+    visibility: hidden;
+    transition-property: opacity, scale, translate, visibility;
+    transition-duration: var(--media-duration-slow);
+    transition-timing-function: var(--clay-spring);
+  }
+
+  .clay-skin .clay-stage-row:has(.clay-big-play[data-paused]:not([data-ended])) .clay-stage-seek {
+    opacity: 1;
+    scale: 1;
+    visibility: visible;
+  }
+
+  .clay-skin .clay-stage-seek::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--ca-disc-cream) center / contain no-repeat;
+    filter: var(--clay-rim) var(--clay-shadow-lifted);
+  }
+
+  .clay-skin .clay-stage-seek .media-button-icon {
+    width: calc(var(--clay-seek-size) * 0.55);
+    height: calc(var(--clay-seek-size) * 0.55);
+    translate: 0 -8%;
+  }
+
+  /* The "10" sits centred in the open bottom of the arrow, on both buttons. */
+  .clay-skin .clay-stage-seek .media-seek-button-label {
+    inset-inline: 0;
+    left: 0;
+    right: 0;
+    bottom: 22%;
+    text-align: center;
+    color: var(--clay-ink);
+    font-size: 0.95em;
+    font-weight: 700;
+    text-shadow: none;
+  }
+
+  @media (hover: hover) {
+    .clay-skin .clay-stage-seek:hover {
+      background-color: transparent;
+      color: var(--clay-ink);
+      translate: 0 -2px;
+      scale: 1.05;
+    }
+  }
+
+  .clay-skin .clay-stage-seek:active {
+    scale: 1.1 0.86;
+    transition-duration: 0.08s;
+  }
+
+  .clay-skin .clay-stage-seek:focus-visible {
+    background-color: transparent;
+    color: var(--clay-ink);
+  }
+
+  /* The big play button: a big disc of yellow clay, shown whenever the video is paused (before start, paused or
+     ended). It comes in with a squash and a bounce. */
+  .clay-skin .clay-big-play {
+    --clay-big-size: clamp(calc(var(--media-spacing) * 16), 14cqi, calc(var(--media-spacing) * 26));
+    position: relative;
+    isolation: isolate;
+    width: var(--clay-big-size);
+    height: var(--clay-big-size);
+    border-radius: 50%;
+    color: var(--clay-ink);
+    background-color: transparent;
+    pointer-events: auto;
+    opacity: 0;
+    scale: 0.6;
+    visibility: hidden;
+    transition-property: opacity, scale, translate, visibility;
+    transition-duration: var(--media-duration-slow);
+    transition-timing-function: var(--clay-spring);
+  }
+
+  .clay-skin .clay-big-play[data-paused] {
+    opacity: 1;
+    scale: 1;
+    visibility: visible;
+  }
+
+  .clay-skin .clay-big-play::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--ca-disc-big-yellow) center / contain no-repeat;
+    filter: var(--clay-rim) var(--clay-shadow-lifted);
+  }
+
+  .clay-skin .clay-big-play .media-button-icon {
+    width: 46%;
+    height: 46%;
+  }
+
+  .clay-skin .clay-big-play .media-play-button-play-icon {
+    translate: 5% 0;
+  }
+
+  @media (hover: hover) {
+    .clay-skin .clay-big-play[data-paused]:hover {
+      background-color: transparent;
+      color: var(--clay-ink);
+      translate: 0 -3px;
+      scale: 1.05;
+    }
+  }
+
+  .clay-skin .clay-big-play:active {
+    scale: 1.12 0.84;
+    transition-duration: 0.08s;
+  }
+
+  @container media-root (width < 24rem) {
+    .clay-skin .clay-stage :is(.clay-big-play, .clay-stage-seek) {
+      display: none;
+    }
+  }
+
+  /* "The End": live text on a slab of cream clay, with the replay button under it. */
+  .clay-skin .clay-end-banner {
+    margin: 0;
+    padding: calc(var(--media-spacing) * 3) calc(var(--media-spacing) * 9) calc(var(--media-spacing) * 2.5);
+    position: relative;
+    isolation: isolate;
+    color: var(--clay-ink);
+    font-size: clamp(2rem, 8cqi, 4.5rem);
+    font-weight: 700;
+    line-height: 1;
+    display: none;
+  }
+
+  .clay-skin .clay-end-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-image-source: var(--ca-panel-cream);
+    border-image-slice: 80 fill;
+    border-image-width: calc(var(--media-spacing) * 6);
+    filter: var(--clay-shadow-lifted);
+  }
+
+  .clay-skin .clay-stage:has(.clay-big-play[data-ended]) .clay-end-banner {
+    display: block;
+  }
+
+  .clay-skin .clay-big-play[data-ended] {
+    margin-top: calc(var(--media-spacing) * -2);
+  }
+
+  /* The big button already shows the paused state, so Default's centre flash is dropped. The status announcer still
+     reports it. */
+  .clay-skin .media-playback-status-indicator {
+    display: none;
+  }
+
+  /* ---------- Buffering: a ring of four clay pieces turning ---------- */
+  .clay-skin:has(.media-buffering-indicator[data-visible]) .clay-stage {
+    visibility: hidden;
+  }
+
+  .clay-skin .media-buffering-indicator::before {
+    background-color: rgb(43 39 56 / 0.25);
+    backdrop-filter: none;
+  }
+
+  .clay-skin .media-buffering-indicator-spinner-icon {
+    display: none;
+  }
+
+  .clay-skin .clay-spinner {
+    position: relative;
+    z-index: 30;
+    width: calc(var(--media-spacing) * 18);
+    height: calc(var(--media-spacing) * 18);
+    background: var(--ca-spinner) center / contain no-repeat;
+    filter: var(--clay-shadow-lifted);
+    animation: clay-spin 1.4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  }
+
+  .clay-skin .media-buffering-indicator:not([data-visible]) .clay-spinner {
+    animation: none;
+  }
+
+  @keyframes clay-spin {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  /* ---------- Error dialog: a slab of cream clay ---------- */
+  .clay-skin .media-dialog-popup {
+    isolation: isolate;
+    background-color: transparent;
+    color: var(--clay-ink);
+    box-shadow: none;
+    text-shadow: none;
+    padding: calc(var(--media-spacing) * 6) calc(var(--media-spacing) * 6) calc(var(--media-spacing) * 5);
+    font-size: 1.1em;
+    filter: var(--clay-shadow-lifted);
+  }
+
+  .clay-skin .media-dialog-popup::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 0;
+    box-shadow: none;
+    background: none;
+    border-image-source: var(--ca-panel-cream);
+    border-image-slice: 80 fill;
+    border-image-width: calc(var(--media-spacing) * 6);
+  }
+
+  .clay-skin .media-dialog-title {
+    font-size: 1.3em;
+    font-weight: 700;
+  }
+
+  /* OK is a yellow clay pill. */
+  .clay-skin .media-dialog-close {
+    position: relative;
+    isolation: isolate;
+    width: auto;
+    min-width: calc(var(--media-spacing) * 24);
+    align-self: center;
+    border-radius: 999px;
+    background-color: transparent;
+    color: var(--clay-ink);
+    font-weight: 600;
+    font-size: 1.1em;
+    transition-property: translate, scale;
+    transition-timing-function: var(--clay-spring);
+  }
+
+  .clay-skin .media-dialog-close::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-style: solid;
+    border-width: 0;
+    border-image: var(--ca-pill-yellow) 0 70 fill / 0 1.3em / 0 stretch;
+    filter: var(--clay-shadow);
+  }
+
+  @media (hover: hover) {
+    .clay-skin .media-dialog-close:hover {
+      background-color: transparent;
+      color: var(--clay-ink);
+      translate: 0 -2px;
+    }
+  }
+
+  .clay-skin .media-dialog-close:active {
+    scale: 1.08 0.9;
+  }
+
+  .clay-skin .media-dialog-close:focus-visible {
+    background-color: transparent;
+    outline: 3px solid var(--clay-ink);
+    outline-offset: 3px;
+  }
+
+  /* ---------- Realistic thin clay (the default) ----------
+     Rendered in Cycles under one big soft light, on a shadow catcher: each picture carries the piece's own soft
+     shadow and contact shadow (and an icon's shadow falls on its disc), so CSS adds no shadows of its own. Every
+     picture has a fixed margin round the piece for its shadow (sizes in `../assets/manifest-real.json`); the rules
+     below let that margin spill outside each control's box. The clay is moderately thick, unevenly. */
+  .clay-skin:not(.clay-skin--thick) {
+    --clay-shadow: drop-shadow(0 0 0 transparent);
+    --clay-shadow-lifted: drop-shadow(0 4px 5px rgb(43 39 56 / 0.2));
+    --clay-rim: drop-shadow(0 0 0 transparent);
+    /* Icon pictures are 0.68 units wide for a 0.56 icon: scale them up so the clay keeps its size. */
+    --clay-icon-scale: 1.214;
+  }
+
+  .clay-skin:not(.clay-skin--thick) .clay-icon-art {
+    width: calc(100% * var(--clay-icon-scale));
+    height: calc(100% * var(--clay-icon-scale));
+    margin: calc((1 - var(--clay-icon-scale)) * 50%);
+  }
+
+  /* Discs: the piece is 0.7 of a 1.02 picture. */
+  .clay-skin:not(.clay-skin--thick) .video-controls .media-button::before {
+    inset: -20%;
+  }
+
+  .clay-skin:not(.clay-skin--thick) .clay-stage-seek::before {
+    inset: -22.9%;
+  }
+
+  .clay-skin:not(.clay-skin--thick) .clay-big-play::before {
+    inset: -20.8%;
+  }
+
+  .clay-skin:not(.clay-skin--thick) .media-menu-item-indicator {
+    background-size: 146%;
+  }
+
+  /* The bar floats again: in from the sides, with space below. */
+  @container media-root (width >= 32rem) {
+    .clay-skin:not(.clay-skin--thick) .video-controls-content {
+      inset-inline: calc(var(--media-spacing) * 3);
+      bottom: calc(var(--media-spacing) * 3);
+      padding: calc(var(--media-spacing) * 2.5) calc(var(--media-spacing) * 3.5);
+    }
+
+    .clay-skin:not(.clay-skin--thick) .video-controls-content::before {
+      inset: -12px;
+      border-image-slice: 0 110 fill;
+      border-image-width: 0 37px;
+      filter: none;
+    }
+  }
+
+  @container media-root (width < 32rem) {
+    .clay-skin:not(.clay-skin--thick) .video-controls-primary {
+      inset-inline: calc(var(--media-spacing) * 2);
+      bottom: calc(var(--media-spacing) * 2);
+    }
+
+    .clay-skin:not(.clay-skin--thick) .video-controls-primary::before {
+      inset: -10px;
+      border-image-slice: 0 110 fill;
+      border-image-width: 0 30px;
+    }
+
+    .clay-skin:not(.clay-skin--thick) .video-controls-secondary::before {
+      inset: -9px;
+      border-image-slice: 106 fill;
+      border-image-width: 20px;
+    }
+  }
+
+  /* Slabs: 480px pictures, 48px of shadow margin, corners within 106px. */
+  .clay-skin:not(.clay-skin--thick) .media-popup-surface::after {
+    inset: -9px;
+    border-image-slice: 106 fill;
+    border-image-width: 20px;
+  }
+
+  .clay-skin:not(.clay-skin--thick) .clay-end-banner::before,
+  .clay-skin:not(.clay-skin--thick) .media-dialog-popup::after {
+    inset: -11px;
+    border-image-slice: 106 fill;
+    border-image-width: 24px;
+  }
+
+  /* Plates and pills: 191px tall, 27px of margin, ends within 86px. */
+  .clay-skin:not(.clay-skin--thick) .media-tooltip {
+    border-image: var(--ca-plate-ink) 0 86 fill / 0 18px / 6px 5px stretch;
+  }
+
+  .clay-skin:not(.clay-skin--thick) .media-menu-content [role^='menuitem'][data-highlighted]::before {
+    inset: -6px -5px;
+    border-image: var(--ca-pill-yellow) 0 86 fill / 0 1.15em / 0 stretch;
+  }
+
+  .clay-skin:not(.clay-skin--thick) .media-dialog-close::before {
+    inset: -7px -6px;
+    border-image: var(--ca-pill-yellow) 0 86 fill / 0 1.35em / 0 stretch;
+  }
+
+  /* Strips: the piece is 0.18 of a 0.34 picture; the margin spills out with border-image-outset. */
+  .clay-skin:not(.clay-skin--thick) [data-orientation='horizontal'] > .media-slider-track::before,
+  .clay-skin:not(.clay-skin--thick) .media-slider-track[data-orientation='horizontal']::before,
+  .clay-skin:not(.clay-skin--thick) .media-slider-buffer[data-orientation='horizontal']::before,
+  .clay-skin:not(.clay-skin--thick) .media-slider-fill[data-orientation='horizontal']::before {
+    border-image-slice: 0 49 fill;
+    border-image-width: 0 calc(var(--clay-track-h) * 0.94);
+    border-image-outset: calc(var(--clay-track-h) * 0.44);
+  }
+
+  .clay-skin:not(.clay-skin--thick) .media-slider-track[data-orientation='vertical']::before,
+  .clay-skin:not(.clay-skin--thick) .media-slider-fill[data-orientation='vertical']::before {
+    border-image-slice: 50 0 fill;
+    border-image-width: calc(var(--clay-track-h) * 0.94) 0;
+    border-image-outset: calc(var(--clay-track-h) * 0.44);
+  }
+
+  /* The handle keeps an ink rim (it marks the position); its picture's margin is cropped. */
+  .clay-skin:not(.clay-skin--thick) .media-slider-thumb {
+    background-size: 147%;
+    filter: drop-shadow(1.5px 0 0 var(--clay-ink)) drop-shadow(-1.5px 0 0 var(--clay-ink))
+      drop-shadow(0 1.5px 0 var(--clay-ink)) drop-shadow(0 -1.5px 0 var(--clay-ink))
+      drop-shadow(1px 2px 2px rgb(43 39 56 / 0.35));
+  }
+
+  /* The morph frames carry the same margin as the icons. */
+  .clay-skin:not(.clay-skin--thick) .video-controls .media-play-button::after {
+    width: calc(var(--media-icon-size) * var(--clay-icon-scale));
+    height: calc(var(--media-icon-size) * var(--clay-icon-scale));
+  }
+
+  /* ---------- Thick clay (`thickness="thick"`) ----------
+     The same pieces pressed about twice as thick, rendered with the camera tilted 22° so each one shows its side
+     wall along the bottom (`../assets/thick`, sizes in `manifest.json`). A piece's picture is therefore taller than
+     its top face: discs are drawn so the top face, not the whole picture, centres on the button, and stretched slabs
+     keep their wall in a deeper bottom slice. */
+  .clay-skin.clay-skin--thick {
+    --ca-bar-cream: url('../assets/thick/bar-cream.webp');
+    --ca-disc-big-yellow: url('../assets/thick/disc-big-yellow.webp');
+    --ca-disc-cream: url('../assets/thick/disc-cream.webp');
+    --ca-disc-leaf: url('../assets/thick/disc-leaf.webp');
+    --ca-disc-orange: url('../assets/thick/disc-orange.webp');
+    --ca-disc-pink: url('../assets/thick/disc-pink.webp');
+    --ca-disc-sky: url('../assets/thick/disc-sky.webp');
+    --ca-disc-white: url('../assets/thick/disc-white.webp');
+    --ca-disc-yellow: url('../assets/thick/disc-yellow.webp');
+    --ca-morph-pause-to-play: url('../assets/thick/morph-pause-to-play.webp');
+    --ca-morph-play-to-pause: url('../assets/thick/morph-play-to-pause.webp');
+    --ca-panel-cream: url('../assets/thick/panel-cream.webp');
+    --ca-pill-yellow: url('../assets/thick/pill-yellow.webp');
+    --ca-plate-ink: url('../assets/thick/plate-ink.webp');
+    --ca-spinner: url('../assets/thick/spinner.webp');
+    --ca-strip-buffer: url('../assets/thick/strip-buffer.webp');
+    --ca-strip-played: url('../assets/thick/strip-played.webp');
+    --ca-strip-track: url('../assets/thick/strip-track.webp');
+    --ca-thumb-pink: url('../assets/thick/thumb-pink.webp');
+    --ca-vstrip-fill: url('../assets/thick/vstrip-fill.webp');
+    --ca-vstrip-track: url('../assets/thick/vstrip-track.webp');
+    --clay-track-h: calc(var(--media-spacing) * 4);
+    /* Thick pieces stand taller off the video, so their shadow falls further. */
+    --clay-shadow: drop-shadow(0 3px 1px rgb(43 39 56 / 0.4)) drop-shadow(0 8px 12px rgb(43 39 56 / 0.28));
+    --clay-shadow-lifted: drop-shadow(0 5px 2px rgb(43 39 56 / 0.35)) drop-shadow(0 16px 20px rgb(43 39 56 / 0.3));
+  }
+
+  /* Discs: 200×224 pictures (top face plus wall). The top face's centre lands on the button's centre. */
+  .clay-skin--thick .video-controls .media-button::before,
+  .clay-skin--thick .clay-stage-seek::before,
+  .clay-skin--thick .clay-big-play::before {
+    inset: auto 0;
+    top: 3%;
+    height: auto;
+    aspect-ratio: 200 / 224;
+    background-size: 100% 100%;
+  }
+
+  .clay-skin--thick .video-controls .media-button::before {
+    inset: auto 3%;
+    top: 4%;
+  }
+
+  /* Icons: their pictures carry their own wall below the face, so they sit a little low to centre the face. */
+  .clay-skin--thick .clay-icon-art {
+    translate: 0 4%;
+  }
+
+  /* The bar: no bleed below; its front wall sits on the player's bottom edge and the controls stay on the top face. */
+  @container media-root (width >= 32rem) {
+    .clay-skin--thick .video-controls-content {
+      padding-bottom: calc(var(--media-spacing) * 2 + 12px);
+    }
+
+    .clay-skin--thick .video-controls-content::before {
+      inset: calc(var(--media-spacing) * -1) 0 0;
+      border-image-slice: 0 110 fill;
+    }
+  }
+
+  @container media-root (width < 32rem) {
+    .clay-skin--thick .video-controls-primary {
+      padding-bottom: calc(var(--media-spacing) * 1.5 + 10px);
+    }
+
+    .clay-skin--thick .video-controls-primary::before {
+      inset: calc(var(--media-spacing) * -1) 0 0;
+    }
+
+    .clay-skin--thick .video-controls-secondary::before {
+      border-image-slice: 80 80 112 fill;
+      border-image-width: calc(var(--media-spacing) * 4) calc(var(--media-spacing) * 4) calc(var(--media-spacing) * 5.6);
+      inset: 0 0 calc(var(--media-spacing) * -2);
+    }
+  }
+
+  /* Panels (menus, volume, "The End", error): a deeper bottom slice holds the wall; the slab hangs a little below the
+     content so the wall doesn't cover the last row. */
+  .clay-skin--thick .media-popup-surface::after,
+  .clay-skin--thick .clay-end-banner::before,
+  .clay-skin--thick .media-dialog-popup::after {
+    inset: 0 0 calc(var(--media-spacing) * -2.5);
+    border-image-slice: 80 80 112 fill;
+    border-image-width: calc(var(--media-spacing) * 5) calc(var(--media-spacing) * 5) calc(var(--media-spacing) * 7);
+  }
+
+  /* Strips: the wall makes them taller, so the rounded caps get a little wider. */
+  .clay-skin--thick [data-orientation='horizontal'] > .media-slider-track::before,
+  .clay-skin--thick .media-slider-track[data-orientation='horizontal']::before,
+  .clay-skin--thick .media-slider-buffer[data-orientation='horizontal']::before,
+  .clay-skin--thick .media-slider-fill[data-orientation='horizontal']::before {
+    border-image-slice: 0 34 fill;
+    border-image-width: 0 calc(var(--clay-track-h) / 2);
+  }
+
+  .clay-skin--thick .media-slider-track[data-orientation='vertical']::before,
+  .clay-skin--thick .media-slider-fill[data-orientation='vertical']::before {
+    border-image-slice: 30 0 50 fill;
+    border-image-width: calc(var(--clay-track-h) / 2) 0 calc(var(--clay-track-h) * 0.85);
+  }
+
+  /* The handle is a thick ball: a bit bigger, picture taller than wide. */
+  .clay-skin--thick .media-time-slider-thumb {
+    width: calc(var(--media-spacing) * 7.5);
+    height: calc(var(--media-spacing) * 7.5);
+  }
+
+  /* Plates and pills get their wall at the bottom too. */
+  .clay-skin--thick .media-tooltip {
+    padding-bottom: calc(var(--media-spacing) * 1.5 + 4px);
+  }
+
+  /* The ink rim would outline the walls as well; keep it lighter on thick pieces. */
+  .clay-skin--thick .clay-stage-seek::before,
+  .clay-skin--thick .clay-big-play::before {
+    filter: drop-shadow(1px 0 0 var(--clay-ink)) drop-shadow(-1px 0 0 var(--clay-ink))
+      drop-shadow(0 -1px 0 var(--clay-ink)) var(--clay-shadow-lifted);
+  }
+
+  /* ---------- Preferences ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .clay-skin {
+      --clay-hide-slide: 0%;
+    }
+
+    /* The morph jumps straight to its last frame; the ring holds still. */
+    .clay-skin .video-controls .media-play-button::after {
+      animation: none !important;
+      background-position: 100% 0;
+    }
+
+    .clay-skin .clay-spinner {
+      animation: none;
+    }
+
+    .clay-skin .video-controls .media-button,
+    .clay-skin .video-controls .media-button:hover,
+    .clay-skin .video-controls .media-button:active,
+    .clay-skin .clay-stage-seek:hover,
+    .clay-skin .clay-stage-seek:active,
+    .clay-skin .clay-big-play:hover,
+    .clay-skin .clay-big-play:active {
+      translate: none;
+      scale: 1;
+    }
+  }
+
+  /* Windows High Contrast and other forced-colour modes: the clay pictures would ignore the system colours, so the
+     Video.js SVG icons come back, and every clay surface becomes a plain system-coloured shape. */
+  @media (forced-colors: active) {
+    .clay-skin .clay-icon-art,
+    .clay-skin .video-controls .media-play-button::after,
+    .clay-skin .clay-spinner {
+      display: none !important;
+    }
+
+    .clay-skin .clay-icon-fallback {
+      display: block;
+    }
+
+    .clay-skin .video-controls .media-play-button :is(.media-play-button-play-icon, .media-play-button-pause-icon) {
+      visibility: visible;
+    }
+
+    .clay-skin .media-buffering-indicator-spinner-icon {
+      display: block;
+    }
+
+    .clay-skin .video-controls .media-button::before,
+    .clay-skin .clay-stage-seek::before,
+    .clay-skin .clay-big-play::before,
+    .clay-skin .video-controls-content::before,
+    .clay-skin .media-popup-surface::after,
+    .clay-skin .clay-end-banner::before,
+    .clay-skin .media-dialog-popup::after,
+    .clay-skin .media-menu-content [role^='menuitem'][data-highlighted]::before {
+      forced-color-adjust: none;
+      border-image: none;
+      background: Canvas;
+      border: 1px solid CanvasText;
+      border-radius: 12px;
+      filter: none;
+    }
+
+    .clay-skin .media-slider-thumb {
+      forced-color-adjust: none;
+      background: CanvasText;
+      filter: none;
+    }
+
+    .clay-skin .media-slider-track::before,
+    .clay-skin .media-slider-buffer::before,
+    .clay-skin .media-slider-fill::before {
+      border-image: none;
+      background: CanvasText;
+    }
+
+    .clay-skin .media-slider-track::before {
+      background: GrayText;
+    }
+
+    .clay-skin .media-tooltip {
+      border-image: none;
+      border: 1px solid CanvasText;
+    }
+  }
+}

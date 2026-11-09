@@ -1,0 +1,854 @@
+/*
+ * ASCII Glitch: the video redrawn as coloured monospace glyphs on black, with a green/magenta RGB split, shimmering
+ * glyphs and the odd torn row, wrapped in a terminal-style control strip.
+ * Everything here sits in its own layer, declared after the Default skin's layers, so it wins without !important.
+ * Tokens come first; the rules below them only add what tokens can't express.
+ * The glyph screen itself is the WebGL canvas in `video/display/ascii-screen.tsx`; it reads `--ax-columns` (glyph
+ * columns across the player) and `--ax-glyph-font` from here.
+ */
+@layer ascii {
+  /* ---------- Tokens ---------- */
+  .ascii-skin {
+    --ax-black: #050505;
+    --ax-ink: #eafff0;
+    --ax-green: #3dff7d;
+    --ax-magenta: #ff3cf0;
+    --ax-red: #ff2e4c;
+    --ax-dim: rgb(61 255 125 / 0.42);
+    --ax-faint: rgb(61 255 125 / 0.16);
+    --ax-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+    /* The glyph screen. */
+    --ax-columns: 180;
+    --ax-glyph-font: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+    /* The RGB split, for text and icons. */
+    --ax-split-x: 1px;
+    --ax-split-text:
+      calc(var(--ax-split-x) * -1) 0 rgb(61 255 125 / 0.85),
+      var(--ax-split-x) 0 rgb(255 60 240 / 0.85);
+    --ax-split-icon: drop-shadow(calc(var(--ax-split-x) * -1) 0 rgb(61 255 125 / 0.9))
+      drop-shadow(var(--ax-split-x) 0 rgb(255 60 240 / 0.9));
+    --ax-focus: 1px solid var(--ax-green);
+    --ax-hide-slide: 30%;
+
+    /* Video.js tokens. `--media-accent-color` still overrides the accent, as on the packaged skins. */
+    --media-default-accent-color: var(--ax-green);
+    --media-default-accent-text-color: var(--ax-black);
+    --media-accent: transparent;
+    --media-accent-foreground: currentColor;
+    --media-background: #000;
+    --media-font-family: var(--ax-mono);
+    --media-popover: rgb(5 5 5 / 0.92);
+    --media-popover-foreground: var(--ax-ink);
+    --media-controls-foreground: var(--ax-ink);
+    --media-ring: var(--ax-green);
+    --media-muted: var(--ax-faint);
+    --media-backdrop-filter-surface: none;
+    --media-backdrop-filter-indicator: none;
+    --media-shadow-surface: none;
+    --media-shadow-surface-inset: none;
+    --media-shadow-thumb: none;
+    --media-surface-border: transparent;
+    --media-frame-border: transparent;
+    --media-controls-gradient: linear-gradient(to top, rgb(0 0 0 / 0.75), transparent);
+    --media-controls-radius: 0;
+    --media-popup-radius: 0;
+    --media-menu-item-radius: 0;
+    --media-video-border-radius: var(--media-border-radius, 6px);
+    --media-caption-controls-y: calc(var(--media-spacing) * -16);
+
+    font-family: var(--ax-mono);
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- The glyph screen ---------- */
+  /* It covers the video only while paused (before start, paused or ended) and once frames are being drawn. While the
+     video plays, or in fallback, the plain video shows. The big play button's `data-paused` is the paused signal. */
+  .ascii-skin .ax-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: inherit;
+    overflow: hidden;
+    background-color: #000;
+    opacity: 0;
+    transition: opacity var(--media-duration-slow) steps(3);
+  }
+
+  .ascii-skin[data-ascii='on']:has(.ax-big-play[data-paused]) .ax-screen {
+    opacity: 1;
+  }
+
+  .ascii-skin .ax-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* A slight CRT vignette over the glyphs. */
+  .ascii-skin .ax-screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 90% at 50% 50%, transparent 60%, rgb(0 0 0 / 0.55));
+  }
+
+  /* While the glyph screen is up, its own caption layer replaces the video's hidden native cues. */
+  .ascii-skin[data-ascii='on']:has(.ax-big-play[data-paused]) video::cue {
+    color: transparent;
+    background-color: transparent;
+  }
+
+  .ascii-skin:not([data-ascii='on']) .ax-cue-layer,
+  .ascii-skin:not(:has(.ax-big-play[data-paused])) .ax-cue-layer {
+    display: none;
+  }
+
+  .ascii-skin .ax-cue-layer {
+    position: absolute;
+    inset-inline: 0;
+    bottom: calc(var(--media-spacing) * 22);
+    z-index: 12;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    transition: translate var(--media-duration) steps(4);
+  }
+
+  .ascii-skin:not([data-controls-visible]) .ax-cue-layer {
+    translate: 0 calc(var(--media-spacing) * 14);
+  }
+
+  .ascii-skin .ax-cue {
+    margin: 0;
+    padding: 2px 1ch;
+    display: grid;
+    justify-items: center;
+    background-color: rgb(0 0 0 / 0.82);
+    color: var(--ax-ink);
+    font-size: clamp(0.85rem, 2.4cqi, 1.4rem);
+    font-weight: 600;
+    text-shadow: var(--ax-split-text);
+  }
+
+  /* ---------- The control strip: a terminal status line along the bottom ---------- */
+  .ascii-skin .video-controls-content,
+  .ascii-skin .video-controls-primary,
+  .ascii-skin .video-controls-secondary {
+    background-color: transparent;
+    box-shadow: none;
+    text-shadow: var(--ax-split-text);
+  }
+
+  .ascii-skin .video-controls-content::after,
+  .ascii-skin .video-controls-primary::after,
+  .ascii-skin .video-controls-secondary::after {
+    content: none;
+  }
+
+  @container media-root (width >= 32rem) {
+    .ascii-skin .video-controls-content {
+      inset-inline: 0;
+      bottom: 0;
+      border-radius: 0;
+      padding: calc(var(--media-spacing) * 2) calc(var(--media-spacing) * 2.5) calc(var(--media-spacing) * 1.5);
+      background-color: rgb(0 0 0 / 0.8);
+      color: var(--ax-ink);
+    }
+
+    /* A dashed rule of ASCII along the top edge: +-----+ */
+    .ascii-skin .video-controls-content::before {
+      content: '+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+';
+      position: absolute;
+      inset-inline: 0;
+      top: -0.7em;
+      overflow: hidden;
+      white-space: nowrap;
+      color: var(--ax-dim);
+      font-size: 0.9em;
+      line-height: 1;
+      pointer-events: none;
+    }
+  }
+
+  @container media-root (width < 32rem) {
+    .ascii-skin .video-controls-primary,
+    .ascii-skin .video-controls-secondary {
+      background-color: rgb(0 0 0 / 0.8);
+      border: 1px solid var(--ax-dim);
+    }
+  }
+
+  /* ---------- Buttons: bare glyph keys that invert like a selection ---------- */
+  .ascii-skin .video-controls .media-button {
+    position: relative;
+    border-radius: 0;
+    color: var(--ax-ink);
+    background-color: transparent;
+    transition-property: color, background-color, outline-offset;
+    transition-timing-function: steps(2);
+  }
+
+  .ascii-skin .media-button :is(.media-button-icon, .media-button-icon-base) {
+    filter: var(--ax-split-icon);
+  }
+
+  /* Brackets appear around the key under the pointer: [ ▶ ] */
+  .ascii-skin .video-controls .media-button::before,
+  .ascii-skin .video-controls .media-button::after {
+    position: absolute;
+    top: 50%;
+    translate: 0 -54%;
+    color: var(--ax-green);
+    font-size: 1.35em;
+    font-weight: 400;
+    line-height: 1;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .ascii-skin .video-controls .media-button::before {
+    content: '[';
+    left: 0;
+  }
+
+  .ascii-skin .video-controls .media-button::after {
+    content: ']';
+    right: 0;
+  }
+
+  @media (hover: hover) {
+    .ascii-skin .video-controls .media-button:not([aria-disabled='true']):hover {
+      background-color: transparent;
+      color: var(--ax-green);
+    }
+
+    .ascii-skin .video-controls .media-button:not([aria-disabled='true']):hover::before,
+    .ascii-skin .video-controls .media-button:not([aria-disabled='true']):hover::after {
+      opacity: 1;
+    }
+
+    .ascii-skin .video-controls .media-button:not([aria-disabled='true']):hover :is(.media-button-icon, .media-button-icon-base) {
+      animation: ax-glitch 0.32s steps(1) 1;
+    }
+  }
+
+  .ascii-skin .video-controls .media-button:not([aria-disabled='true']):active {
+    background-color: var(--ax-green);
+    color: var(--ax-black);
+  }
+
+  .ascii-skin
+    .media-button:where(:focus-visible, [aria-expanded='true'], [data-highlighted]):where(:not([aria-disabled='true'])) {
+    background-color: transparent;
+    color: var(--ax-green);
+  }
+
+  .ascii-skin .media-button[aria-expanded='true']::before,
+  .ascii-skin .media-button[aria-expanded='true']::after {
+    opacity: 1;
+  }
+
+  /* Focus: a thin phosphor box. */
+  .ascii-skin .media-button:focus-visible,
+  .ascii-skin .media-time-toggle:focus-visible,
+  .ascii-skin .media-slider-thumb:focus-visible {
+    outline: var(--ax-focus);
+    outline-offset: 1px;
+  }
+
+  .ascii-skin.media-container:focus-visible {
+    outline: 1px solid var(--ax-green);
+    outline-offset: 3px;
+  }
+
+  /* ---------- Time: a terminal readout ---------- */
+  .ascii-skin .media-time-value,
+  .ascii-skin .media-time-toggle {
+    font-size: 1.05em;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--ax-ink);
+  }
+
+  .ascii-skin .media-time-toggle {
+    padding-block: calc((var(--media-spacing) * 11 - 1em) / 2);
+    padding-inline: calc(var(--media-spacing) * 1);
+    border-radius: 0;
+  }
+
+  .ascii-skin .media-time-toggle:hover {
+    color: var(--ax-green);
+  }
+
+  .ascii-skin .video-time-slider-group {
+    gap: calc(var(--media-spacing) * 3);
+  }
+
+  /* ---------- Sliders: a segmented progress bar [|||||||.....] with a block cursor ---------- */
+  .ascii-skin .media-slider-track::before {
+    border-radius: 0;
+    background-color: transparent;
+    background-image: repeating-linear-gradient(90deg, var(--ax-faint) 0 3px, transparent 3px 5px);
+  }
+
+  .ascii-skin .media-slider-track[data-orientation='vertical']::before {
+    background-image: repeating-linear-gradient(0deg, var(--ax-faint) 0 3px, transparent 3px 5px);
+  }
+
+  .ascii-skin .media-slider-track[data-orientation='horizontal'] {
+    height: calc(var(--media-spacing) * 2.5);
+  }
+
+  .ascii-skin .media-slider-buffer::before {
+    border-radius: 0;
+    background-color: transparent;
+    background-image: repeating-linear-gradient(90deg, rgb(255 60 240 / 0.35) 0 3px, transparent 3px 5px);
+  }
+
+  .ascii-skin .media-slider-fill::before {
+    border-radius: 0;
+    background-color: transparent;
+    background-image: repeating-linear-gradient(90deg, var(--ax-green) 0 3px, transparent 3px 5px);
+    filter: drop-shadow(0 0 3px rgb(61 255 125 / 0.55));
+  }
+
+  .ascii-skin .media-slider-track[data-orientation='vertical'] .media-slider-fill::before {
+    background-image: repeating-linear-gradient(0deg, var(--ax-green) 0 3px, transparent 3px 5px);
+  }
+
+  .ascii-skin .media-time-slider-chapter {
+    --media-chapter-inset-start: 1;
+    --media-chapter-inset-end: 1;
+  }
+
+  .ascii-skin .media-time-slider-chapter:first-of-type {
+    --media-chapter-inset-start: 0;
+  }
+
+  .ascii-skin .media-time-slider-chapter:last-of-type {
+    --media-chapter-inset-end: 0;
+  }
+
+  /* The playhead is a block cursor with its own RGB split, and it stays visible. */
+  .ascii-skin .media-time-slider-thumb,
+  .ascii-skin .media-volume-slider-thumb {
+    width: calc(var(--media-spacing) * 2.5);
+    height: calc(var(--media-spacing) * 5);
+    border-radius: 0;
+    background-color: var(--ax-ink);
+    box-shadow:
+      -2px 0 0 rgb(61 255 125 / 0.9),
+      2px 0 0 rgb(255 60 240 / 0.9);
+  }
+
+  .ascii-skin .media-volume-slider-thumb {
+    width: calc(var(--media-spacing) * 5);
+    height: calc(var(--media-spacing) * 2.5);
+  }
+
+  .ascii-skin .media-time-slider-thumb,
+  .ascii-skin .media-time-slider-thumb[data-interactive] {
+    opacity: 1;
+    scale: 1;
+  }
+
+  .ascii-skin:has(.video-controls .media-play-button[data-paused]) .media-time-slider-thumb {
+    animation: ax-blink 1.06s steps(1) infinite;
+  }
+
+  .ascii-skin .media-volume-popover .media-slider-track[data-orientation='vertical'] {
+    width: calc(var(--media-spacing) * 2);
+  }
+
+  /* Seek preview: the thumbnail in a thin phosphor frame, the time as an inverted tag. */
+  .ascii-skin .media-time-slider .media-slider-thumbnail {
+    border-radius: 0;
+    box-shadow:
+      0 0 0 1px var(--ax-green),
+      -3px 0 0 1px rgb(255 60 240 / 0.6);
+  }
+
+  .ascii-skin .media-time-slider .media-slider-thumbnail[data-hidden] {
+    box-shadow: none;
+  }
+
+  .ascii-skin .media-time-slider-value {
+    padding: 2px 0.75ch;
+    background-color: var(--ax-green);
+    color: var(--ax-black);
+    font-weight: 800;
+    text-shadow: none;
+  }
+
+  .ascii-skin .media-time-slider-chapter-title:not(:empty) {
+    padding: 1px 0.75ch;
+    background-color: rgb(0 0 0 / 0.85);
+    color: var(--ax-ink);
+  }
+
+  /* ---------- Popups, menus and tooltips: terminal windows ---------- */
+  .ascii-skin .media-popup-surface {
+    border-radius: 0;
+    background-color: var(--media-popover);
+    color: var(--ax-ink);
+    box-shadow:
+      0 0 0 1px var(--ax-dim),
+      -3px 3px 0 0 rgb(255 60 240 / 0.35),
+      3px -3px 0 0 rgb(61 255 125 / 0.2);
+  }
+
+  .ascii-skin .media-menu-separator {
+    background: none;
+    border-top: 1px dashed var(--ax-dim);
+  }
+
+  .ascii-skin .media-menu-content [role^='menuitem'] {
+    border-radius: 0;
+  }
+
+  .ascii-skin .media-menu-content [role^='menuitem'][data-highlighted] {
+    background-color: var(--ax-green);
+    color: var(--ax-black);
+    text-shadow: none;
+  }
+
+  .ascii-skin .media-menu-content [role^='menuitem']:focus-visible {
+    outline: var(--ax-focus);
+    outline-offset: -2px;
+  }
+
+  .ascii-skin .media-menu-item-indicator,
+  .ascii-skin .media-menu-radio-item-icon {
+    color: var(--ax-green);
+  }
+
+  .ascii-skin .media-menu-content [role^='menuitem'][data-highlighted] :is(.media-menu-item-indicator, .media-menu-radio-item-icon) {
+    color: var(--ax-black);
+  }
+
+  .ascii-skin .media-menu-back-item {
+    font-weight: 800;
+  }
+
+  .ascii-skin .media-tooltip {
+    border-radius: 0;
+    background-color: var(--ax-ink);
+    color: var(--ax-black);
+    box-shadow:
+      -2px 0 0 rgb(61 255 125 / 0.9),
+      2px 0 0 rgb(255 60 240 / 0.9);
+    font-weight: 700;
+    text-transform: lowercase;
+  }
+
+  /* ---------- Motion: digital, in steps ---------- */
+  @container media-root (width >= 32rem) {
+    .ascii-skin .video-controls-content {
+      transition-timing-function: steps(4);
+    }
+
+    .ascii-skin .video-controls-content:not([data-visible]) {
+      translate: 0 var(--ax-hide-slide);
+      scale: 1;
+      filter: none;
+    }
+  }
+
+  @container media-root (width < 32rem) {
+    .ascii-skin .video-controls-content:not([data-visible]) :is(.video-controls-primary, .video-controls-secondary) {
+      scale: 1;
+      filter: none;
+    }
+  }
+
+  /* ---------- Player states: the prompt in the middle of the video ---------- */
+  .ascii-skin .ax-stage {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: calc(var(--media-spacing) * 3);
+    pointer-events: none;
+    color: var(--ax-ink);
+    text-shadow: var(--ax-split-text);
+  }
+
+  .ascii-skin .ax-stage-row {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--media-spacing) * 3);
+  }
+
+  /* The big play button: [ ▶ RUN ], shown whenever the video is paused (before start, paused or ended). */
+  .ascii-skin .ax-big-play {
+    width: auto;
+    height: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 1ch;
+    padding: calc(var(--media-spacing) * 2.5) 2ch;
+    border-radius: 0;
+    background-color: rgb(0 0 0 / 0.78);
+    color: var(--ax-ink);
+    font-size: clamp(1rem, 3.4cqi, 1.6rem);
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    box-shadow:
+      0 0 0 1px var(--ax-green),
+      -4px 0 0 1px rgb(255 60 240 / 0.45),
+      4px 0 0 1px rgb(61 255 125 / 0.25);
+    pointer-events: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition-property: opacity, visibility, background-color, color;
+    transition-duration: var(--media-duration);
+    transition-timing-function: steps(3);
+  }
+
+  .ascii-skin .ax-big-play[data-paused] {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .ascii-skin .ax-big-play .media-button-icon {
+    position: static;
+    width: 1.1em;
+    height: 1.1em;
+  }
+
+  /* Only the icon for the current state takes up room. */
+  .ascii-skin .ax-big-play:not([data-ended]) :is(.media-play-button-restart-icon, .media-play-button-pause-icon),
+  .ascii-skin .ax-big-play[data-ended] :is(.media-play-button-play-icon, .media-play-button-pause-icon) {
+    display: none;
+  }
+
+  .ascii-skin .ax-big-play::before,
+  .ascii-skin .ax-big-play::after {
+    color: var(--ax-green);
+    font-weight: 400;
+  }
+
+  .ascii-skin .ax-big-play::before {
+    content: '[';
+    order: -1;
+  }
+
+  .ascii-skin .ax-big-play::after {
+    content: 'RUN ]';
+  }
+
+  .ascii-skin .ax-big-play[data-ended]::after {
+    content: 'REPLAY ]';
+  }
+
+  @media (hover: hover) {
+    .ascii-skin .ax-big-play[data-paused]:hover {
+      background-color: var(--ax-green);
+      color: var(--ax-black);
+      text-shadow: none;
+    }
+
+    .ascii-skin .ax-big-play[data-paused]:hover::before,
+    .ascii-skin .ax-big-play[data-paused]:hover::after {
+      color: var(--ax-black);
+    }
+
+    .ascii-skin .ax-big-play[data-paused]:hover .media-button-icon {
+      filter: none;
+      animation: ax-glitch 0.32s steps(1) 1;
+    }
+  }
+
+  .ascii-skin .ax-big-play:active {
+    translate: 1px 1px;
+  }
+
+  /* Skip keys: << 10 and 10 >>, only while paused. */
+  .ascii-skin .ax-stage-seek {
+    width: auto;
+    height: auto;
+    padding: calc(var(--media-spacing) * 2) 1.25ch;
+    border-radius: 0;
+    background-color: rgb(0 0 0 / 0.7);
+    color: var(--ax-ink);
+    font-size: clamp(0.8rem, 2.2cqi, 1.1rem);
+    font-weight: 700;
+    box-shadow: 0 0 0 1px var(--ax-dim);
+    pointer-events: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition-property: opacity, visibility, background-color, color;
+    transition-duration: var(--media-duration);
+    transition-timing-function: steps(3);
+  }
+
+  .ascii-skin .ax-stage-row:has(.ax-big-play[data-paused]:not([data-ended])) .ax-stage-seek {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .ascii-skin .ax-stage-seek .media-seek-button-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5ch;
+  }
+
+  .ascii-skin .ax-stage-seek .media-button-icon {
+    display: none;
+  }
+
+  .ascii-skin .ax-stage-seek .media-seek-button-label {
+    position: static;
+    font-size: inherit;
+    font-weight: inherit;
+    translate: none;
+  }
+
+  .ascii-skin .ax-stage-seek .media-seek-button-backward-label::before {
+    content: '<< ';
+    color: var(--ax-green);
+  }
+
+  .ascii-skin .ax-stage-seek .media-seek-button-forward-label::after {
+    content: ' >>';
+    color: var(--ax-green);
+  }
+
+  @media (hover: hover) {
+    .ascii-skin .ax-stage-seek:hover {
+      background-color: var(--ax-green);
+      color: var(--ax-black);
+      text-shadow: none;
+    }
+
+    .ascii-skin .ax-stage-seek:hover :is(.media-seek-button-backward-label, .media-seek-button-forward-label)::before,
+    .ascii-skin .ax-stage-seek:hover :is(.media-seek-button-backward-label, .media-seek-button-forward-label)::after {
+      color: var(--ax-black);
+    }
+  }
+
+  .ascii-skin .ax-stage-seek:focus-visible {
+    outline: var(--ax-focus);
+    outline-offset: 2px;
+  }
+
+  @container media-root (width < 24rem) {
+    .ascii-skin .ax-stage :is(.ax-big-play, .ax-stage-seek) {
+      display: none;
+    }
+  }
+
+  /* > EOF_ when the video ends, over the replay prompt. */
+  .ascii-skin .ax-end-banner {
+    display: none;
+    margin: 0;
+    padding: 0.1em 0.6ch;
+    background-color: rgb(0 0 0 / 0.75);
+    color: var(--ax-ink);
+    font-size: clamp(2rem, 10cqi, 5.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: 0.06em;
+    text-shadow:
+      -3px 0 rgb(61 255 125 / 0.9),
+      3px 0 rgb(255 60 240 / 0.9);
+    animation: ax-tear 2.4s steps(1) infinite;
+  }
+
+  .ascii-skin .ax-stage:has(.ax-big-play[data-ended]) .ax-end-banner {
+    display: block;
+  }
+
+  .ascii-skin .ax-prompt {
+    color: var(--ax-green);
+  }
+
+  .ascii-skin .ax-cursor {
+    animation: ax-blink 1.06s steps(1) infinite;
+  }
+
+  /* Default's centre flash of the play/pause icon would sit where the prompt appears; the prompt already shows the
+     paused state. The status announcer still reports it. */
+  .ascii-skin .media-playback-status-indicator {
+    display: none;
+  }
+
+  /* Seek and volume flashes: plain terminal text. */
+  .ascii-skin :is(.media-seek-indicator, .media-volume-indicator, .media-status-indicator) {
+    font-family: var(--ax-mono);
+    text-shadow: var(--ax-split-text);
+  }
+
+  /* ---------- Buffering: | / - \ BUFFERING_ ---------- */
+  .ascii-skin:has(.media-buffering-indicator[data-visible]) .ax-stage {
+    visibility: hidden;
+  }
+
+  .ascii-skin .media-buffering-indicator::before {
+    background-color: rgb(0 0 0 / 0.35);
+    backdrop-filter: none;
+  }
+
+  .ascii-skin .media-buffering-indicator-spinner-icon {
+    display: none;
+  }
+
+  .ascii-skin .ax-loading {
+    position: relative;
+    z-index: 30;
+    display: inline-flex;
+    gap: 1ch;
+    padding: calc(var(--media-spacing) * 2) 1.5ch;
+    background-color: rgb(0 0 0 / 0.8);
+    color: var(--ax-ink);
+    font-size: clamp(0.9rem, 2.6cqi, 1.25rem);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-shadow: var(--ax-split-text);
+    box-shadow: 0 0 0 1px var(--ax-dim);
+  }
+
+  .ascii-skin .ax-spinner {
+    display: inline-block;
+    width: 1ch;
+    overflow: hidden;
+    color: var(--ax-green);
+    letter-spacing: 0;
+  }
+
+  .ascii-skin .ax-spinner-strip {
+    display: inline-block;
+    white-space: pre;
+    animation: ax-spin 0.5s steps(4) infinite;
+  }
+
+  .ascii-skin .media-buffering-indicator:not([data-visible]) :is(.ax-spinner-strip, .ax-cursor) {
+    animation: none;
+  }
+
+  /* ---------- Error dialog: a terminal window ---------- */
+  .ascii-skin .media-dialog-popup {
+    border-radius: 0;
+    background-color: rgb(5 5 5 / 0.94);
+    color: var(--ax-ink);
+    text-shadow: var(--ax-split-text);
+    box-shadow:
+      0 0 0 1px var(--ax-red),
+      -4px 0 0 1px rgb(255 60 240 / 0.4),
+      4px 0 0 1px rgb(61 255 125 / 0.25);
+  }
+
+  .ascii-skin .media-dialog-title {
+    font-weight: 800;
+    color: var(--ax-red);
+  }
+
+  .ascii-skin .media-dialog-title::before {
+    content: 'ERR! ';
+  }
+
+  .ascii-skin .media-dialog-close {
+    border-radius: 0;
+    background-color: var(--ax-green);
+    color: var(--ax-black);
+    font-weight: 800;
+    text-shadow: none;
+  }
+
+  .ascii-skin .media-dialog-close::before {
+    content: '[ ';
+  }
+
+  .ascii-skin .media-dialog-close::after {
+    content: ' ]';
+  }
+
+  @media (hover: hover) {
+    .ascii-skin .media-dialog-close:hover {
+      background-color: var(--ax-ink);
+      color: var(--ax-black);
+    }
+  }
+
+  .ascii-skin .media-dialog-close:focus-visible {
+    outline: var(--ax-focus);
+    outline-offset: 3px;
+  }
+
+  /* ---------- Keyframes ---------- */
+  @keyframes ax-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes ax-spin {
+    to {
+      translate: -4ch 0;
+    }
+  }
+
+  @keyframes ax-glitch {
+    0% {
+      translate: -2px 0;
+      filter: drop-shadow(-3px 0 rgb(61 255 125)) drop-shadow(3px 0 rgb(255 60 240));
+    }
+    33% {
+      translate: 2px 0;
+    }
+    66% {
+      translate: -1px 0;
+    }
+    100% {
+      translate: 0;
+    }
+  }
+
+  @keyframes ax-tear {
+    0%,
+    88%,
+    100% {
+      clip-path: none;
+      translate: 0;
+    }
+    90% {
+      clip-path: inset(30% 0 45% 0);
+      translate: 6px 0;
+    }
+    94% {
+      clip-path: inset(60% 0 10% 0);
+      translate: -5px 0;
+    }
+  }
+
+  /* ---------- Preferences ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .ascii-skin {
+      --ax-hide-slide: 0%;
+    }
+
+    .ascii-skin :is(.ax-cursor, .ax-spinner-strip, .ax-end-banner, .media-time-slider-thumb),
+    .ascii-skin .media-button:hover :is(.media-button-icon, .media-button-icon-base) {
+      animation: none !important;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .ascii-skin .ax-screen {
+      display: none;
+    }
+
+    .ascii-skin :is(.video-controls-content, .media-popup-surface, .ax-big-play, .ax-stage-seek, .ax-loading) {
+      forced-color-adjust: none;
+      background-color: Canvas;
+      color: CanvasText;
+      border: 1px solid CanvasText;
+    }
+  }
+}

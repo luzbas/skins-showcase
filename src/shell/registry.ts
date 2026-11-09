@@ -1,0 +1,136 @@
+// Every skin in the showcase, and the website built around each one. Add a skin by adding an entry here.
+import type { ComponentType } from 'react';
+import Noticeboard from '../sites/noticeboard/Noticeboard';
+import LittleIsland from '../sites/littleisland/LittleIsland';
+import Relay from '../sites/relay/Relay';
+import SmallDish from '../sites/smalldish/SmallDish';
+import { PapercutPlayer } from '../lib/PapercutPlayer';
+import { ClayPlayer } from '../lib/ClayPlayer';
+import { GlitchPlayer } from '../lib/GlitchPlayer';
+import { SketchPlayer } from '../lib/SketchPlayer';
+
+export interface Variation {
+  id: string;
+  name: string;
+  /** One line about the site, shown under its name in the index. */
+  fit: string;
+  /** Three colours for the little swatch in the index. */
+  swatch: [string, string, string];
+  Site: ComponentType;
+}
+
+export interface Skin {
+  id: string;
+  name: string;
+  description: string;
+  /** The website the skin is shown in. */
+  site: string;
+  repo: string;
+  demo: string;
+  /** The bare skin player, shown as the skin's picture on the homepage. */
+  Player: ComponentType;
+  variations: Variation[];
+}
+
+export const SKINS: Skin[] = [
+  {
+    id: 'papercut',
+    name: 'Papercut',
+    description: 'A construction-paper collage. Every control is a scrap pinned around a taped-down photo.',
+    site: 'Cut-Out Cosmos Club',
+    repo: 'https://github.com/luzbas/papercut-player',
+    demo: 'https://luzbas.github.io/papercut-player/',
+    Player: PapercutPlayer,
+    variations: [
+      {
+        id: 'noticeboard',
+        name: 'Library noticeboard',
+        fit: 'A kids’ space club on a corkboard of pinned flyers',
+        swatch: ['#b98d5a', '#f1e7cc', '#b5382c'],
+        Site: Noticeboard,
+      },
+    ],
+  },
+  {
+    id: 'clay',
+    name: 'Clay',
+    description: 'A modelling-clay diorama. The video plays on a clay TV on a floating island, with controls in the scenery.',
+    site: 'Little Island TV',
+    repo: 'https://github.com/luzbas/clay-skin-',
+    demo: 'https://luzbas.github.io/clay-skin-/',
+    Player: ClayPlayer,
+    variations: [
+      {
+        id: 'tv-guide',
+        name: 'Kids’ TV guide',
+        fit: 'A clay science show, laid out like a TV listings page',
+        swatch: ['#e0457b', '#f5c93a', '#9fc9e8'],
+        Site: LittleIsland,
+      },
+    ],
+  },
+  {
+    id: 'glitch',
+    name: 'ASCII Glitch',
+    description: 'A circuit-board schematic. Every control is a wired unit, and a paused frame turns into glyphs.',
+    site: 'RELAY_07',
+    repo: 'https://github.com/luzbas/glitch-skin',
+    demo: 'https://luzbas.github.io/glitch-skin/',
+    Player: GlitchPlayer,
+    variations: [
+      {
+        id: 'broadcast',
+        name: 'Broadcast zine',
+        fit: 'A listening station that pulls space broadcasts out of the noise',
+        swatch: ['#150d08', '#ffb22e', '#ff6236'],
+        Site: Relay,
+      },
+    ],
+  },
+  {
+    id: 'sketch',
+    name: 'Sketch',
+    description: 'A pencil schematic. The video is a chip and every control is a part wired to it, on dotted paper.',
+    site: 'Small Dish Society',
+    repo: 'https://github.com/luzbas/sketch-skin',
+    demo: 'https://luzbas.github.io/sketch-skin/',
+    Player: SketchPlayer,
+    variations: [
+      {
+        id: 'notebook',
+        name: 'Engineer’s notebook',
+        fit: 'A makerspace class: build a radio telescope from an old dish',
+        swatch: ['#eeebe3', '#2b2a27', '#c0392b'],
+        Site: SmallDish,
+      },
+    ],
+  },
+];
+
+export type View = 'site' | 'devices';
+
+export type Route =
+  | { page: 'home' }
+  | { page: 'player'; skin: Skin }
+  | { page: 'skin'; skin: Skin; variation: Variation; view: View };
+
+/** Hashes that aren't routes (a site's own in-page anchors, like #li-guide) return null and leave the page alone. */
+export function resolve(hash: string): Route | null {
+  if (hash === '' || hash === '#' || hash === '#/') return { page: 'home' };
+  if (!hash.startsWith('#/')) return null;
+  const [first, second, third] = hash.slice(2).split('/');
+  if (first === 'player') {
+    const skin = SKINS.find((s) => s.id === second) ?? SKINS[0];
+    return { page: 'player', skin };
+  }
+  const skin = SKINS.find((s) => s.id === first);
+  if (!skin) return { page: 'home' };
+  const variation = skin.variations.find((v) => v.id === second) ?? skin.variations[0];
+  const view: View = third === 'devices' ? 'devices' : 'site';
+  return { page: 'skin', skin, variation, view };
+}
+
+export const HOME_HREF = '#/';
+
+export const href = (skin: Skin, variation: Variation, view: View = 'site') =>
+  `#/${skin.id}/${variation.id}${view === 'devices' ? '/devices' : ''}`;
