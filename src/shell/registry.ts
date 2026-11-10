@@ -113,7 +113,7 @@ export const SKINS: Skin[] = [
     description: 'An outdoor movie night in 3D. The video plays on a sheet in a garden, with controls hanging as tags from festoon bulbs.',
     site: 'The Lantern Lawn',
     repo: 'https://github.com/luzbas/outdoor-video-skin',
-    demo: 'https://luzbas.github.io/outdoor-video-skin/',
+    demo: 'https://outdoor-video-skin.vercel.app/',
     Player: PicnicPlayer,
     variations: [
       {
