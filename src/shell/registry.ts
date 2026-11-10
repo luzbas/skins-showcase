@@ -4,10 +4,12 @@ import Noticeboard from '../sites/noticeboard/Noticeboard';
 import LittleIsland from '../sites/littleisland/LittleIsland';
 import Relay from '../sites/relay/Relay';
 import SmallDish from '../sites/smalldish/SmallDish';
+import LanternLawn from '../sites/lanternlawn/LanternLawn';
 import { PapercutPlayer } from '../lib/PapercutPlayer';
 import { ClayPlayer } from '../lib/ClayPlayer';
 import { GlitchPlayer } from '../lib/GlitchPlayer';
 import { SketchPlayer } from '../lib/SketchPlayer';
+import { PicnicPlayer } from '../lib/PicnicPlayer';
 
 export interface Variation {
   id: string;
@@ -102,6 +104,24 @@ export const SKINS: Skin[] = [
         fit: 'A makerspace class: build a radio telescope from an old dish',
         swatch: ['#eeebe3', '#2b2a27', '#c0392b'],
         Site: SmallDish,
+      },
+    ],
+  },
+  {
+    id: 'picnic',
+    name: 'Picnic Cinema',
+    description: 'An outdoor movie night in 3D. The video plays on a sheet in a garden, with controls hanging as tags from festoon bulbs.',
+    site: 'The Lantern Lawn',
+    repo: 'https://github.com/luzbas/outdoor-video-skin',
+    demo: 'https://luzbas.github.io/outdoor-video-skin/',
+    Player: PicnicPlayer,
+    variations: [
+      {
+        id: 'garden',
+        name: 'Garden film night',
+        fit: 'Friday silent films on a sheet in a community garden',
+        swatch: ['#0d1626', '#ffc66b', '#f2ead6'],
+        Site: LanternLawn,
       },
     ],
   },

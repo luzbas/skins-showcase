@@ -1,0 +1,411 @@
+/*
+ * Picnic cinema — layered on the Default skin's styles. Unlayered rules win over the Default skin's @layer rules.
+ *
+ *  - flat (no data-picnic): the Default layout with warm surfaces, shown while the scene loads or without WebGL.
+ *  - ready ([data-picnic="ready"]): PicnicStage renders the Blender scene and positions every control over its mesh
+ *    (inline left/top/width/height each frame). --picnic-h is the drawn height of the mesh under a control;
+ *    --picnic-lit is 1 when the house lights are up (paused) and 0 when they are down (playing).
+ */
+
+.picnic-skin {
+  color-scheme: dark;
+  --picnic-ink: #2a1a10;
+  --picnic-paper: #f6e3c4;
+  --picnic-glow: #ffb36a;
+  --picnic-night: #05070d;
+  --media-font-family: "American Typewriter", "Courier Prime", ui-serif, Georgia, serif;
+  --media-video-border-radius: 18px;
+  --media-default-accent-color: #ff9a3c;
+  --media-accent: #ff9a3c;
+  --media-accent-foreground: #2a1a10;
+  --media-ring: var(--picnic-glow);
+  --media-popover: rgb(40 26 16 / 0.86);
+  --media-popover-foreground: #fbe9cf;
+  --media-backdrop-filter-surface: blur(14px) saturate(1.3);
+  --media-popup-radius: 12px;
+  --media-controls-radius: 14px;
+  --media-menu-item-radius: 8px;
+}
+
+/* ---------------------------------------------------------------- stage */
+
+.picnic-stage,
+.picnic-cue-layer,
+.picnic-remote {
+  display: none;
+}
+
+.picnic-skin[data-picnic="ready"] {
+  background: var(--picnic-night);
+  overflow: hidden;
+}
+
+.picnic-skin[data-picnic="ready"]::after {
+  display: none;
+}
+
+.picnic-skin[data-picnic="ready"] .picnic-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The real <video> keeps playing (and owns PiP and the text tracks); the sheet in the scene shows it. */
+.picnic-skin[data-picnic="ready"] video {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- control layer over the scene */
+
+/* The strand and the remote are part of the scene, so they don't fade with the controls: the stage dims them instead. */
+.picnic-skin[data-picnic="ready"] .video-controls-content,
+.picnic-skin[data-picnic="ready"] .video-controls-content:not([data-visible]) {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: block;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  pointer-events: none;
+  opacity: 1;
+  translate: none;
+  scale: none;
+  filter: none;
+  transition: none;
+}
+
+.picnic-skin[data-picnic="ready"] .video-controls-content::after {
+  display: none;
+}
+
+.picnic-skin[data-picnic="ready"] :is(.picnic-strand, .picnic-remote, .picnic-remote-keys) {
+  display: contents;
+}
+
+.picnic-skin[data-picnic="ready"] :is(.picnic-tag, .picnic-tag-time, .picnic-hem, .picnic-key, .picnic-remote-time,
+  .picnic-remote-slider, .picnic-remote-toggle) {
+  position: absolute;
+  inset: auto;
+  margin: 0;
+}
+
+.picnic-skin[data-picnic="ready"] :is(.picnic-tag, .picnic-hem, .picnic-key, .picnic-remote-slider, .picnic-remote-toggle) {
+  pointer-events: auto;
+}
+
+/* Popups take pointer input back, or a click inside them would fall through to the video. */
+.picnic-skin[data-picnic="ready"] :is(.media-popup, [popover]),
+.picnic-skin[data-picnic="ready"] :is(.media-popup, [popover]) * {
+  pointer-events: auto;
+}
+
+/* The strand belongs to the scene: once fullscreen has pushed in to the sheet it is out of view (and out of the tab
+   order); the remote carries the controls there. */
+.picnic-skin[data-picnic-fs] :is(.picnic-tag, .picnic-tag-time, .picnic-hem) {
+  visibility: hidden;
+}
+
+/* ---------------------------------------------------------------- tags on the strand */
+
+.picnic-skin[data-picnic="ready"] :is(.picnic-tag, .picnic-key) {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--picnic-ink);
+  box-shadow: none;
+  outline: 3px solid transparent;
+  outline-offset: 1px;
+  transition: outline-color 0.15s ease-out;
+}
+
+/* Icons are drawn in ink on the glowing paper; they fade a little when the house lights go down. */
+.picnic-skin[data-picnic="ready"] .picnic-tag :is(.media-button-icon, .media-button-icon-base) {
+  width: calc(var(--picnic-h, 24px) * 0.56);
+  height: calc(var(--picnic-h, 24px) * 0.56);
+  opacity: calc(0.28 + 0.72 * var(--picnic-lit, 1));
+  filter: none;
+}
+
+.picnic-skin[data-picnic="ready"] :is(.picnic-tag, .picnic-key):is(:hover, :focus-visible) :is(.media-button-icon, .media-button-icon-base) {
+  opacity: 1;
+}
+
+.picnic-skin[data-picnic="ready"] :is(.picnic-tag, .picnic-key):focus-visible {
+  outline-color: var(--picnic-glow);
+  box-shadow: 0 0 0 2px var(--picnic-ink);
+}
+
+/* Skip tags carry only the arrow; the seconds stay in the accessible name. */
+.picnic-skin[data-picnic="ready"] :is(.picnic-tag, .picnic-key) .media-seek-button-label {
+  display: none;
+}
+
+.picnic-skin[data-picnic="ready"] :is(.picnic-tag, .picnic-key) .media-seek-button-content {
+  display: grid;
+  place-items: center;
+}
+
+/* The gear is drawn alone; its label stays as the button's accessible name (visually hidden, not display: none). */
+.picnic-skin[data-picnic="ready"] :is(.picnic-tag, .picnic-key) .media-settings-menu-trigger-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.picnic-skin[data-picnic="ready"] :is(.picnic-tag-time, .picnic-remote-time) {
+  display: grid;
+  place-items: center;
+  color: var(--picnic-ink);
+  font-size: clamp(7px, calc(var(--picnic-h, 20px) * 0.4), 20px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  opacity: calc(0.3 + 0.7 * var(--picnic-lit, 1));
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- hem timeline */
+
+.picnic-skin[data-picnic="ready"] :is(.picnic-hem, .picnic-remote-slider) {
+  display: flex;
+  align-items: center;
+  height: auto;
+}
+
+.picnic-skin[data-picnic="ready"] :is(.picnic-hem, .picnic-remote-slider) :is(.media-slider-track, .media-slider-fill, .media-slider-buffer) {
+  background: transparent;
+  box-shadow: none;
+}
+
+.picnic-skin[data-picnic="ready"] :is(.picnic-hem, .picnic-remote-slider) :is(.media-slider-track, .media-slider-fill, .media-slider-buffer)::before,
+.picnic-skin[data-picnic="ready"] :is(.picnic-hem, .picnic-remote-slider) :is(.media-slider-track, .media-slider-fill, .media-slider-buffer)::after {
+  display: none;
+}
+
+/* The playhead bulb (hem) and the brass knob (remote) are in the scene; the DOM thumb only shows focus. */
+.picnic-skin[data-picnic="ready"] :is(.picnic-hem, .picnic-remote-slider) .media-time-slider-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  opacity: 1;
+  scale: 1;
+}
+
+.picnic-skin[data-picnic="ready"] :is(.picnic-hem, .picnic-remote-slider) .media-time-slider-thumb:focus-visible {
+  outline: 3px solid var(--picnic-glow);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px var(--picnic-ink);
+}
+
+/* ---------------------------------------------------------------- remote */
+
+.picnic-skin[data-picnic="ready"] .picnic-remote-toggle {
+  z-index: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  outline: 3px solid transparent;
+  outline-offset: 2px;
+}
+
+.picnic-skin[data-picnic="ready"] .picnic-remote-toggle:focus-visible {
+  outline-color: var(--picnic-glow);
+}
+
+/* In fullscreen the remote is the control bar; its toggle isn't needed there. */
+.picnic-skin[data-picnic-fs] .picnic-remote-toggle {
+  visibility: hidden;
+}
+
+/* The keys exist only while the remote is lifted: hidden keys are out of the tab order and the accessibility tree. */
+.picnic-skin[data-picnic="ready"]:not([data-picnic-remote="open"]) :is(.picnic-key, .picnic-remote-time, .picnic-remote-slider) {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.picnic-skin[data-picnic="ready"] .picnic-key {
+  z-index: 1;
+  border-radius: 50%;
+}
+
+.picnic-skin[data-picnic="ready"] .picnic-key :is(.media-button-icon, .media-button-icon-base) {
+  width: calc(var(--picnic-h, 24px) * 0.5);
+  height: calc(var(--picnic-h, 24px) * 0.5);
+  opacity: 1;
+}
+
+.picnic-skin[data-picnic="ready"] .picnic-key--Play :is(.media-button-icon, .media-button-icon-base) {
+  width: calc(var(--picnic-h, 24px) * 0.52);
+  height: calc(var(--picnic-h, 24px) * 0.52);
+}
+
+/* The volume key is the brass knob: its speaker icon sits in cream on the brass. */
+.picnic-skin[data-picnic="ready"] .picnic-key--Volume {
+  color: #fff3dc;
+}
+
+.picnic-skin[data-picnic="ready"] .picnic-remote-time {
+  z-index: 1;
+  opacity: 1;
+  font-size: clamp(9px, calc(var(--picnic-h, 20px) * 0.46), 20px);
+}
+
+/* ---------------------------------------------------------------- poster, captions, indicators */
+
+/* The stage draws the poster on the sheet; the DOM poster would cover the canvas (and the lifted remote). */
+.picnic-skin[data-picnic="ready"] .picnic-poster {
+  visibility: hidden;
+}
+
+.picnic-skin[data-picnic="ready"] .picnic-cue-layer {
+  position: absolute;
+  z-index: 15;
+  display: block;
+  left: var(--picnic-screen-x, 0);
+  top: var(--picnic-screen-y, 0);
+  width: var(--picnic-screen-w, 100%);
+  height: var(--picnic-screen-h, 100%);
+  pointer-events: none;
+}
+
+.picnic-cue {
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  display: grid;
+  justify-items: center;
+  width: max-content;
+  max-width: 92%;
+  margin: 0;
+  padding: 0.25em 0.8em;
+  border-radius: 0.4em;
+  background: rgb(20 12 6 / 0.72);
+  color: #fff4e2;
+  font-size: clamp(11px, calc(var(--picnic-screen-h, 400px) * 0.06), 30px);
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  translate: -50% 0;
+}
+
+/* The lifted remote covers the bottom of the picture; captions move up while it is out. */
+.picnic-skin[data-picnic-remote="open"] .picnic-cue {
+  bottom: 34%;
+}
+
+.picnic-skin[data-picnic="ready"] .media-buffering-indicator {
+  z-index: 18;
+}
+
+.picnic-skin :is(.media-tooltip, .media-menu-popup, .media-volume-popover, .media-slider-thumbnail) {
+  border: 1px solid rgb(255 214 160 / 0.25);
+  box-shadow: 0 12px 30px -10px rgb(0 0 0 / 0.6);
+}
+
+.picnic-skin :is(.media-volume-popover) .media-slider-fill {
+  background: linear-gradient(to top, #ff8a3a, #ffd27a);
+}
+
+/* ---------------------------------------------------------------- look around */
+
+.picnic-reset-view,
+.picnic-zoom-hint {
+  display: none;
+}
+
+.picnic-skin[data-picnic-orbit] {
+  cursor: grab;
+}
+
+.picnic-skin[data-picnic-dragging],
+.picnic-skin[data-picnic-dragging] * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+.picnic-skin[data-picnic="ready"] .picnic-reset-view {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 35;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 6px 9px;
+  border: 1px solid rgb(255 214 160 / 0.3);
+  border-radius: 999px;
+  background: rgb(40 26 16 / 0.78);
+  color: #fbe9cf;
+  font: 600 13px/1 var(--media-font-family);
+  cursor: pointer;
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  visibility: hidden;
+  translate: 0 -4px;
+  transition: opacity 0.2s ease-out, translate 0.2s ease-out, visibility 0s 0.2s;
+}
+
+.picnic-skin[data-picnic-orbit][data-picnic-moved] .picnic-reset-view {
+  opacity: 1;
+  visibility: visible;
+  translate: 0 0;
+  transition: opacity 0.2s ease-out, translate 0.2s ease-out, visibility 0s;
+}
+
+.picnic-skin .picnic-reset-view svg {
+  width: 15px;
+  height: 15px;
+}
+
+.picnic-skin .picnic-reset-view:focus-visible {
+  outline: 3px solid var(--picnic-glow);
+  outline-offset: 2px;
+}
+
+.picnic-skin[data-picnic="ready"] .picnic-zoom-hint {
+  position: absolute;
+  inset: 0;
+  z-index: 34;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  background: rgb(5 7 13 / 0.45);
+  color: #fff4e2;
+  font: 600 clamp(14px, 2.4cqi, 22px) / 1.2 var(--media-font-family);
+  text-shadow: 0 1px 6px rgb(0 0 0 / 0.6);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+}
+
+.picnic-skin[data-picnic-hint] .picnic-zoom-hint {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .picnic-skin :is(.picnic-reset-view, .picnic-zoom-hint) {
+    transition: none;
+  }
+}

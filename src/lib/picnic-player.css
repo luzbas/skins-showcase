@@ -1,0 +1,12 @@
+/* The picnic player's shape: wide on desktop, upright on phones so the skin picks its portrait framing. */
+.picnic-embed {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+@media (max-width: 600px) {
+  .picnic-embed {
+    aspect-ratio: 9 / 16;
+    max-height: calc(100svh - 24px);
+  }
+}

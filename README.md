@@ -32,7 +32,14 @@ The homepage (`#/`) lists every skin with a live, scaled-down copy of its player
 - A pencil sketch of the finished telescope, four evenings wired one to the next, and a parts list where you tick what you're bringing.
 - A "save a seat" sign-up with a confirmation.
 
-The sites embed their skins through `src/lib/PapercutPlayer.tsx`, `src/lib/ClayPlayer.tsx`, `src/lib/GlitchPlayer.tsx` and `src/lib/SketchPlayer.tsx`; `src/lib/use-media.ts` lets page content read the player's time and seek it. Club details and helpers live in `src/lib/club.ts`. Sign-ups and questions are remembered in the browser.
+**Picnic Cinema** (3D outdoor movie-night skin, three.js), shown in *The Lantern Lawn* (`#/picnic/garden`), Friday silent films on a sheet in a community garden:
+
+- A festoon string over the hero that is lit while the film is paused and dims while it plays, like the skin's bulbs.
+- *The Fall of the House of Usher* (1928) in the player, with five scene cards that jump to each moment and show which one is on.
+- A "what to bring" basket of paper tags to tick off, and the season's programme.
+- A lawn map to claim a blanket spot, with a blanket-tag confirmation.
+
+The sites embed their skins through `src/lib/PapercutPlayer.tsx`, `src/lib/ClayPlayer.tsx`, `src/lib/GlitchPlayer.tsx`, `src/lib/SketchPlayer.tsx` and `src/lib/PicnicPlayer.tsx`; `src/lib/use-media.ts` lets page content read the player's time and seek it. Club details and helpers live in `src/lib/club.ts`. Sign-ups and questions are remembered in the browser.
 
 ## Run
 
@@ -51,4 +58,4 @@ Routing is hash-based and `vite.config.ts` uses a relative base, so the build wo
 
 ## Credits
 
-Demo film: NASA, *Cosmic Dawn* trailer (Mux HLS stream). Licensed Apache 2.0, same as Video.js.
+Demo films: NASA, *Cosmic Dawn* trailer, and *The Fall of the House of Usher* (1928, public domain) for Picnic Cinema (Mux HLS streams). Licensed Apache 2.0, same as Video.js.
