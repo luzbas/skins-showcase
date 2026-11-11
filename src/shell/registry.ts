@@ -151,6 +151,7 @@ export type View = 'site' | 'devices' | 'duo';
 export type Route =
   | { page: 'home' }
   | { page: 'duos' }
+  | { page: 'devices' }
   | { page: 'player'; skin: Skin }
   | { page: 'skin'; skin: Skin; variation: Variation; view: View };
 
@@ -159,6 +160,7 @@ export function resolve(hash: string): Route | null {
   if (hash === '' || hash === '#' || hash === '#/') return { page: 'home' };
   if (!hash.startsWith('#/')) return null;
   if (hash === '#/duos') return { page: 'duos' };
+  if (hash === '#/devices') return { page: 'devices' };
   const [first, second, third] = hash.slice(2).split('/');
   if (first === 'player') {
     const skin = SKINS.find((s) => s.id === second) ?? SKINS[0];
@@ -173,6 +175,7 @@ export function resolve(hash: string): Route | null {
 
 export const HOME_HREF = '#/';
 export const DUOS_HREF = '#/duos';
+export const DEVICES_HREF = '#/devices';
 
 export const href = (skin: Skin, variation: Variation, view: View = 'site') =>
   `#/${skin.id}/${variation.id}${view === 'site' ? '' : `/${view}`}`;

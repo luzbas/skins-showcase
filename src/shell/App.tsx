@@ -1,7 +1,8 @@
 // The showcase shell: a fixed index of skins on the left, the selected website (or its device preview) on the right.
 import { useEffect, useState } from 'react';
-import { DUOS_HREF, HOME_HREF, SKINS, href, resolve, type Route } from './registry';
+import { DEVICES_HREF, DUOS_HREF, HOME_HREF, SKINS, href, resolve, type Route } from './registry';
 import AllDuos from './AllDuos';
+import AllDevices from './AllDevices';
 import DevicePreview from './DevicePreview';
 import DuoPreview from './DuoPreview';
 import Home from './Home';
@@ -30,17 +31,18 @@ const IS_FRAME = new URLSearchParams(window.location.search).has('frame');
 export default function App() {
   const route = useRoute();
   const [open, setOpen] = useState(false);
-  const skin = route.page === 'home' || route.page === 'duos' ? null : route.skin;
+  const skin = route.page === 'home' || route.page === 'duos' || route.page === 'devices' ? null : route.skin;
   const variation = route.page === 'skin' ? route.variation : null;
   const view = route.page === 'skin' ? route.view : null;
   const viewName =
-    route.page === 'home' ? 'All skins' : route.page === 'duos' ? 'All Duos' : view === 'devices' ? 'How it will look' : view === 'duo' ? 'Duo' : 'Website';
+    route.page === 'home' ? 'All skins' : route.page === 'duos' ? 'All Duos' : route.page === 'devices' ? 'All devices' : view === 'devices' ? 'How it will look' : view === 'duo' ? 'Duo' : 'Website';
 
   useEffect(() => {
     window.scrollTo(0, 0);
     setOpen(false);
     if (route.page === 'home') document.title = 'Video.js skin showcase';
     else if (route.page === 'duos') document.title = 'All Duos · Video.js skin showcase';
+    else if (route.page === 'devices') document.title = 'All devices · Video.js skin showcase';
     else if (route.page === 'player') document.title = `${route.skin.name} skin player`;
     else document.title = IS_FRAME ? `${route.skin.site} · ${route.skin.name} skin` : `${route.skin.name} skin · ${viewName}`;
   }, [route, viewName]);
@@ -73,8 +75,8 @@ export default function App() {
             <>
               {skin.name} <span className="shell-bar-sep">/</span> {viewName}
             </>
-          ) : route.page === 'duos' ? (
-            'All Duos'
+          ) : route.page === 'duos' || route.page === 'devices' ? (
+            viewName
           ) : (
             'Skin showcase'
           )}
@@ -103,6 +105,10 @@ export default function App() {
         <a className="shell-link shell-home-link" href={DUOS_HREF} aria-current={route.page === 'duos' ? 'page' : undefined}>
           <FoldIcon />
           All Duos
+        </a>
+        <a className="shell-link shell-home-link" href={DEVICES_HREF} aria-current={route.page === 'devices' ? 'page' : undefined}>
+          <DevicesIcon />
+          All devices
         </a>
 
         <ul className="shell-skins">
@@ -175,6 +181,8 @@ export default function App() {
           )
         ) : route.page === 'duos' ? (
           <AllDuos />
+        ) : route.page === 'devices' ? (
+          <AllDevices />
         ) : (
           <Home />
         )}
