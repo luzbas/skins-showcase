@@ -8,7 +8,7 @@
 //   inner, portrait    open flat, fold running across: the film on the top half, the page on the bottom half
 //   split              propped up (tabletop): the film on the top half that stands up, the page lying flat below
 //   outer-p            closed, upright: a composition notebook (film taped to the marbled cover, index-tab rail)
-//   outer-l            closed, sideways: the film edge to edge between thin cloth bands
+//   outer-l            closed, sideways: the same notebook, the film edge to edge under its label
 // Fullscreen (real, or the simulation's) uses the web skin's fullscreen: the page turns in over the film when paused.
 // It is one DOM in every pose, so the video never remounts and keeps playing while the phone moves. Controls on the
 // closed phone sit in the iOS 27 edge rail: 73 pt on the trailing edge, 48 pt buttons 12 pt apart.
@@ -55,8 +55,7 @@ const FONT_URL =
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
 
-/** The six rail controls on the closed phone: index tabs on the notebook's page edges (upright), or rubber stamps on
- * the red spine (sideways). */
+/** The six rail controls on the closed phone, as coloured index tabs on the notebook's page edges. */
 function Rail({ fullscreen }: { fullscreen: { active: boolean; toggle: () => void } }) {
   const paused = usePlayer((s) => s.paused) ?? true;
   const muted = usePlayer((s) => s.muted) ?? false;
@@ -81,29 +80,28 @@ function Rail({ fullscreen }: { fullscreen: { active: boolean; toggle: () => voi
         </svg>
       </div>
       <div className={'apd-rail-group'} role="group" aria-label="Playback">
-        <PlayButtonPrimitive className={'apd-stamp'} data-tone="red" data-tab="pink" aria-label={paused ? 'Play' : 'Pause'}>
+        <PlayButtonPrimitive className={'apd-tab'} data-tab="pink" aria-label={paused ? 'Play' : 'Pause'}>
           {paused ? <PlayIcon className={'apd-icon'} /> : <PauseIcon className={'apd-icon'} />}
         </PlayButtonPrimitive>
-        <SeekButtonPrimitive className={'apd-stamp'} data-tab="green" seconds={-10} aria-label="Back 10 seconds">
+        <SeekButtonPrimitive className={'apd-tab'} data-tab="green" seconds={-10} aria-label="Back 10 seconds">
           <SeekIcon className={cn('apd-icon', 'apd-icon--back')} />
           <span className={'apd-ten'}>10</span>
         </SeekButtonPrimitive>
-        <SeekButtonPrimitive className={'apd-stamp'} data-tab="green" seconds={10} aria-label="Ahead 10 seconds">
+        <SeekButtonPrimitive className={'apd-tab'} data-tab="green" seconds={10} aria-label="Ahead 10 seconds">
           <SeekIcon className={'apd-icon'} />
           <span className={'apd-ten'}>10</span>
         </SeekButtonPrimitive>
       </div>
       <div className={cn('apd-rail-group', 'apd-rail-group--end')} role="group" aria-label="More controls">
-        <CaptionsButtonPrimitive className={'apd-stamp'} data-tab="blue" aria-label={captions ? 'Turn captions off' : 'Turn captions on'}>
+        <CaptionsButtonPrimitive className={'apd-tab'} data-tab="blue" aria-label={captions ? 'Turn captions off' : 'Turn captions on'}>
           {captions ? <CaptionsOnIcon className={'apd-icon'} /> : <CaptionsOffIcon className={'apd-icon'} />}
         </CaptionsButtonPrimitive>
-        <MuteButtonPrimitive className={'apd-stamp'} data-tab="lavender" aria-label={muted ? 'Unmute' : 'Mute'}>
+        <MuteButtonPrimitive className={'apd-tab'} data-tab="lavender" aria-label={muted ? 'Unmute' : 'Mute'}>
           {muted ? <VolumeOffIcon className={'apd-icon'} /> : <VolumeHighIcon className={'apd-icon'} />}
         </MuteButtonPrimitive>
         <button
           type="button"
-          className={'apd-stamp'}
-          data-tone="green"
+          className={'apd-tab'}
           data-tab="yellow"
           aria-label={fullscreen.active ? 'Exit full screen' : 'Full screen'}
           onClick={fullscreen.toggle}
@@ -251,7 +249,7 @@ export function AnnotatedDuoSkin({ children, className, style, title, ...props }
         touch
         extras={
           <>
-            {layout === 'outer-p' ? <CompositionLabel title={title} /> : null}
+            {outer ? <CompositionLabel title={title} /> : null}
             {layout === 'outer-p' ? (
               <span className={'apd-note'} aria-hidden="true">
                 open the cover to read more →

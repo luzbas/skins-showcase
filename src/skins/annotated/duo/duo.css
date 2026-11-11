@@ -9,12 +9,6 @@
   .annotated-duo {
     --w: 890;
     --pt: calc(100cqi / var(--w));
-    --apd-cloth: #3f5a4a;
-    --apd-spine: #7a2f2a;
-    --apd-card: #f4eedd;
-    --apd-stamp-red: #b6584e;
-    --apd-stamp-blue: #3a5a9a;
-    --apd-stamp-green: #2f6b4a;
 
     position: relative;
     width: 100%;
@@ -281,7 +275,7 @@
 
   /* ---------- Open and on the table, inverted: a black page with light ink ----------
      Every pose with the inner screen (open sideways, open upright, propped up, and their fullscreen) uses the dark
-     page; only the closed phone keeps its covers. The tokens flip, so the title, sentence, timeline,
+     page; only the closed phone keeps its notebook cover. The tokens flip, so the title, sentence, timeline,
      footnotes and the popups all follow. The highlighter words keep their colours and dark ink. */
   :is(.annotated-duo[data-duo='split'], .annotated-duo[data-duo='inner-landscape'], .annotated-duo[data-duo='inner-portrait']) {
     --ap-paper: #141311;
@@ -356,22 +350,31 @@
     background-image: linear-gradient(to right, #000 0, var(--ap-paper) calc(var(--pt) * 22));
   }
 
-  /* ================= Closed: upright a composition notebook, sideways a library book ================= */
+  /* ================= Closed: a composition notebook ================= */
+  /* Both closed poses are the same notebook: a marbled cover with the film and chapter written on its label, the
+     timeline on a cream card, and the rail as the pages' edges showing past the cover, the controls as coloured index
+     tabs. Upright, the black cloth binding runs down the leading edge and the film is taped on as a snapshot; sideways,
+     the binding is along the hinge at the bottom and the film runs edge to edge. */
+  :is(.annotated-duo[data-duo='outer-p'], .annotated-duo[data-duo='outer-l']) {
+    --apd-cover-paper: #fbf8f1;
+    --apd-cover-ink: #1e1b16;
+    --apd-cover-rule: #9fb6c9;
+  }
+
   :is(.annotated-duo[data-duo='outer-p'], .annotated-duo[data-duo='outer-l']) .ap-stage[data-layout='spread'] {
     display: block;
-    background-color: var(--apd-cloth);
+    background-color: #151412;
     background-image:
-      linear-gradient(to right, rgb(0 0 0 / 0.32), transparent calc(var(--pt) * 22)),
-      repeating-linear-gradient(0deg, rgb(255 255 255 / 0.03) 0 1px, transparent 1px 3px),
-      repeating-linear-gradient(90deg, rgb(0 0 0 / 0.07) 0 1px, transparent 1px 3px);
-    color: #efe6cf;
+      linear-gradient(to right, #1c1b19 0 calc(var(--pt) * 30), rgb(255 255 255 / 0.06) calc(var(--pt) * 30) calc(var(--pt) * 30 + 3px), transparent 0),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Crect width='220' height='220' fill='%23151412'/%3E%3Cpath d='M106 123 L105 129 L99 132 L91 126 L93 121 L99 116 L102 118Z' fill='%23d9d3c7'/%3E%3Cpath d='M135 172 L134 173 L131 173 L130 172 L129 170 L131 169 L134 169Z' fill='%23efeae0'/%3E%3Cpath d='M49 204 L48 205 L47 205 L46 205 L46 203 L46 203 L48 203Z' fill='%23f6f2ea'/%3E%3Cpath d='M28 93 L26 94 L25 94 L23 93 L24 92 L25 90 L27 91Z' fill='%23f6f2ea'/%3E%3Cpath d='M37 130 L33 135 L27 137 L21 131 L23 124 L26 122 L32 122Z' fill='%23f6f2ea'/%3E%3Cpath d='M72 38 L69 43 L63 44 L58 42 L59 37 L62 33 L70 34Z' fill='%23d9d3c7'/%3E%3Cpath d='M135 203 L132 207 L130 208 L125 205 L125 202 L129 198 L133 200Z' fill='%23efeae0'/%3E%3Cpath d='M195 126 L194 129 L190 131 L186 129 L186 125 L189 121 L192 122Z' fill='%23f6f2ea'/%3E%3Cpath d='M59 3 L58 5 L55 4 L54 3 L54 1 L56 1 L58 1Z' fill='%23efeae0'/%3E%3Cpath d='M212 61 L210 63 L208 63 L207 62 L207 60 L209 59 L211 60Z' fill='%23ffffff'/%3E%3Cpath d='M55 31 L54 33 L52 32 L50 32 L50 30 L51 29 L53 29Z' fill='%23d9d3c7'/%3E%3Cpath d='M26 205 L23 210 L18 211 L14 209 L15 203 L18 202 L22 200Z' fill='%23ffffff'/%3E%3Cpath d='M59 158 L59 159 L57 159 L56 159 L56 157 L57 156 L59 157Z' fill='%23efeae0'/%3E%3Cpath d='M172 97 L169 101 L165 101 L162 98 L163 95 L165 94 L170 93Z' fill='%23f6f2ea'/%3E%3Cpath d='M122 218 L121 219 L119 219 L118 218 L118 216 L120 216 L120 217Z' fill='%23d9d3c7'/%3E%3Cpath d='M8 63 L6 66 L1 66 L-1 65 L-3 60 L1 58 L6 59Z' fill='%23ffffff'/%3E%3Cpath d='M228 63 L226 66 L221 66 L219 65 L217 60 L221 58 L226 59Z' fill='%23ffffff'/%3E%3Cpath d='M202 69 L201 72 L198 72 L196 71 L196 68 L197 66 L200 67Z' fill='%23ffffff'/%3E%3Cpath d='M113 151 L113 152 L109 154 L108 152 L109 150 L110 148 L112 149Z' fill='%23ffffff'/%3E%3Cpath d='M9 154 L8 160 L2 162 L-4 156 L-3 152 L0 149 L7 149Z' fill='%23d9d3c7'/%3E%3Cpath d='M229 154 L228 160 L222 162 L216 156 L217 152 L220 149 L227 149Z' fill='%23d9d3c7'/%3E%3Cpath d='M182 89 L181 92 L178 92 L176 91 L177 88 L178 86 L181 86Z' fill='%23d9d3c7'/%3E%3Cpath d='M157 168 L157 171 L154 172 L151 170 L150 167 L153 164 L157 166Z' fill='%23d9d3c7'/%3E%3Cpath d='M92 214 L91 217 L82 219 L80 216 L80 211 L83 207 L90 207Z' fill='%23efeae0'/%3E%3Cpath d='M131 159 L130 161 L127 161 L126 160 L126 159 L127 157 L130 158Z' fill='%23f6f2ea'/%3E%3Cpath d='M139 141 L136 144 L130 146 L127 142 L127 138 L131 137 L136 135Z' fill='%23efeae0'/%3E%3Cpath d='M141 2 L140 3 L138 5 L136 3 L136 1 L138 -1 L140 0Z' fill='%23ffffff'/%3E%3Cpath d='M141 222 L140 223 L138 225 L136 223 L136 221 L138 219 L140 220Z' fill='%23ffffff'/%3E%3Cpath d='M88 34 L87 35 L85 36 L83 34 L83 32 L85 30 L87 31Z' fill='%23ffffff'/%3E%3Cpath d='M65 31 L64 34 L62 35 L59 33 L60 30 L62 28 L64 29Z' fill='%23ffffff'/%3E%3Cpath d='M182 118 L180 125 L174 126 L169 121 L169 116 L173 113 L178 112Z' fill='%23efeae0'/%3E%3Cpath d='M167 143 L166 145 L164 145 L161 144 L161 142 L164 141 L166 140Z' fill='%23efeae0'/%3E%3Cpath d='M121 157 L118 162 L114 163 L110 159 L108 153 L114 152 L119 151Z' fill='%23ffffff'/%3E%3Cpath d='M28 41 L26 43 L23 43 L21 42 L21 39 L23 38 L26 39Z' fill='%23d9d3c7'/%3E%3Cpath d='M181 85 L179 90 L176 90 L172 86 L171 83 L176 80 L180 82Z' fill='%23d9d3c7'/%3E%3Cpath d='M8 180 L5 184 L-1 185 L-6 184 L-5 178 L-1 175 L4 174Z' fill='%23ffffff'/%3E%3Cpath d='M228 180 L225 184 L219 185 L214 184 L215 178 L219 175 L224 174Z' fill='%23ffffff'/%3E%3Cpath d='M72 17 L71 19 L68 20 L66 18 L65 15 L68 13 L71 15Z' fill='%23f6f2ea'/%3E%3Cpath d='M209 165 L209 167 L206 168 L204 166 L204 164 L206 162 L208 163Z' fill='%23efeae0'/%3E%3Cpath d='M39 27 L37 31 L33 30 L31 29 L30 26 L33 24 L37 25Z' fill='%23f6f2ea'/%3E%3Cpath d='M48 73 L48 75 L44 76 L42 74 L42 72 L44 71 L47 71Z' fill='%23ffffff'/%3E%3Cpath d='M23 191 L22 195 L20 194 L17 193 L17 191 L20 189 L22 190Z' fill='%23efeae0'/%3E%3Cpath d='M110 90 L104 95 L99 96 L91 91 L92 85 L97 82 L106 84Z' fill='%23d9d3c7'/%3E%3Cpath d='M91 109 L90 111 L88 111 L87 110 L87 108 L88 108 L90 108Z' fill='%23f6f2ea'/%3E%3Cpath d='M134 166 L134 168 L130 169 L128 167 L128 164 L131 162 L133 163Z' fill='%23f6f2ea'/%3E%3Cpath d='M126 199 L126 200 L124 201 L123 199 L123 198 L124 197 L126 197Z' fill='%23d9d3c7'/%3E%3Cpath d='M50 188 L47 195 L44 193 L38 191 L37 187 L44 184 L50 184Z' fill='%23f6f2ea'/%3E%3Cpath d='M99 38 L97 41 L91 45 L85 40 L85 35 L90 31 L95 32Z' fill='%23efeae0'/%3E%3Cpath d='M5 130 L6 131 L1 133 L-2 131 L-2 128 L0 125 L4 126Z' fill='%23efeae0'/%3E%3Cpath d='M225 130 L226 131 L221 133 L218 131 L218 128 L220 125 L224 126Z' fill='%23efeae0'/%3E%3Cpath d='M122 113 L117 118 L112 117 L106 115 L107 108 L111 103 L117 106Z' fill='%23d9d3c7'/%3E%3Cpath d='M76 134 L74 136 L71 137 L67 135 L67 133 L71 131 L75 131Z' fill='%23ffffff'/%3E%3Cpath d='M61 110 L61 112 L53 116 L50 112 L47 108 L54 104 L58 105Z' fill='%23efeae0'/%3E%3Cpath d='M157 157 L153 161 L147 164 L144 160 L143 156 L147 154 L154 152Z' fill='%23d9d3c7'/%3E%3Cpath d='M87 172 L85 174 L83 174 L81 173 L82 171 L83 169 L86 170Z' fill='%23d9d3c7'/%3E%3Cpath d='M62 80 L61 81 L59 82 L56 80 L56 79 L59 77 L61 78Z' fill='%23f6f2ea'/%3E%3Cpath d='M124 30 L123 33 L119 35 L115 32 L114 27 L119 24 L124 25Z' fill='%23efeae0'/%3E%3Cpath d='M207 47 L206 51 L201 52 L196 49 L196 46 L202 43 L205 42Z' fill='%23d9d3c7'/%3E%3Cpath d='M113 57 L111 61 L104 61 L99 61 L97 55 L103 51 L109 50Z' fill='%23ffffff'/%3E%3Cpath d='M10 156 L8 157 L6 158 L4 157 L4 155 L7 152 L9 154Z' fill='%23f6f2ea'/%3E%3Cpath d='M10 120 L6 127 L-1 129 L-8 122 L-6 116 L-2 114 L5 114Z' fill='%23f6f2ea'/%3E%3Cpath d='M230 120 L226 127 L219 129 L212 122 L214 116 L218 114 L225 114Z' fill='%23f6f2ea'/%3E%3Cpath d='M56 55 L54 57 L51 57 L49 55 L50 53 L52 52 L54 53Z' fill='%23ffffff'/%3E%3Cpath d='M43 189 L43 190 L40 190 L37 190 L37 187 L40 186 L43 186Z' fill='%23d9d3c7'/%3E%3Cpath d='M13 157 L12 158 L10 159 L9 158 L9 156 L11 155 L12 156Z' fill='%23d9d3c7'/%3E%3Cpath d='M103 183 L100 187 L97 188 L94 185 L91 182 L96 179 L100 178Z' fill='%23d9d3c7'/%3E%3Cpath d='M0 90 L-0 91 L-2 92 L-3 90 L-3 89 L-2 88 L-1 89Z' fill='%23f6f2ea'/%3E%3Cpath d='M220 90 L220 91 L218 92 L217 90 L217 89 L218 88 L219 89Z' fill='%23f6f2ea'/%3E%3Cpath d='M5 46 L3 48 L2 48 L0 47 L1 45 L2 44 L4 45Z' fill='%23ffffff'/%3E%3Cpath d='M141 99 L139 100 L138 101 L136 100 L136 98 L137 97 L140 98Z' fill='%23d9d3c7'/%3E%3Cpath d='M72 166 L72 168 L70 168 L69 167 L69 165 L70 164 L72 165Z' fill='%23f6f2ea'/%3E%3Cpath d='M113 125 L112 126 L111 126 L110 125 L110 124 L111 124 L112 124Z' fill='%23f6f2ea'/%3E%3Cpath d='M5 89 L2 95 L-3 94 L-9 93 L-9 85 L-3 81 L2 80Z' fill='%23d9d3c7'/%3E%3Cpath d='M225 89 L222 95 L217 94 L211 93 L211 85 L217 81 L222 80Z' fill='%23d9d3c7'/%3E%3Cpath d='M26 123 L21 127 L14 131 L10 126 L10 118 L16 114 L20 116Z' fill='%23efeae0'/%3E%3Cpath d='M3 47 L-0 49 L-4 51 L-7 47 L-6 44 L-3 41 L1 42Z' fill='%23efeae0'/%3E%3Cpath d='M223 47 L220 49 L216 51 L213 47 L214 44 L217 41 L221 42Z' fill='%23efeae0'/%3E%3Cpath d='M4 153 L2 156 L-2 157 L-6 155 L-6 150 L-3 148 L3 149Z' fill='%23f6f2ea'/%3E%3Cpath d='M224 153 L222 156 L218 157 L214 155 L214 150 L217 148 L223 149Z' fill='%23f6f2ea'/%3E%3Cpath d='M88 164 L87 166 L85 168 L82 165 L82 161 L84 161 L88 161Z' fill='%23d9d3c7'/%3E%3Cpath d='M21 80 L21 82 L18 81 L18 80 L17 79 L19 78 L20 79Z' fill='%23f6f2ea'/%3E%3Cpath d='M148 174 L146 176 L143 177 L142 175 L142 173 L144 172 L146 171Z' fill='%23efeae0'/%3E%3Cpath d='M83 118 L81 121 L75 122 L71 120 L73 117 L76 112 L82 114Z' fill='%23d9d3c7'/%3E%3Cpath d='M218 116 L215 119 L213 119 L209 117 L209 114 L213 112 L215 112Z' fill='%23f6f2ea'/%3E%3Cpath d='M80 108 L76 112 L70 114 L66 109 L66 106 L71 102 L76 102Z' fill='%23efeae0'/%3E%3Cpath d='M160 7 L158 9 L156 9 L154 9 L155 6 L157 4 L158 5Z' fill='%23ffffff'/%3E%3Cpath d='M133 178 L132 180 L129 182 L126 180 L127 177 L128 174 L132 174Z' fill='%23d9d3c7'/%3E%3Cpath d='M132 1 L131 6 L125 7 L122 3 L121 -0 L125 -4 L132 -2Z' fill='%23efeae0'/%3E%3Cpath d='M132 221 L131 226 L125 227 L122 223 L121 220 L125 216 L132 218Z' fill='%23efeae0'/%3E%3Cpath d='M206 46 L205 49 L203 50 L200 48 L199 45 L203 44 L206 44Z' fill='%23f6f2ea'/%3E%3Cpath d='M134 115 L132 117 L129 118 L127 116 L127 113 L129 112 L132 112Z' fill='%23f6f2ea'/%3E%3Cpath d='M88 26 L88 28 L84 28 L82 27 L83 24 L84 24 L87 24Z' fill='%23ffffff'/%3E%3Cpath d='M159 80 L155 85 L149 86 L145 83 L144 77 L149 72 L158 74Z' fill='%23d9d3c7'/%3E%3Cpath d='M122 145 L122 148 L115 149 L114 148 L114 142 L116 142 L121 142Z' fill='%23efeae0'/%3E%3Cpath d='M47 80 L45 83 L43 83 L40 82 L40 80 L43 78 L45 79Z' fill='%23f6f2ea'/%3E%3Cpath d='M10 207 L10 209 L6 211 L3 209 L3 206 L6 204 L10 205Z' fill='%23ffffff'/%3E%3Cpath d='M193 210 L192 212 L191 212 L190 211 L189 210 L191 209 L192 209Z' fill='%23ffffff'/%3E%3Cpath d='M103 51 L102 54 L99 54 L97 52 L97 50 L99 49 L102 49Z' fill='%23d9d3c7'/%3E%3Cpath d='M104 10 L102 13 L95 15 L91 11 L91 8 L95 5 L100 5Z' fill='%23d9d3c7'/%3E%3Cpath d='M18 36 L19 39 L13 39 L11 37 L11 33 L15 32 L17 33Z' fill='%23ffffff'/%3E%3Cpath d='M73 128 L73 131 L70 130 L68 129 L69 126 L69 126 L72 126Z' fill='%23f6f2ea'/%3E%3Cpath d='M12 32 L11 36 L8 37 L5 34 L5 31 L7 29 L12 30Z' fill='%23f6f2ea'/%3E%3Cpath d='M57 164 L57 166 L55 166 L52 164 L53 162 L55 161 L57 161Z' fill='%23ffffff'/%3E%3Cpath d='M142 139 L142 141 L140 141 L139 140 L139 139 L140 138 L142 138Z' fill='%23f6f2ea'/%3E%3Cpath d='M181 56 L178 59 L173 62 L169 59 L170 53 L174 50 L180 53Z' fill='%23f6f2ea'/%3E%3Cpath d='M71 54 L70 59 L64 58 L62 56 L61 50 L66 49 L71 51Z' fill='%23f6f2ea'/%3E%3Cpath d='M175 172 L172 177 L167 177 L164 176 L163 171 L167 167 L173 169Z' fill='%23efeae0'/%3E%3Cpath d='M206 65 L203 68 L200 68 L196 66 L196 62 L200 60 L203 59Z' fill='%23f6f2ea'/%3E%3Cpath d='M57 204 L52 207 L46 209 L42 205 L42 200 L46 197 L53 197Z' fill='%23ffffff'/%3E%3Cpath d='M61 175 L60 177 L59 177 L57 176 L57 174 L59 173 L60 174Z' fill='%23d9d3c7'/%3E%3Cpath d='M57 125 L56 127 L53 128 L51 127 L52 124 L54 123 L56 123Z' fill='%23f6f2ea'/%3E%3Cpath d='M49 146 L47 148 L45 149 L43 147 L43 145 L45 143 L47 144Z' fill='%23f6f2ea'/%3E%3Cpath d='M51 66 L49 70 L46 69 L41 67 L41 64 L45 61 L51 62Z' fill='%23ffffff'/%3E%3Cpath d='M167 127 L166 129 L164 129 L162 129 L162 126 L164 124 L166 126Z' fill='%23efeae0'/%3E%3Cpath d='M106 117 L104 119 L100 119 L98 119 L98 115 L101 112 L104 114Z' fill='%23efeae0'/%3E%3Cpath d='M203 140 L202 142 L200 142 L199 141 L198 139 L200 138 L201 139Z' fill='%23ffffff'/%3E%3Cpath d='M36 213 L35 215 L33 214 L30 213 L30 210 L32 209 L36 211Z' fill='%23ffffff'/%3E%3Cpath d='M14 78 L12 80 L10 81 L7 80 L7 76 L9 75 L12 75Z' fill='%23ffffff'/%3E%3Cpath d='M40 36 L39 37 L37 37 L36 36 L36 35 L38 34 L39 34Z' fill='%23f6f2ea'/%3E%3Cpath d='M72 42 L70 47 L62 50 L55 44 L54 40 L61 35 L69 35Z' fill='%23efeae0'/%3E%3Cpath d='M8 33 L6 35 L1 37 L-1 34 L-2 30 L2 30 L5 29Z' fill='%23efeae0'/%3E%3Cpath d='M228 33 L226 35 L221 37 L219 34 L218 30 L222 30 L225 29Z' fill='%23efeae0'/%3E%3Cpath d='M56 68 L56 70 L53 71 L51 70 L50 67 L53 65 L55 66Z' fill='%23efeae0'/%3E%3Cpath d='M210 10 L208 12 L205 14 L202 11 L201 8 L205 5 L208 5Z' fill='%23ffffff'/%3E%3Cpath d='M113 12 L111 15 L108 17 L105 15 L105 11 L108 9 L111 11Z' fill='%23f6f2ea'/%3E%3Cpath d='M108 185 L106 188 L101 189 L99 188 L98 185 L102 183 L106 183Z' fill='%23efeae0'/%3E%3Cpath d='M145 37 L143 40 L140 40 L137 38 L138 36 L140 34 L143 34Z' fill='%23efeae0'/%3E%3Cpath d='M202 9 L201 11 L200 12 L197 10 L197 8 L199 7 L201 7Z' fill='%23ffffff'/%3E%3Cpath d='M215 31 L213 35 L210 34 L208 33 L208 30 L210 28 L214 30Z' fill='%23efeae0'/%3E%3Cpath d='M144 141 L141 144 L137 146 L134 143 L135 139 L137 138 L142 139Z' fill='%23efeae0'/%3E%3Cpath d='M99 186 L96 190 L91 189 L88 188 L89 185 L91 183 L96 183Z' fill='%23ffffff'/%3E%3Cpath d='M209 83 L206 85 L201 87 L196 84 L197 80 L202 76 L206 76Z' fill='%23ffffff'/%3E%3C/svg%3E");
+    background-size: auto, calc(var(--pt) * 220) calc(var(--pt) * 220);
+    color: var(--apd-cover-paper);
   }
 
   .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] {
     background-image:
-      linear-gradient(to top, rgb(0 0 0 / 0.32), transparent calc(var(--pt) * 20)),
-      repeating-linear-gradient(0deg, rgb(255 255 255 / 0.03) 0 1px, transparent 1px 3px),
-      repeating-linear-gradient(90deg, rgb(0 0 0 / 0.07) 0 1px, transparent 1px 3px);
+      linear-gradient(to top, rgb(0 0 0 / 0.35), transparent calc(var(--pt) * 20)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Crect width='220' height='220' fill='%23151412'/%3E%3Cpath d='M106 123 L105 129 L99 132 L91 126 L93 121 L99 116 L102 118Z' fill='%23d9d3c7'/%3E%3Cpath d='M135 172 L134 173 L131 173 L130 172 L129 170 L131 169 L134 169Z' fill='%23efeae0'/%3E%3Cpath d='M49 204 L48 205 L47 205 L46 205 L46 203 L46 203 L48 203Z' fill='%23f6f2ea'/%3E%3Cpath d='M28 93 L26 94 L25 94 L23 93 L24 92 L25 90 L27 91Z' fill='%23f6f2ea'/%3E%3Cpath d='M37 130 L33 135 L27 137 L21 131 L23 124 L26 122 L32 122Z' fill='%23f6f2ea'/%3E%3Cpath d='M72 38 L69 43 L63 44 L58 42 L59 37 L62 33 L70 34Z' fill='%23d9d3c7'/%3E%3Cpath d='M135 203 L132 207 L130 208 L125 205 L125 202 L129 198 L133 200Z' fill='%23efeae0'/%3E%3Cpath d='M195 126 L194 129 L190 131 L186 129 L186 125 L189 121 L192 122Z' fill='%23f6f2ea'/%3E%3Cpath d='M59 3 L58 5 L55 4 L54 3 L54 1 L56 1 L58 1Z' fill='%23efeae0'/%3E%3Cpath d='M212 61 L210 63 L208 63 L207 62 L207 60 L209 59 L211 60Z' fill='%23ffffff'/%3E%3Cpath d='M55 31 L54 33 L52 32 L50 32 L50 30 L51 29 L53 29Z' fill='%23d9d3c7'/%3E%3Cpath d='M26 205 L23 210 L18 211 L14 209 L15 203 L18 202 L22 200Z' fill='%23ffffff'/%3E%3Cpath d='M59 158 L59 159 L57 159 L56 159 L56 157 L57 156 L59 157Z' fill='%23efeae0'/%3E%3Cpath d='M172 97 L169 101 L165 101 L162 98 L163 95 L165 94 L170 93Z' fill='%23f6f2ea'/%3E%3Cpath d='M122 218 L121 219 L119 219 L118 218 L118 216 L120 216 L120 217Z' fill='%23d9d3c7'/%3E%3Cpath d='M8 63 L6 66 L1 66 L-1 65 L-3 60 L1 58 L6 59Z' fill='%23ffffff'/%3E%3Cpath d='M228 63 L226 66 L221 66 L219 65 L217 60 L221 58 L226 59Z' fill='%23ffffff'/%3E%3Cpath d='M202 69 L201 72 L198 72 L196 71 L196 68 L197 66 L200 67Z' fill='%23ffffff'/%3E%3Cpath d='M113 151 L113 152 L109 154 L108 152 L109 150 L110 148 L112 149Z' fill='%23ffffff'/%3E%3Cpath d='M9 154 L8 160 L2 162 L-4 156 L-3 152 L0 149 L7 149Z' fill='%23d9d3c7'/%3E%3Cpath d='M229 154 L228 160 L222 162 L216 156 L217 152 L220 149 L227 149Z' fill='%23d9d3c7'/%3E%3Cpath d='M182 89 L181 92 L178 92 L176 91 L177 88 L178 86 L181 86Z' fill='%23d9d3c7'/%3E%3Cpath d='M157 168 L157 171 L154 172 L151 170 L150 167 L153 164 L157 166Z' fill='%23d9d3c7'/%3E%3Cpath d='M92 214 L91 217 L82 219 L80 216 L80 211 L83 207 L90 207Z' fill='%23efeae0'/%3E%3Cpath d='M131 159 L130 161 L127 161 L126 160 L126 159 L127 157 L130 158Z' fill='%23f6f2ea'/%3E%3Cpath d='M139 141 L136 144 L130 146 L127 142 L127 138 L131 137 L136 135Z' fill='%23efeae0'/%3E%3Cpath d='M141 2 L140 3 L138 5 L136 3 L136 1 L138 -1 L140 0Z' fill='%23ffffff'/%3E%3Cpath d='M141 222 L140 223 L138 225 L136 223 L136 221 L138 219 L140 220Z' fill='%23ffffff'/%3E%3Cpath d='M88 34 L87 35 L85 36 L83 34 L83 32 L85 30 L87 31Z' fill='%23ffffff'/%3E%3Cpath d='M65 31 L64 34 L62 35 L59 33 L60 30 L62 28 L64 29Z' fill='%23ffffff'/%3E%3Cpath d='M182 118 L180 125 L174 126 L169 121 L169 116 L173 113 L178 112Z' fill='%23efeae0'/%3E%3Cpath d='M167 143 L166 145 L164 145 L161 144 L161 142 L164 141 L166 140Z' fill='%23efeae0'/%3E%3Cpath d='M121 157 L118 162 L114 163 L110 159 L108 153 L114 152 L119 151Z' fill='%23ffffff'/%3E%3Cpath d='M28 41 L26 43 L23 43 L21 42 L21 39 L23 38 L26 39Z' fill='%23d9d3c7'/%3E%3Cpath d='M181 85 L179 90 L176 90 L172 86 L171 83 L176 80 L180 82Z' fill='%23d9d3c7'/%3E%3Cpath d='M8 180 L5 184 L-1 185 L-6 184 L-5 178 L-1 175 L4 174Z' fill='%23ffffff'/%3E%3Cpath d='M228 180 L225 184 L219 185 L214 184 L215 178 L219 175 L224 174Z' fill='%23ffffff'/%3E%3Cpath d='M72 17 L71 19 L68 20 L66 18 L65 15 L68 13 L71 15Z' fill='%23f6f2ea'/%3E%3Cpath d='M209 165 L209 167 L206 168 L204 166 L204 164 L206 162 L208 163Z' fill='%23efeae0'/%3E%3Cpath d='M39 27 L37 31 L33 30 L31 29 L30 26 L33 24 L37 25Z' fill='%23f6f2ea'/%3E%3Cpath d='M48 73 L48 75 L44 76 L42 74 L42 72 L44 71 L47 71Z' fill='%23ffffff'/%3E%3Cpath d='M23 191 L22 195 L20 194 L17 193 L17 191 L20 189 L22 190Z' fill='%23efeae0'/%3E%3Cpath d='M110 90 L104 95 L99 96 L91 91 L92 85 L97 82 L106 84Z' fill='%23d9d3c7'/%3E%3Cpath d='M91 109 L90 111 L88 111 L87 110 L87 108 L88 108 L90 108Z' fill='%23f6f2ea'/%3E%3Cpath d='M134 166 L134 168 L130 169 L128 167 L128 164 L131 162 L133 163Z' fill='%23f6f2ea'/%3E%3Cpath d='M126 199 L126 200 L124 201 L123 199 L123 198 L124 197 L126 197Z' fill='%23d9d3c7'/%3E%3Cpath d='M50 188 L47 195 L44 193 L38 191 L37 187 L44 184 L50 184Z' fill='%23f6f2ea'/%3E%3Cpath d='M99 38 L97 41 L91 45 L85 40 L85 35 L90 31 L95 32Z' fill='%23efeae0'/%3E%3Cpath d='M5 130 L6 131 L1 133 L-2 131 L-2 128 L0 125 L4 126Z' fill='%23efeae0'/%3E%3Cpath d='M225 130 L226 131 L221 133 L218 131 L218 128 L220 125 L224 126Z' fill='%23efeae0'/%3E%3Cpath d='M122 113 L117 118 L112 117 L106 115 L107 108 L111 103 L117 106Z' fill='%23d9d3c7'/%3E%3Cpath d='M76 134 L74 136 L71 137 L67 135 L67 133 L71 131 L75 131Z' fill='%23ffffff'/%3E%3Cpath d='M61 110 L61 112 L53 116 L50 112 L47 108 L54 104 L58 105Z' fill='%23efeae0'/%3E%3Cpath d='M157 157 L153 161 L147 164 L144 160 L143 156 L147 154 L154 152Z' fill='%23d9d3c7'/%3E%3Cpath d='M87 172 L85 174 L83 174 L81 173 L82 171 L83 169 L86 170Z' fill='%23d9d3c7'/%3E%3Cpath d='M62 80 L61 81 L59 82 L56 80 L56 79 L59 77 L61 78Z' fill='%23f6f2ea'/%3E%3Cpath d='M124 30 L123 33 L119 35 L115 32 L114 27 L119 24 L124 25Z' fill='%23efeae0'/%3E%3Cpath d='M207 47 L206 51 L201 52 L196 49 L196 46 L202 43 L205 42Z' fill='%23d9d3c7'/%3E%3Cpath d='M113 57 L111 61 L104 61 L99 61 L97 55 L103 51 L109 50Z' fill='%23ffffff'/%3E%3Cpath d='M10 156 L8 157 L6 158 L4 157 L4 155 L7 152 L9 154Z' fill='%23f6f2ea'/%3E%3Cpath d='M10 120 L6 127 L-1 129 L-8 122 L-6 116 L-2 114 L5 114Z' fill='%23f6f2ea'/%3E%3Cpath d='M230 120 L226 127 L219 129 L212 122 L214 116 L218 114 L225 114Z' fill='%23f6f2ea'/%3E%3Cpath d='M56 55 L54 57 L51 57 L49 55 L50 53 L52 52 L54 53Z' fill='%23ffffff'/%3E%3Cpath d='M43 189 L43 190 L40 190 L37 190 L37 187 L40 186 L43 186Z' fill='%23d9d3c7'/%3E%3Cpath d='M13 157 L12 158 L10 159 L9 158 L9 156 L11 155 L12 156Z' fill='%23d9d3c7'/%3E%3Cpath d='M103 183 L100 187 L97 188 L94 185 L91 182 L96 179 L100 178Z' fill='%23d9d3c7'/%3E%3Cpath d='M0 90 L-0 91 L-2 92 L-3 90 L-3 89 L-2 88 L-1 89Z' fill='%23f6f2ea'/%3E%3Cpath d='M220 90 L220 91 L218 92 L217 90 L217 89 L218 88 L219 89Z' fill='%23f6f2ea'/%3E%3Cpath d='M5 46 L3 48 L2 48 L0 47 L1 45 L2 44 L4 45Z' fill='%23ffffff'/%3E%3Cpath d='M141 99 L139 100 L138 101 L136 100 L136 98 L137 97 L140 98Z' fill='%23d9d3c7'/%3E%3Cpath d='M72 166 L72 168 L70 168 L69 167 L69 165 L70 164 L72 165Z' fill='%23f6f2ea'/%3E%3Cpath d='M113 125 L112 126 L111 126 L110 125 L110 124 L111 124 L112 124Z' fill='%23f6f2ea'/%3E%3Cpath d='M5 89 L2 95 L-3 94 L-9 93 L-9 85 L-3 81 L2 80Z' fill='%23d9d3c7'/%3E%3Cpath d='M225 89 L222 95 L217 94 L211 93 L211 85 L217 81 L222 80Z' fill='%23d9d3c7'/%3E%3Cpath d='M26 123 L21 127 L14 131 L10 126 L10 118 L16 114 L20 116Z' fill='%23efeae0'/%3E%3Cpath d='M3 47 L-0 49 L-4 51 L-7 47 L-6 44 L-3 41 L1 42Z' fill='%23efeae0'/%3E%3Cpath d='M223 47 L220 49 L216 51 L213 47 L214 44 L217 41 L221 42Z' fill='%23efeae0'/%3E%3Cpath d='M4 153 L2 156 L-2 157 L-6 155 L-6 150 L-3 148 L3 149Z' fill='%23f6f2ea'/%3E%3Cpath d='M224 153 L222 156 L218 157 L214 155 L214 150 L217 148 L223 149Z' fill='%23f6f2ea'/%3E%3Cpath d='M88 164 L87 166 L85 168 L82 165 L82 161 L84 161 L88 161Z' fill='%23d9d3c7'/%3E%3Cpath d='M21 80 L21 82 L18 81 L18 80 L17 79 L19 78 L20 79Z' fill='%23f6f2ea'/%3E%3Cpath d='M148 174 L146 176 L143 177 L142 175 L142 173 L144 172 L146 171Z' fill='%23efeae0'/%3E%3Cpath d='M83 118 L81 121 L75 122 L71 120 L73 117 L76 112 L82 114Z' fill='%23d9d3c7'/%3E%3Cpath d='M218 116 L215 119 L213 119 L209 117 L209 114 L213 112 L215 112Z' fill='%23f6f2ea'/%3E%3Cpath d='M80 108 L76 112 L70 114 L66 109 L66 106 L71 102 L76 102Z' fill='%23efeae0'/%3E%3Cpath d='M160 7 L158 9 L156 9 L154 9 L155 6 L157 4 L158 5Z' fill='%23ffffff'/%3E%3Cpath d='M133 178 L132 180 L129 182 L126 180 L127 177 L128 174 L132 174Z' fill='%23d9d3c7'/%3E%3Cpath d='M132 1 L131 6 L125 7 L122 3 L121 -0 L125 -4 L132 -2Z' fill='%23efeae0'/%3E%3Cpath d='M132 221 L131 226 L125 227 L122 223 L121 220 L125 216 L132 218Z' fill='%23efeae0'/%3E%3Cpath d='M206 46 L205 49 L203 50 L200 48 L199 45 L203 44 L206 44Z' fill='%23f6f2ea'/%3E%3Cpath d='M134 115 L132 117 L129 118 L127 116 L127 113 L129 112 L132 112Z' fill='%23f6f2ea'/%3E%3Cpath d='M88 26 L88 28 L84 28 L82 27 L83 24 L84 24 L87 24Z' fill='%23ffffff'/%3E%3Cpath d='M159 80 L155 85 L149 86 L145 83 L144 77 L149 72 L158 74Z' fill='%23d9d3c7'/%3E%3Cpath d='M122 145 L122 148 L115 149 L114 148 L114 142 L116 142 L121 142Z' fill='%23efeae0'/%3E%3Cpath d='M47 80 L45 83 L43 83 L40 82 L40 80 L43 78 L45 79Z' fill='%23f6f2ea'/%3E%3Cpath d='M10 207 L10 209 L6 211 L3 209 L3 206 L6 204 L10 205Z' fill='%23ffffff'/%3E%3Cpath d='M193 210 L192 212 L191 212 L190 211 L189 210 L191 209 L192 209Z' fill='%23ffffff'/%3E%3Cpath d='M103 51 L102 54 L99 54 L97 52 L97 50 L99 49 L102 49Z' fill='%23d9d3c7'/%3E%3Cpath d='M104 10 L102 13 L95 15 L91 11 L91 8 L95 5 L100 5Z' fill='%23d9d3c7'/%3E%3Cpath d='M18 36 L19 39 L13 39 L11 37 L11 33 L15 32 L17 33Z' fill='%23ffffff'/%3E%3Cpath d='M73 128 L73 131 L70 130 L68 129 L69 126 L69 126 L72 126Z' fill='%23f6f2ea'/%3E%3Cpath d='M12 32 L11 36 L8 37 L5 34 L5 31 L7 29 L12 30Z' fill='%23f6f2ea'/%3E%3Cpath d='M57 164 L57 166 L55 166 L52 164 L53 162 L55 161 L57 161Z' fill='%23ffffff'/%3E%3Cpath d='M142 139 L142 141 L140 141 L139 140 L139 139 L140 138 L142 138Z' fill='%23f6f2ea'/%3E%3Cpath d='M181 56 L178 59 L173 62 L169 59 L170 53 L174 50 L180 53Z' fill='%23f6f2ea'/%3E%3Cpath d='M71 54 L70 59 L64 58 L62 56 L61 50 L66 49 L71 51Z' fill='%23f6f2ea'/%3E%3Cpath d='M175 172 L172 177 L167 177 L164 176 L163 171 L167 167 L173 169Z' fill='%23efeae0'/%3E%3Cpath d='M206 65 L203 68 L200 68 L196 66 L196 62 L200 60 L203 59Z' fill='%23f6f2ea'/%3E%3Cpath d='M57 204 L52 207 L46 209 L42 205 L42 200 L46 197 L53 197Z' fill='%23ffffff'/%3E%3Cpath d='M61 175 L60 177 L59 177 L57 176 L57 174 L59 173 L60 174Z' fill='%23d9d3c7'/%3E%3Cpath d='M57 125 L56 127 L53 128 L51 127 L52 124 L54 123 L56 123Z' fill='%23f6f2ea'/%3E%3Cpath d='M49 146 L47 148 L45 149 L43 147 L43 145 L45 143 L47 144Z' fill='%23f6f2ea'/%3E%3Cpath d='M51 66 L49 70 L46 69 L41 67 L41 64 L45 61 L51 62Z' fill='%23ffffff'/%3E%3Cpath d='M167 127 L166 129 L164 129 L162 129 L162 126 L164 124 L166 126Z' fill='%23efeae0'/%3E%3Cpath d='M106 117 L104 119 L100 119 L98 119 L98 115 L101 112 L104 114Z' fill='%23efeae0'/%3E%3Cpath d='M203 140 L202 142 L200 142 L199 141 L198 139 L200 138 L201 139Z' fill='%23ffffff'/%3E%3Cpath d='M36 213 L35 215 L33 214 L30 213 L30 210 L32 209 L36 211Z' fill='%23ffffff'/%3E%3Cpath d='M14 78 L12 80 L10 81 L7 80 L7 76 L9 75 L12 75Z' fill='%23ffffff'/%3E%3Cpath d='M40 36 L39 37 L37 37 L36 36 L36 35 L38 34 L39 34Z' fill='%23f6f2ea'/%3E%3Cpath d='M72 42 L70 47 L62 50 L55 44 L54 40 L61 35 L69 35Z' fill='%23efeae0'/%3E%3Cpath d='M8 33 L6 35 L1 37 L-1 34 L-2 30 L2 30 L5 29Z' fill='%23efeae0'/%3E%3Cpath d='M228 33 L226 35 L221 37 L219 34 L218 30 L222 30 L225 29Z' fill='%23efeae0'/%3E%3Cpath d='M56 68 L56 70 L53 71 L51 70 L50 67 L53 65 L55 66Z' fill='%23efeae0'/%3E%3Cpath d='M210 10 L208 12 L205 14 L202 11 L201 8 L205 5 L208 5Z' fill='%23ffffff'/%3E%3Cpath d='M113 12 L111 15 L108 17 L105 15 L105 11 L108 9 L111 11Z' fill='%23f6f2ea'/%3E%3Cpath d='M108 185 L106 188 L101 189 L99 188 L98 185 L102 183 L106 183Z' fill='%23efeae0'/%3E%3Cpath d='M145 37 L143 40 L140 40 L137 38 L138 36 L140 34 L143 34Z' fill='%23efeae0'/%3E%3Cpath d='M202 9 L201 11 L200 12 L197 10 L197 8 L199 7 L201 7Z' fill='%23ffffff'/%3E%3Cpath d='M215 31 L213 35 L210 34 L208 33 L208 30 L210 28 L214 30Z' fill='%23efeae0'/%3E%3Cpath d='M144 141 L141 144 L137 146 L134 143 L135 139 L137 138 L142 139Z' fill='%23efeae0'/%3E%3Cpath d='M99 186 L96 190 L91 189 L88 188 L89 185 L91 183 L96 183Z' fill='%23ffffff'/%3E%3Cpath d='M209 83 L206 85 L201 87 L196 84 L197 80 L202 76 L206 76Z' fill='%23ffffff'/%3E%3C/svg%3E");
   }
 
   :is(.annotated-duo[data-duo='outer-p'], .annotated-duo[data-duo='outer-l']) .ap-stage[data-layout='spread'] .ap-page--left {
@@ -381,64 +384,38 @@
     box-shadow: none;
   }
 
-  :is(.annotated-duo[data-duo='outer-p'], .annotated-duo[data-duo='outer-l']) .ap-stage[data-layout='spread'] .ap-page--right,
-  :is(.annotated-duo[data-duo='outer-p'], .annotated-duo[data-duo='outer-l']) .ap-stage[data-layout='spread'] .ap-folio {
+  :is(.annotated-duo[data-duo='outer-p'], .annotated-duo[data-duo='outer-l']) .ap-stage[data-layout='spread'] :is(.ap-page--right, .ap-folio, .ap-head) {
     display: none;
   }
 
-  :is(.annotated-duo[data-duo='outer-p'], .annotated-duo[data-duo='outer-l']) .ap-stage[data-layout='spread'] .ap-head {
-    position: absolute;
-    z-index: 2;
+  :is(.annotated-duo[data-duo='outer-p'], .annotated-duo[data-duo='outer-l']) .ap-stage[data-layout='spread'] .ap-screen {
+    box-shadow: none;
   }
 
-  :is(.annotated-duo[data-duo='outer-p'], .annotated-duo[data-duo='outer-l']) .ap-stage[data-layout='spread'] :is(.ap-title, .ap-kicker) {
-    color: #efe6cf;
-  }
-
-  /* ---------- Outer, portrait: a composition notebook ----------
-     A marbled cover with a black cloth binding down the leading edge, the film and chapter written on the cover label,
-     the film taped on as a snapshot, the timeline on a card tucked under it. The rail is the page edges showing past
-     the cover, with the controls as coloured index tabs. */
-  .annotated-duo[data-duo='outer-p'] {
-    --apd-cover-paper: #fbf8f1;
-    --apd-cover-ink: #1e1b16;
-    --apd-cover-rule: #9fb6c9;
-  }
-
-  .annotated-duo[data-duo='outer-p'] .ap-stage[data-layout='spread'] {
-    background-color: #151412;
-    background-image:
-      linear-gradient(to right, #1c1b19 0 calc(var(--pt) * 30), rgb(255 255 255 / 0.06) calc(var(--pt) * 30) calc(var(--pt) * 30 + 3px), transparent 0),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Crect width='220' height='220' fill='%23151412'/%3E%3Cpath d='M106 123 L105 129 L99 132 L91 126 L93 121 L99 116 L102 118Z' fill='%23d9d3c7'/%3E%3Cpath d='M135 172 L134 173 L131 173 L130 172 L129 170 L131 169 L134 169Z' fill='%23efeae0'/%3E%3Cpath d='M49 204 L48 205 L47 205 L46 205 L46 203 L46 203 L48 203Z' fill='%23f6f2ea'/%3E%3Cpath d='M28 93 L26 94 L25 94 L23 93 L24 92 L25 90 L27 91Z' fill='%23f6f2ea'/%3E%3Cpath d='M37 130 L33 135 L27 137 L21 131 L23 124 L26 122 L32 122Z' fill='%23f6f2ea'/%3E%3Cpath d='M72 38 L69 43 L63 44 L58 42 L59 37 L62 33 L70 34Z' fill='%23d9d3c7'/%3E%3Cpath d='M135 203 L132 207 L130 208 L125 205 L125 202 L129 198 L133 200Z' fill='%23efeae0'/%3E%3Cpath d='M195 126 L194 129 L190 131 L186 129 L186 125 L189 121 L192 122Z' fill='%23f6f2ea'/%3E%3Cpath d='M59 3 L58 5 L55 4 L54 3 L54 1 L56 1 L58 1Z' fill='%23efeae0'/%3E%3Cpath d='M212 61 L210 63 L208 63 L207 62 L207 60 L209 59 L211 60Z' fill='%23ffffff'/%3E%3Cpath d='M55 31 L54 33 L52 32 L50 32 L50 30 L51 29 L53 29Z' fill='%23d9d3c7'/%3E%3Cpath d='M26 205 L23 210 L18 211 L14 209 L15 203 L18 202 L22 200Z' fill='%23ffffff'/%3E%3Cpath d='M59 158 L59 159 L57 159 L56 159 L56 157 L57 156 L59 157Z' fill='%23efeae0'/%3E%3Cpath d='M172 97 L169 101 L165 101 L162 98 L163 95 L165 94 L170 93Z' fill='%23f6f2ea'/%3E%3Cpath d='M122 218 L121 219 L119 219 L118 218 L118 216 L120 216 L120 217Z' fill='%23d9d3c7'/%3E%3Cpath d='M8 63 L6 66 L1 66 L-1 65 L-3 60 L1 58 L6 59Z' fill='%23ffffff'/%3E%3Cpath d='M228 63 L226 66 L221 66 L219 65 L217 60 L221 58 L226 59Z' fill='%23ffffff'/%3E%3Cpath d='M202 69 L201 72 L198 72 L196 71 L196 68 L197 66 L200 67Z' fill='%23ffffff'/%3E%3Cpath d='M113 151 L113 152 L109 154 L108 152 L109 150 L110 148 L112 149Z' fill='%23ffffff'/%3E%3Cpath d='M9 154 L8 160 L2 162 L-4 156 L-3 152 L0 149 L7 149Z' fill='%23d9d3c7'/%3E%3Cpath d='M229 154 L228 160 L222 162 L216 156 L217 152 L220 149 L227 149Z' fill='%23d9d3c7'/%3E%3Cpath d='M182 89 L181 92 L178 92 L176 91 L177 88 L178 86 L181 86Z' fill='%23d9d3c7'/%3E%3Cpath d='M157 168 L157 171 L154 172 L151 170 L150 167 L153 164 L157 166Z' fill='%23d9d3c7'/%3E%3Cpath d='M92 214 L91 217 L82 219 L80 216 L80 211 L83 207 L90 207Z' fill='%23efeae0'/%3E%3Cpath d='M131 159 L130 161 L127 161 L126 160 L126 159 L127 157 L130 158Z' fill='%23f6f2ea'/%3E%3Cpath d='M139 141 L136 144 L130 146 L127 142 L127 138 L131 137 L136 135Z' fill='%23efeae0'/%3E%3Cpath d='M141 2 L140 3 L138 5 L136 3 L136 1 L138 -1 L140 0Z' fill='%23ffffff'/%3E%3Cpath d='M141 222 L140 223 L138 225 L136 223 L136 221 L138 219 L140 220Z' fill='%23ffffff'/%3E%3Cpath d='M88 34 L87 35 L85 36 L83 34 L83 32 L85 30 L87 31Z' fill='%23ffffff'/%3E%3Cpath d='M65 31 L64 34 L62 35 L59 33 L60 30 L62 28 L64 29Z' fill='%23ffffff'/%3E%3Cpath d='M182 118 L180 125 L174 126 L169 121 L169 116 L173 113 L178 112Z' fill='%23efeae0'/%3E%3Cpath d='M167 143 L166 145 L164 145 L161 144 L161 142 L164 141 L166 140Z' fill='%23efeae0'/%3E%3Cpath d='M121 157 L118 162 L114 163 L110 159 L108 153 L114 152 L119 151Z' fill='%23ffffff'/%3E%3Cpath d='M28 41 L26 43 L23 43 L21 42 L21 39 L23 38 L26 39Z' fill='%23d9d3c7'/%3E%3Cpath d='M181 85 L179 90 L176 90 L172 86 L171 83 L176 80 L180 82Z' fill='%23d9d3c7'/%3E%3Cpath d='M8 180 L5 184 L-1 185 L-6 184 L-5 178 L-1 175 L4 174Z' fill='%23ffffff'/%3E%3Cpath d='M228 180 L225 184 L219 185 L214 184 L215 178 L219 175 L224 174Z' fill='%23ffffff'/%3E%3Cpath d='M72 17 L71 19 L68 20 L66 18 L65 15 L68 13 L71 15Z' fill='%23f6f2ea'/%3E%3Cpath d='M209 165 L209 167 L206 168 L204 166 L204 164 L206 162 L208 163Z' fill='%23efeae0'/%3E%3Cpath d='M39 27 L37 31 L33 30 L31 29 L30 26 L33 24 L37 25Z' fill='%23f6f2ea'/%3E%3Cpath d='M48 73 L48 75 L44 76 L42 74 L42 72 L44 71 L47 71Z' fill='%23ffffff'/%3E%3Cpath d='M23 191 L22 195 L20 194 L17 193 L17 191 L20 189 L22 190Z' fill='%23efeae0'/%3E%3Cpath d='M110 90 L104 95 L99 96 L91 91 L92 85 L97 82 L106 84Z' fill='%23d9d3c7'/%3E%3Cpath d='M91 109 L90 111 L88 111 L87 110 L87 108 L88 108 L90 108Z' fill='%23f6f2ea'/%3E%3Cpath d='M134 166 L134 168 L130 169 L128 167 L128 164 L131 162 L133 163Z' fill='%23f6f2ea'/%3E%3Cpath d='M126 199 L126 200 L124 201 L123 199 L123 198 L124 197 L126 197Z' fill='%23d9d3c7'/%3E%3Cpath d='M50 188 L47 195 L44 193 L38 191 L37 187 L44 184 L50 184Z' fill='%23f6f2ea'/%3E%3Cpath d='M99 38 L97 41 L91 45 L85 40 L85 35 L90 31 L95 32Z' fill='%23efeae0'/%3E%3Cpath d='M5 130 L6 131 L1 133 L-2 131 L-2 128 L0 125 L4 126Z' fill='%23efeae0'/%3E%3Cpath d='M225 130 L226 131 L221 133 L218 131 L218 128 L220 125 L224 126Z' fill='%23efeae0'/%3E%3Cpath d='M122 113 L117 118 L112 117 L106 115 L107 108 L111 103 L117 106Z' fill='%23d9d3c7'/%3E%3Cpath d='M76 134 L74 136 L71 137 L67 135 L67 133 L71 131 L75 131Z' fill='%23ffffff'/%3E%3Cpath d='M61 110 L61 112 L53 116 L50 112 L47 108 L54 104 L58 105Z' fill='%23efeae0'/%3E%3Cpath d='M157 157 L153 161 L147 164 L144 160 L143 156 L147 154 L154 152Z' fill='%23d9d3c7'/%3E%3Cpath d='M87 172 L85 174 L83 174 L81 173 L82 171 L83 169 L86 170Z' fill='%23d9d3c7'/%3E%3Cpath d='M62 80 L61 81 L59 82 L56 80 L56 79 L59 77 L61 78Z' fill='%23f6f2ea'/%3E%3Cpath d='M124 30 L123 33 L119 35 L115 32 L114 27 L119 24 L124 25Z' fill='%23efeae0'/%3E%3Cpath d='M207 47 L206 51 L201 52 L196 49 L196 46 L202 43 L205 42Z' fill='%23d9d3c7'/%3E%3Cpath d='M113 57 L111 61 L104 61 L99 61 L97 55 L103 51 L109 50Z' fill='%23ffffff'/%3E%3Cpath d='M10 156 L8 157 L6 158 L4 157 L4 155 L7 152 L9 154Z' fill='%23f6f2ea'/%3E%3Cpath d='M10 120 L6 127 L-1 129 L-8 122 L-6 116 L-2 114 L5 114Z' fill='%23f6f2ea'/%3E%3Cpath d='M230 120 L226 127 L219 129 L212 122 L214 116 L218 114 L225 114Z' fill='%23f6f2ea'/%3E%3Cpath d='M56 55 L54 57 L51 57 L49 55 L50 53 L52 52 L54 53Z' fill='%23ffffff'/%3E%3Cpath d='M43 189 L43 190 L40 190 L37 190 L37 187 L40 186 L43 186Z' fill='%23d9d3c7'/%3E%3Cpath d='M13 157 L12 158 L10 159 L9 158 L9 156 L11 155 L12 156Z' fill='%23d9d3c7'/%3E%3Cpath d='M103 183 L100 187 L97 188 L94 185 L91 182 L96 179 L100 178Z' fill='%23d9d3c7'/%3E%3Cpath d='M0 90 L-0 91 L-2 92 L-3 90 L-3 89 L-2 88 L-1 89Z' fill='%23f6f2ea'/%3E%3Cpath d='M220 90 L220 91 L218 92 L217 90 L217 89 L218 88 L219 89Z' fill='%23f6f2ea'/%3E%3Cpath d='M5 46 L3 48 L2 48 L0 47 L1 45 L2 44 L4 45Z' fill='%23ffffff'/%3E%3Cpath d='M141 99 L139 100 L138 101 L136 100 L136 98 L137 97 L140 98Z' fill='%23d9d3c7'/%3E%3Cpath d='M72 166 L72 168 L70 168 L69 167 L69 165 L70 164 L72 165Z' fill='%23f6f2ea'/%3E%3Cpath d='M113 125 L112 126 L111 126 L110 125 L110 124 L111 124 L112 124Z' fill='%23f6f2ea'/%3E%3Cpath d='M5 89 L2 95 L-3 94 L-9 93 L-9 85 L-3 81 L2 80Z' fill='%23d9d3c7'/%3E%3Cpath d='M225 89 L222 95 L217 94 L211 93 L211 85 L217 81 L222 80Z' fill='%23d9d3c7'/%3E%3Cpath d='M26 123 L21 127 L14 131 L10 126 L10 118 L16 114 L20 116Z' fill='%23efeae0'/%3E%3Cpath d='M3 47 L-0 49 L-4 51 L-7 47 L-6 44 L-3 41 L1 42Z' fill='%23efeae0'/%3E%3Cpath d='M223 47 L220 49 L216 51 L213 47 L214 44 L217 41 L221 42Z' fill='%23efeae0'/%3E%3Cpath d='M4 153 L2 156 L-2 157 L-6 155 L-6 150 L-3 148 L3 149Z' fill='%23f6f2ea'/%3E%3Cpath d='M224 153 L222 156 L218 157 L214 155 L214 150 L217 148 L223 149Z' fill='%23f6f2ea'/%3E%3Cpath d='M88 164 L87 166 L85 168 L82 165 L82 161 L84 161 L88 161Z' fill='%23d9d3c7'/%3E%3Cpath d='M21 80 L21 82 L18 81 L18 80 L17 79 L19 78 L20 79Z' fill='%23f6f2ea'/%3E%3Cpath d='M148 174 L146 176 L143 177 L142 175 L142 173 L144 172 L146 171Z' fill='%23efeae0'/%3E%3Cpath d='M83 118 L81 121 L75 122 L71 120 L73 117 L76 112 L82 114Z' fill='%23d9d3c7'/%3E%3Cpath d='M218 116 L215 119 L213 119 L209 117 L209 114 L213 112 L215 112Z' fill='%23f6f2ea'/%3E%3Cpath d='M80 108 L76 112 L70 114 L66 109 L66 106 L71 102 L76 102Z' fill='%23efeae0'/%3E%3Cpath d='M160 7 L158 9 L156 9 L154 9 L155 6 L157 4 L158 5Z' fill='%23ffffff'/%3E%3Cpath d='M133 178 L132 180 L129 182 L126 180 L127 177 L128 174 L132 174Z' fill='%23d9d3c7'/%3E%3Cpath d='M132 1 L131 6 L125 7 L122 3 L121 -0 L125 -4 L132 -2Z' fill='%23efeae0'/%3E%3Cpath d='M132 221 L131 226 L125 227 L122 223 L121 220 L125 216 L132 218Z' fill='%23efeae0'/%3E%3Cpath d='M206 46 L205 49 L203 50 L200 48 L199 45 L203 44 L206 44Z' fill='%23f6f2ea'/%3E%3Cpath d='M134 115 L132 117 L129 118 L127 116 L127 113 L129 112 L132 112Z' fill='%23f6f2ea'/%3E%3Cpath d='M88 26 L88 28 L84 28 L82 27 L83 24 L84 24 L87 24Z' fill='%23ffffff'/%3E%3Cpath d='M159 80 L155 85 L149 86 L145 83 L144 77 L149 72 L158 74Z' fill='%23d9d3c7'/%3E%3Cpath d='M122 145 L122 148 L115 149 L114 148 L114 142 L116 142 L121 142Z' fill='%23efeae0'/%3E%3Cpath d='M47 80 L45 83 L43 83 L40 82 L40 80 L43 78 L45 79Z' fill='%23f6f2ea'/%3E%3Cpath d='M10 207 L10 209 L6 211 L3 209 L3 206 L6 204 L10 205Z' fill='%23ffffff'/%3E%3Cpath d='M193 210 L192 212 L191 212 L190 211 L189 210 L191 209 L192 209Z' fill='%23ffffff'/%3E%3Cpath d='M103 51 L102 54 L99 54 L97 52 L97 50 L99 49 L102 49Z' fill='%23d9d3c7'/%3E%3Cpath d='M104 10 L102 13 L95 15 L91 11 L91 8 L95 5 L100 5Z' fill='%23d9d3c7'/%3E%3Cpath d='M18 36 L19 39 L13 39 L11 37 L11 33 L15 32 L17 33Z' fill='%23ffffff'/%3E%3Cpath d='M73 128 L73 131 L70 130 L68 129 L69 126 L69 126 L72 126Z' fill='%23f6f2ea'/%3E%3Cpath d='M12 32 L11 36 L8 37 L5 34 L5 31 L7 29 L12 30Z' fill='%23f6f2ea'/%3E%3Cpath d='M57 164 L57 166 L55 166 L52 164 L53 162 L55 161 L57 161Z' fill='%23ffffff'/%3E%3Cpath d='M142 139 L142 141 L140 141 L139 140 L139 139 L140 138 L142 138Z' fill='%23f6f2ea'/%3E%3Cpath d='M181 56 L178 59 L173 62 L169 59 L170 53 L174 50 L180 53Z' fill='%23f6f2ea'/%3E%3Cpath d='M71 54 L70 59 L64 58 L62 56 L61 50 L66 49 L71 51Z' fill='%23f6f2ea'/%3E%3Cpath d='M175 172 L172 177 L167 177 L164 176 L163 171 L167 167 L173 169Z' fill='%23efeae0'/%3E%3Cpath d='M206 65 L203 68 L200 68 L196 66 L196 62 L200 60 L203 59Z' fill='%23f6f2ea'/%3E%3Cpath d='M57 204 L52 207 L46 209 L42 205 L42 200 L46 197 L53 197Z' fill='%23ffffff'/%3E%3Cpath d='M61 175 L60 177 L59 177 L57 176 L57 174 L59 173 L60 174Z' fill='%23d9d3c7'/%3E%3Cpath d='M57 125 L56 127 L53 128 L51 127 L52 124 L54 123 L56 123Z' fill='%23f6f2ea'/%3E%3Cpath d='M49 146 L47 148 L45 149 L43 147 L43 145 L45 143 L47 144Z' fill='%23f6f2ea'/%3E%3Cpath d='M51 66 L49 70 L46 69 L41 67 L41 64 L45 61 L51 62Z' fill='%23ffffff'/%3E%3Cpath d='M167 127 L166 129 L164 129 L162 129 L162 126 L164 124 L166 126Z' fill='%23efeae0'/%3E%3Cpath d='M106 117 L104 119 L100 119 L98 119 L98 115 L101 112 L104 114Z' fill='%23efeae0'/%3E%3Cpath d='M203 140 L202 142 L200 142 L199 141 L198 139 L200 138 L201 139Z' fill='%23ffffff'/%3E%3Cpath d='M36 213 L35 215 L33 214 L30 213 L30 210 L32 209 L36 211Z' fill='%23ffffff'/%3E%3Cpath d='M14 78 L12 80 L10 81 L7 80 L7 76 L9 75 L12 75Z' fill='%23ffffff'/%3E%3Cpath d='M40 36 L39 37 L37 37 L36 36 L36 35 L38 34 L39 34Z' fill='%23f6f2ea'/%3E%3Cpath d='M72 42 L70 47 L62 50 L55 44 L54 40 L61 35 L69 35Z' fill='%23efeae0'/%3E%3Cpath d='M8 33 L6 35 L1 37 L-1 34 L-2 30 L2 30 L5 29Z' fill='%23efeae0'/%3E%3Cpath d='M228 33 L226 35 L221 37 L219 34 L218 30 L222 30 L225 29Z' fill='%23efeae0'/%3E%3Cpath d='M56 68 L56 70 L53 71 L51 70 L50 67 L53 65 L55 66Z' fill='%23efeae0'/%3E%3Cpath d='M210 10 L208 12 L205 14 L202 11 L201 8 L205 5 L208 5Z' fill='%23ffffff'/%3E%3Cpath d='M113 12 L111 15 L108 17 L105 15 L105 11 L108 9 L111 11Z' fill='%23f6f2ea'/%3E%3Cpath d='M108 185 L106 188 L101 189 L99 188 L98 185 L102 183 L106 183Z' fill='%23efeae0'/%3E%3Cpath d='M145 37 L143 40 L140 40 L137 38 L138 36 L140 34 L143 34Z' fill='%23efeae0'/%3E%3Cpath d='M202 9 L201 11 L200 12 L197 10 L197 8 L199 7 L201 7Z' fill='%23ffffff'/%3E%3Cpath d='M215 31 L213 35 L210 34 L208 33 L208 30 L210 28 L214 30Z' fill='%23efeae0'/%3E%3Cpath d='M144 141 L141 144 L137 146 L134 143 L135 139 L137 138 L142 139Z' fill='%23efeae0'/%3E%3Cpath d='M99 186 L96 190 L91 189 L88 188 L89 185 L91 183 L96 183Z' fill='%23ffffff'/%3E%3Cpath d='M209 83 L206 85 L201 87 L196 84 L197 80 L202 76 L206 76Z' fill='%23ffffff'/%3E%3C/svg%3E");
-    background-size: auto, calc(var(--pt) * 220) calc(var(--pt) * 220);
-    color: var(--apd-cover-paper);
-  }
-
-  .annotated-duo[data-duo='outer-p'] .ap-stage[data-layout='spread'] .ap-head {
-    display: none;
-  }
-
-  /* The cover label: COMPOSITION over two ruled lines, the film and the chapter written in. */
+  /* ---------- The cover label: COMPOSITION over ruled lines, the film and the chapter written in ---------- */
   .annotated-duo .apd-label,
   .annotated-duo .apd-note {
     display: none;
   }
 
-  .annotated-duo[data-duo='outer-p'] .ap-stage[data-layout='spread'] .apd-label {
+  :is(.annotated-duo[data-duo='outer-p'], .annotated-duo[data-duo='outer-l']) .ap-stage[data-layout='spread'] .apd-label {
     position: absolute;
-    left: calc(var(--pt) * 46);
-    top: calc(var(--pt) * 40);
     z-index: 2;
     display: block;
-    inline-size: calc(var(--pt) * 316);
     box-sizing: border-box;
-    padding: calc(var(--pt) * 12) calc(var(--pt) * 16) calc(var(--pt) * 8);
     background-color: var(--apd-cover-paper);
     border: 2px solid var(--apd-cover-ink);
-    outline: calc(var(--pt) * 5) solid var(--apd-cover-paper);
-    border-radius: calc(var(--pt) * 18) / calc(var(--pt) * 14);
     color: var(--apd-cover-ink);
     font-family: 'Spectral', Georgia, serif;
+  }
+
+  .annotated-duo[data-duo='outer-p'] .ap-stage[data-layout='spread'] .apd-label {
+    left: calc(var(--pt) * 46);
+    top: calc(var(--pt) * 40);
+    inline-size: calc(var(--pt) * 316);
+    padding: calc(var(--pt) * 12) calc(var(--pt) * 16) calc(var(--pt) * 8);
+    outline: calc(var(--pt) * 5) solid var(--apd-cover-paper);
+    border-radius: calc(var(--pt) * 18) / calc(var(--pt) * 14);
   }
 
   .annotated-duo .apd-label-head {
@@ -454,6 +431,7 @@
     display: flex;
     align-items: baseline;
     gap: calc(var(--pt) * 8);
+    min-inline-size: 0;
     margin: 0;
     padding: calc(var(--pt) * 6) 0 calc(var(--pt) * 2);
     border-block-end: 1px solid var(--apd-cover-rule);
@@ -478,7 +456,56 @@
     white-space: nowrap;
   }
 
-  /* The film, taped on as a snapshot; its caption is the time, written underneath. */
+  /* Sideways, the label is one line across the top: FILM, the title, and the chapter at the far end. */
+  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .apd-label {
+    left: calc(var(--pt) * 84);
+    top: calc(var(--pt) * 10);
+    inline-size: calc(var(--pt) * 420);
+    block-size: calc(var(--pt) * 44);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pt) * 10);
+    padding: 0 calc(var(--pt) * 12);
+    border-radius: calc(var(--pt) * 14) / calc(var(--pt) * 12);
+  }
+
+  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .apd-label-head {
+    display: none;
+  }
+
+  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .apd-label-row {
+    padding: 0;
+    border: 0;
+  }
+
+  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .apd-label-row:first-of-type {
+    flex: 1;
+  }
+
+  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .apd-label-row + .apd-label-row {
+    flex: 0 1 auto;
+    max-inline-size: 45%;
+  }
+
+  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .apd-label-key {
+    inline-size: auto;
+    font-size: calc(var(--pt) * 10);
+    letter-spacing: 0.2em;
+  }
+
+  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .apd-label-row + .apd-label-row .apd-label-key {
+    display: none;
+  }
+
+  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .apd-label-value {
+    font-size: calc(var(--pt) * 17);
+  }
+
+  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .apd-label-row + .apd-label-row .apd-label-value {
+    font-size: calc(var(--pt) * 15);
+  }
+
+  /* ---------- Upright: the film taped on as a snapshot, its time written underneath ---------- */
   .annotated-duo[data-duo='outer-p'] .ap-stage[data-layout='spread'] .ap-figure {
     position: absolute;
     left: calc(var(--pt) * 28);
@@ -506,10 +533,6 @@
     pointer-events: none;
   }
 
-  .annotated-duo[data-duo='outer-p'] .ap-stage[data-layout='spread'] .ap-screen {
-    box-shadow: none;
-  }
-
   .annotated-duo[data-duo='outer-p'] .ap-stage[data-layout='spread'] .ap-figcaption {
     position: absolute;
     left: calc(var(--pt) * 12);
@@ -530,7 +553,6 @@
     color: var(--apd-cover-ink);
   }
 
-  /* The timeline on a card tucked under the snapshot. */
   .annotated-duo[data-duo='outer-p'] .ap-stage[data-layout='spread'] .ap-timeline {
     position: absolute;
     left: calc(var(--pt) * 30);
@@ -546,7 +568,7 @@
     rotate: 1deg;
   }
 
-  .annotated-duo[data-duo='outer-p'] .ap-stage[data-layout='spread'] .ap-time {
+  :is(.annotated-duo[data-duo='outer-p'], .annotated-duo[data-duo='outer-l']) .ap-stage[data-layout='spread'] .ap-time {
     color: #4a4339;
   }
 
@@ -555,123 +577,48 @@
     left: calc(var(--pt) * 46);
     bottom: calc(var(--pt) * 36);
     display: block;
-    font-family: 'Kalam', cursive;
     padding: 0 calc(var(--pt) * 6);
     background-color: #151412;
+    font-family: 'Kalam', cursive;
     font-size: calc(var(--pt) * 16);
     color: var(--apd-cover-paper);
     pointer-events: none;
   }
 
-  /* The rail: the pages' edges past the cover, the controls as coloured index tabs. */
-  .annotated-duo[data-duo='outer-p'] .apd-rail {
-    background-color: #f2ecdf;
-    background-image: repeating-linear-gradient(90deg, #e1d9c8 0 1px, transparent 1px 4px);
-    box-shadow: inset calc(var(--pt) * 6) 0 calc(var(--pt) * 8) calc(var(--pt) * -4) rgb(0 0 0 / 0.45);
-  }
-
-  .annotated-duo[data-duo='outer-p'] .apd-status {
-    color: var(--apd-cover-ink);
-  }
-
-  .annotated-duo[data-duo='outer-p'] .apd-stamp,
-  .annotated-duo[data-duo='outer-p'] .apd-stamp:is([data-tone='red'], [data-tone='green']) {
-    --apd-tab: #ece4d3;
-    inline-size: calc(var(--pt) * 56);
-    margin-inline-end: calc(var(--pt) * -8);
-    border-radius: calc(var(--pt) * 6) calc(var(--pt) * 24) calc(var(--pt) * 24) calc(var(--pt) * 6);
-    background-color: var(--apd-tab);
-    box-shadow: 0 2px 0 rgb(30 27 22 / 0.2);
-    color: var(--apd-cover-ink);
-    rotate: none;
-    transition: translate 0.15s ease, scale 0.15s ease;
-  }
-
-  .annotated-duo[data-duo='outer-p'] .apd-stamp[data-tab='pink'] { --apd-tab: #f7c6d3; }
-  .annotated-duo[data-duo='outer-p'] .apd-stamp[data-tab='green'] { --apd-tab: #cdefc4; }
-  .annotated-duo[data-duo='outer-p'] .apd-stamp[data-tab='blue'] { --apd-tab: #c9e3f5; }
-  .annotated-duo[data-duo='outer-p'] .apd-stamp[data-tab='lavender'] { --apd-tab: #d9ccf5; }
-  .annotated-duo[data-duo='outer-p'] .apd-stamp[data-tab='yellow'] { --apd-tab: #fbe38e; }
-
-  /* Pressed, a tab slides out under the finger, like pulling a section open. */
-  .annotated-duo[data-duo='outer-p'] .apd-stamp:active {
-    rotate: none;
-    scale: none;
-    translate: calc(var(--pt) * -6) 0;
-  }
-
-  .annotated-duo[data-duo='outer-p'] .apd-stamp:focus-visible {
-    outline: 2px solid var(--apd-cover-ink);
-    outline-offset: calc(var(--pt) * 3);
-  }
-
-  /* ---------- Outer, landscape: the film between two thin cloth bands ---------- */
-  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .ap-head {
-    top: 0;
-    inset-inline: calc(var(--pt) * 84) calc(var(--pt) * 250);
-    block-size: calc(var(--pt) * 72);
-    justify-content: center;
-  }
-
-  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .ap-kicker {
-    display: none;
-  }
-
-  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .ap-title {
-    overflow: hidden;
-    font-size: calc(var(--pt) * 19);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
+  /* ---------- Sideways: the film edge to edge under the label, the timeline on a card below ---------- */
   .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .ap-figure {
     position: static;
+  }
+
+  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .ap-figcaption {
+    display: none;
   }
 
   .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .ap-screen {
     position: absolute;
     left: 0;
-    top: calc(var(--pt) * 72);
+    top: calc(var(--pt) * 63);
     inline-size: calc(var(--pt) * 605);
     block-size: calc(var(--pt) * 340);
     aspect-ratio: auto;
-    box-shadow: none;
-  }
-
-  /* The current chapter as a date stamp in the top band. */
-  .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .ap-figcaption {
-    position: absolute;
-    top: calc(var(--pt) * 24);
-    right: calc(var(--pt) * 89);
-    z-index: 2;
-    max-inline-size: calc(var(--pt) * 220);
-    overflow: hidden;
-    padding: calc(var(--pt) * 2) calc(var(--pt) * 8);
-    border: 1.5px solid #f4eedd;
-    color: #f4eedd;
-    font-family: 'Space Mono', ui-monospace, monospace;
-    font-size: calc(var(--pt) * 10);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    rotate: -3deg;
   }
 
   .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .ap-timeline {
     position: absolute;
     left: calc(var(--pt) * 12);
-    top: calc(var(--pt) * 417);
+    top: calc(var(--pt) * 408);
     z-index: 2;
     inline-size: calc(var(--pt) * 581);
-    block-size: calc(var(--pt) * 44);
+    block-size: calc(var(--pt) * 46);
     box-sizing: border-box;
     flex-direction: row;
     align-items: center;
     gap: calc(var(--pt) * 12);
     padding-inline: calc(var(--pt) * 12);
-    background-color: var(--apd-card);
-    color: #2b2416;
+    background-color: var(--apd-cover-paper);
+    border-radius: calc(var(--pt) * 3);
+    color: var(--apd-cover-ink);
+    rotate: -0.4deg;
   }
 
   .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .ap-time-slider {
@@ -681,10 +628,9 @@
 
   .annotated-duo[data-duo='outer-l'] .ap-stage[data-layout='spread'] .ap-time {
     white-space: nowrap;
-    color: #2b2416;
   }
 
-  /* ---------- The edge rail: the red spine, rubber stamps for buttons ---------- */
+  /* ---------- The edge rail: the pages' edges past the cover, the controls as coloured index tabs ---------- */
   .annotated-duo .apd-rail {
     position: absolute;
     top: 0;
@@ -692,8 +638,9 @@
     right: 0;
     z-index: 4;
     inline-size: calc(var(--pt) * 73);
-    background-color: var(--apd-spine);
-    box-shadow: inset calc(var(--pt) * 4) 0 calc(var(--pt) * 6) rgb(0 0 0 / 0.35);
+    background-color: #f2ecdf;
+    background-image: repeating-linear-gradient(90deg, #e1d9c8 0 1px, transparent 1px 4px);
+    box-shadow: inset calc(var(--pt) * 6) 0 calc(var(--pt) * 8) calc(var(--pt) * -4) rgb(0 0 0 / 0.45);
   }
 
   .annotated-duo .apd-status {
@@ -705,14 +652,14 @@
     flex-direction: column;
     align-items: center;
     gap: calc(var(--pt) * 3);
-    color: var(--apd-card);
+    color: var(--apd-cover-ink);
     font-family: -apple-system, 'SF Pro Text', Inter, system-ui, sans-serif;
     font-size: calc(var(--pt) * 13);
     font-weight: 600;
   }
 
   .annotated-duo[data-duo='outer-l'] .apd-status {
-    top: calc(var(--pt) * 16);
+    top: calc(var(--pt) * 18);
   }
 
   .annotated-duo .apd-status svg {
@@ -739,51 +686,40 @@
     bottom: calc(var(--pt) * 23);
   }
 
-  .annotated-duo .apd-stamp {
+  .annotated-duo .apd-tab {
+    --apd-tab: #ece4d3;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    inline-size: calc(var(--pt) * 48);
+    inline-size: calc(var(--pt) * 56);
     block-size: calc(var(--pt) * 48);
+    margin-inline-end: calc(var(--pt) * -8);
     padding: 0;
     border: 0;
-    border-radius: 50%;
-    background-color: var(--apd-card);
-    box-shadow:
-      0 0 0 calc(var(--pt) * 3) var(--apd-stamp-blue),
-      inset 0 0 0 calc(var(--pt) * 4) var(--apd-card),
-      inset 0 0 0 calc(var(--pt) * 5.5) var(--apd-stamp-blue);
-    color: #2b2416;
-    rotate: -6deg;
+    border-radius: calc(var(--pt) * 6) calc(var(--pt) * 24) calc(var(--pt) * 24) calc(var(--pt) * 6);
+    background-color: var(--apd-tab);
+    box-shadow: 0 2px 0 rgb(30 27 22 / 0.2);
+    color: var(--apd-cover-ink);
     cursor: pointer;
-    transition: rotate 0.15s ease, scale 0.15s ease;
+    transition: translate 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .annotated-duo .apd-stamp[data-tone='red'] {
-    --apd-ring: var(--apd-stamp-red);
-    box-shadow:
-      0 0 0 calc(var(--pt) * 3) var(--apd-stamp-red),
-      inset 0 0 0 calc(var(--pt) * 4) var(--apd-card),
-      inset 0 0 0 calc(var(--pt) * 5.5) var(--apd-stamp-red);
+  .annotated-duo .apd-tab[data-tab='pink'] { --apd-tab: #f7c6d3; }
+  .annotated-duo .apd-tab[data-tab='green'] { --apd-tab: #cdefc4; }
+  .annotated-duo .apd-tab[data-tab='blue'] { --apd-tab: #c9e3f5; }
+  .annotated-duo .apd-tab[data-tab='lavender'] { --apd-tab: #d9ccf5; }
+  .annotated-duo .apd-tab[data-tab='yellow'] { --apd-tab: #fbe38e; }
+
+  /* Pressed, a tab slides out under the finger, like pulling a section open. */
+  .annotated-duo .apd-tab:active {
+    translate: calc(var(--pt) * -6) 0;
   }
 
-  .annotated-duo .apd-stamp[data-tone='green'] {
-    box-shadow:
-      0 0 0 calc(var(--pt) * 3) var(--apd-stamp-green),
-      inset 0 0 0 calc(var(--pt) * 4) var(--apd-card),
-      inset 0 0 0 calc(var(--pt) * 5.5) var(--apd-stamp-green);
-  }
-
-  /* Pressed, the stamp straightens and comes down on the page. */
-  .annotated-duo .apd-stamp:active {
-    rotate: 0deg;
-    scale: 0.92;
-  }
-
-  .annotated-duo .apd-stamp:focus-visible {
-    outline: 2px solid #fff;
-    outline-offset: calc(var(--pt) * 5);
+  .annotated-duo .apd-tab:focus-visible {
+    outline: 2px solid var(--apd-cover-ink);
+    outline-offset: calc(var(--pt) * 3);
   }
 
   .annotated-duo .apd-icon {
