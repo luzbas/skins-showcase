@@ -55,8 +55,10 @@ const TABLETOP_RANGE = [45, 165] as const;
 const OUTER_PT = 430 / 466;
 
 const CATEGORIES: { id: Category; label: string }[] = [
-  { id: 'horizontal', label: 'Horizontal' },
-  { id: 'vertical', label: 'Vertical' },
+  // The ids name the hinge's direction; the labels name how the phone is held, which is the other way round
+  // (a phone whose hinge runs top to bottom is held upright, so it reads as Vertical).
+  { id: 'vertical', label: 'Horizontal' },
+  { id: 'horizontal', label: 'Vertical' },
   { id: 'table', label: 'Table' },
 ];
 
