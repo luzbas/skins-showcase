@@ -37,6 +37,7 @@ import {
 import { usePlayer } from '@videojs/react/video';
 import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
 
+import { useTouchOnly } from '../../../duo-kit/touch-only';
 import { foldableAttributes, useFoldable } from '../../../duo-kit/foldable';
 import { SimulatedFullscreen, duoLayoutFor, useFullscreenOrientationLock } from '../../../duo-kit/duo-shared';
 import { cn } from '../skin/lib/resolve-class-name';
@@ -136,42 +137,6 @@ function CompositionLabel({ title }: { title?: string }) {
       ) : null}
     </section>
   );
-}
-
-// Hover-only mouse events: moving, entering and leaving with no button held. A finger can't do any of these.
-const HOVER_EVENTS = [
-  'pointermove',
-  'pointerover',
-  'pointerout',
-  'pointerenter',
-  'pointerleave',
-  'mousemove',
-  'mouseover',
-  'mouseout',
-  'mouseenter',
-  'mouseleave',
-] as const;
-
-/**
- * Stops a mouse from hovering anything inside `el`. Hover-only mouse events are caught on their way down and go no
- * further, so the player doesn't wake its controls when the mouse passes over, menus don't highlight rows under it, and
- * nothing opens on hover. Clicks, drags (a button is held) and real touch pass through untouched.
- */
-function useTouchOnly(getElement: () => HTMLElement | null | undefined) {
-  useEffect(() => {
-    const el = getElement();
-    if (!el) return;
-    const swallow = (event: Event) => {
-      const mouse = event as MouseEvent;
-      if (mouse.buttons !== 0) return;
-      if ('pointerType' in event && (event as PointerEvent).pointerType !== 'mouse') return;
-      event.stopPropagation();
-    };
-    for (const type of HOVER_EVENTS) el.addEventListener(type, swallow, { capture: true });
-    return () => {
-      for (const type of HOVER_EVENTS) el.removeEventListener(type, swallow, { capture: true });
-    };
-  }, [getElement]);
 }
 
 export interface AnnotatedDuoSkinProps extends Omit<NonNullable<ComponentProps<typeof Container>>, 'children'> {

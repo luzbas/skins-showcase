@@ -279,3 +279,19 @@
 .pcd-dev-screen[data-tabletop] .clay-duo .ci-controls {
   z-index: auto;
 }
+
+/* ================= Touch only ================= */
+/* The Duo is a phone: a press is a finger and hovering does nothing (see duo-kit/touch-only, which also turns :hover
+   styles off inside it). In the simulator the mouse is drawn as a fingertip, which presses down when it touches;
+   it wins over every other cursor in the skin, in every state, as on the Annotated Duo. */
+@layer clay-duo {
+  .clay-duo[data-simulated],
+  .clay-duo[data-simulated] * {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='15' fill='rgb(30 27 22 / 0.22)' stroke='rgb(255 255 255 / 0.8)' stroke-width='1.5'/%3E%3C/svg%3E") 20 20, pointer !important;
+  }
+
+  .clay-duo[data-simulated]:active,
+  .clay-duo[data-simulated] *:active {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='11' fill='rgb(30 27 22 / 0.42)' stroke='rgb(255 255 255 / 0.9)' stroke-width='1.5'/%3E%3C/svg%3E") 20 20, pointer !important;
+  }
+}

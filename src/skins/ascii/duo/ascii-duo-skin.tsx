@@ -14,8 +14,9 @@
 import { Controls, Gesture, PlayButton as PlayButtonPrimitive, Time, usePlayer } from '@videojs/react';
 import { FullscreenEnterIcon, FullscreenExitIcon } from '@videojs/react/icons';
 import { selectControls } from '@videojs/core/dom';
-import { useContext, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 
+import { useTouchOnly } from '../../../duo-kit/touch-only';
 import { foldableAttributes, useFoldable } from '../../../duo-kit/foldable';
 import { SimulatedFullscreen, duoLayoutFor, useFullscreenOrientationLock } from '../../../duo-kit/duo-shared';
 import { AsciiFonts } from '../skin/ui/ascii-fonts';
@@ -356,9 +357,13 @@ export function AsciiDuoSkin({ children, className, title = 'Signal' }: AsciiDuo
   // Propped up in the simulation the phone is its own little screen: no fullscreen key there. On a real Duo the split
   // layout only appears in fullscreen, where the key is the way out, so it stays.
   const noFullscreen = layout === 'split' && foldable.simulated;
-  // The overlay layouts hide while playing; a tap shows them (touch), a pointer move too (mouse).
+  // The overlay layouts hide while playing; a tap shows them.
   const overlay = layout === 'full' || outerFullscreen;
   useFullscreenOrientationLock(ref, foldable.fullscreen);
+  // The Duo is a phone: touch-only in every pose, even under the simulator's mouse (a press is a finger, hovering
+  // does nothing; see duo-kit/touch-only).
+  const getHost = useCallback(() => ref.current?.parentElement, []);
+  useTouchOnly(getHost, { pressAsTouch: true });
 
   const { cues, active } = useChapters();
   const chapter = active >= 0 ? cues[active]?.text : null;
@@ -379,6 +384,7 @@ export function AsciiDuoSkin({ children, className, title = 'Signal' }: AsciiDuo
     <Container
       className={cn('ascii-skin', 'ascii-duo', className)}
       data-theme="default"
+      data-input="touch"
       data-layout={`duo-${layout}`}
       data-outer-fullscreen={outerFullscreen ? '' : undefined}
       data-panel={panel ?? undefined}
@@ -399,7 +405,7 @@ export function AsciiDuoSkin({ children, className, title = 'Signal' }: AsciiDuo
           {/* The poster (the stream's thumbnail) until playback starts, sized to the picture's box. */}
           <Poster />
           <AsciiScreen />
-          {/* Click the picture to play or pause (mouse); the transport's button is the one in the tab order. */}
+          {/* Tap the picture to play or pause (not over the overlay layouts); the transport's button is the one in the tab order. */}
           <PlayButtonPrimitive className={'adu-surface'} tabIndex={-1} aria-hidden="true" />
           <AsciiCaptions />
           <AsciiStage />

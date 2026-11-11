@@ -20,6 +20,7 @@
 import { Controls, Menu, Time, usePlayer } from '@videojs/react';
 import { selectControls, selectFullscreen, selectTextTrack, selectTime } from '@videojs/core/dom';
 import {
+  useCallback,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -31,6 +32,7 @@ import {
   type RefObject,
 } from 'react';
 
+import { useTouchOnly } from '../../../duo-kit/touch-only';
 import { foldableAttributes, useFoldable } from '../../../duo-kit/foldable';
 import { SimulatedFullscreen, duoLayoutFor, useFullscreenOrientationLock } from '../../../duo-kit/duo-shared';
 import { AirPlayButton } from '../skin/ui/airplay-button';
@@ -296,6 +298,10 @@ export function ClayDuoSkin({ children, className, style, title = 'Duo demo', ..
   const { w, h } = useSize(stageRef);
   const [board, setBoard] = useState<HTMLElement | null>(null);
   useFullscreenOrientationLock(screenRef, foldable.fullscreen);
+  // The Duo is a phone: touch-only in every pose, even under the simulator's mouse (a press is a finger, hovering
+  // does nothing; see duo-kit/touch-only).
+  const getHost = useCallback(() => screenRef.current?.parentElement, []);
+  useTouchOnly(getHost, { pressAsTouch: true });
 
   // Open flat: upright gets the console below the picture, sideways (and fullscreen) the console over it. Closed:
   // the rail beside the picture, or over it in fullscreen.
@@ -333,6 +339,7 @@ export function ClayDuoSkin({ children, className, style, title = 'Duo demo', ..
       className={cn('video-skin', 'clay-skin', 'clay-island', 'clay-duo', className)}
       data-theme="default"
       data-preset="video"
+      data-input="touch"
       data-mode={mode}
       data-layout={duoLayout}
       data-fs={fs ? '' : undefined}

@@ -10,6 +10,7 @@ import { Controls, Menu, Time, useMedia, usePlayer } from '@videojs/react';
 import { selectControls, selectPiP, selectTextTrack, selectTime } from '@videojs/core/dom';
 import { CheckIcon, FullscreenEnterIcon, FullscreenExitIcon, GearIcon, PipEnterIcon } from '@videojs/react/icons';
 import {
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -35,6 +36,7 @@ import { SeekButton } from '../skin/ui/seek-button';
 import { TimeSlider } from '../skin/ui/time-slider';
 import { VideoHotkeys } from '../skin/video/behaviors/hotkeys';
 import { cn } from '../skin/lib/resolve-class-name';
+import { useTouchOnly } from '../../../duo-kit/touch-only';
 import { foldableAttributes, useFoldable } from '../../../duo-kit/foldable';
 import { SimulatedFullscreen, duoLayoutFor, useFullscreenOrientationLock, type DuoLayout } from '../../../duo-kit/duo-shared';
 // Last, so its layer is declared after the Default skin's layers (see the top of duo.css).
@@ -259,11 +261,16 @@ export function DuoVideoSkin({
   useCaptionsAboveStrip(ref, layout === 'full' && controlsVisible);
   useFullscreenOrientationLock(ref, foldable.fullscreen);
   const [board, setBoard] = useState<HTMLElement | null>(null);
+  // The Duo is a phone: touch-only in every pose, even under the simulator's mouse (a press is a finger, hovering
+  // does nothing; see duo-kit/touch-only).
+  const getHost = useCallback(() => ref.current?.parentElement, []);
+  useTouchOnly(getHost, { pressAsTouch: true });
 
   return (
     <Container
       className={cn('papercut-duo', className)}
       data-theme="default"
+      data-input="touch"
       data-layout={layout}
       data-outer-fullscreen={outerFullscreen ? '' : undefined}
       {...foldAttributes}

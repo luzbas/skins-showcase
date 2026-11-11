@@ -19,8 +19,9 @@ import {
   usePlayer,
 } from '@videojs/react';
 import { selectControls, selectTextTrack, selectTime } from '@videojs/core/dom';
-import { useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 
+import { useTouchOnly } from '../../../duo-kit/touch-only';
 import { foldableAttributes, useFoldable } from '../../../duo-kit/foldable';
 import { SimulatedFullscreen, duoLayoutFor, useFullscreenOrientationLock, type DuoLayout } from '../../../duo-kit/duo-shared';
 import { cn } from '../skin/lib/resolve-class-name';
@@ -167,12 +168,17 @@ export function SketchDuoSkin({ children, className, style, title = 'Duo demo', 
   const controlsVisible = usePlayer(selectControls)?.controlsVisible ?? true;
   useFullscreenOrientationLock(ref, foldable.fullscreen);
   const [board, setBoard] = useState<HTMLElement | null>(null);
+  // The Duo is a phone: touch-only in every pose, even under the simulator's mouse (a press is a finger, hovering
+  // does nothing; see duo-kit/touch-only).
+  const getHost = useCallback(() => ref.current?.parentElement, []);
+  useTouchOnly(getHost, { pressAsTouch: true });
 
   return (
     <ContainerPrimitive
       className={cn('media-skin', 'media-container', 'media-video', 'sketch-duo', className)}
       data-theme="scaffold"
       data-preset="video"
+      data-input="touch"
       data-layout={`duo-${layout}`}
       data-outer-fullscreen={outerFullscreen ? '' : undefined}
       data-controls-shown={controlsVisible ? '' : undefined}
