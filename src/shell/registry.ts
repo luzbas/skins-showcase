@@ -1,5 +1,6 @@
 // Every skin in the showcase, and the website built around each one. Add a skin by adding an entry here.
 import { lazy, type ComponentType } from 'react';
+import type { StageOptions } from '../lib/duo/PapercutDuo';
 import Noticeboard from '../sites/noticeboard/Noticeboard';
 import LittleIsland from '../sites/littleisland/LittleIsland';
 import Relay from '../sites/relay/Relay';
@@ -32,7 +33,7 @@ export interface Skin {
   /** The bare skin player, shown as the skin's picture on the homepage. */
   Player: ComponentType;
   /** The skin's iPhone Duo layout, for skins that have one: shown in the fold simulator in the Duo view. */
-  duo?: { Player: ComponentType; demo: string };
+  duo?: { Player: ComponentType<StageOptions>; demo: string };
   variations: Variation[];
 }
 
@@ -149,6 +150,7 @@ export type View = 'site' | 'devices' | 'duo';
 
 export type Route =
   | { page: 'home' }
+  | { page: 'duos' }
   | { page: 'player'; skin: Skin }
   | { page: 'skin'; skin: Skin; variation: Variation; view: View };
 
@@ -156,6 +158,7 @@ export type Route =
 export function resolve(hash: string): Route | null {
   if (hash === '' || hash === '#' || hash === '#/') return { page: 'home' };
   if (!hash.startsWith('#/')) return null;
+  if (hash === '#/duos') return { page: 'duos' };
   const [first, second, third] = hash.slice(2).split('/');
   if (first === 'player') {
     const skin = SKINS.find((s) => s.id === second) ?? SKINS[0];
@@ -169,6 +172,7 @@ export function resolve(hash: string): Route | null {
 }
 
 export const HOME_HREF = '#/';
+export const DUOS_HREF = '#/duos';
 
 export const href = (skin: Skin, variation: Variation, view: View = 'site') =>
   `#/${skin.id}/${variation.id}${view === 'site' ? '' : `/${view}`}`;

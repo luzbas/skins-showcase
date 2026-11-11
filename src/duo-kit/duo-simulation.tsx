@@ -16,21 +16,21 @@
 import './simulation.css';
 import { HlsVideo } from '@videojs/react/media/hls-video';
 import { VideoPlayer } from '@videojs/react/video';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react';
 
 import { SimulatedFoldable, type SimulatedFoldableValue } from './foldable';
 import { SimulatedFullscreen, fullscreenOrientationFor, type SimulatedFullscreenValue } from './duo-shared';
 
-type Orientation = 'vertical' | 'horizontal';
-type Category = Orientation | 'table';
-type Fold = 'open' | 'closed';
+export type Orientation = 'vertical' | 'horizontal';
+export type Category = Orientation | 'table';
+export type Fold = 'open' | 'closed';
 /** How a propped-up phone is seen: from three quarters, or tilted so one half faces you square-on. */
-type View = 'angled' | 'top' | 'bottom';
+export type View = 'angled' | 'top' | 'bottom';
 /**
  * What the user picked. Horizontal and Vertical use `fold`, Table uses `view`; each remembers its last choice for when
  * the user comes back to it.
  */
-interface Selection {
+export interface Selection {
   category: Category;
   fold: Fold;
   view: View;
@@ -82,9 +82,7 @@ function leanFor(fold: number, look: number) {
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/** The phone starts lying sideways, closed: the outer display, with the picture beside its rail of keys. */
-const INITIAL: Selection = { category: 'horizontal', fold: 'closed', view: 'angled' };
-const INITIAL_POSE = poseFor(INITIAL);
+
 
 export interface DuoSimulationProps {
   /** An HLS or Mux stream; adaptive sources fill the quality, audio and captions menus. */
@@ -96,10 +94,28 @@ export interface DuoSimulationProps {
    * The skin's Duo layout to wrap the media in. It gets the same phone, poses and simulated fullscreen (it reads SimulatedFoldable and SimulatedFullscreen).
    */
   renderSkin: (media: ReactNode) => ReactNode;
+  /** Leave out the pose buttons, for a page that drives the phone with its own (see `controller`). */
+  hideControls?: boolean;
+  /** Lets a page move the phone: `select` resolves once the phone has finished moving. */
+  controller?: Ref<DuoSimulationController>;
+  /** Called with every pose the phone is asked to take. */
+  onSelectionChange?: (selection: Selection) => void;
+  /** The tallest the phone may be drawn, in px, given the window height. Defaults to min(720, height − 140). */
+  maxHeight?: (windowHeight: number) => number;
 }
 
-export function DuoSimulation({ src, poster, chapters, renderSkin }: DuoSimulationProps) {
-  const [selection, setSelection] = useState<Selection>(INITIAL);
+export interface DuoSimulationController {
+  select: (next: Selection) => Promise<void>;
+  /** The phone's element (for measuring where it is on the page). */
+  device: () => HTMLElement | null;
+}
+
+/** The phone starts lying sideways, closed: the outer display, with the picture beside its rail of keys. */
+export const INITIAL_SELECTION: Selection = { category: 'horizontal', fold: 'closed', view: 'angled' };
+const INITIAL_POSE = poseFor(INITIAL_SELECTION);
+
+export function DuoSimulation({ src, poster, chapters, renderSkin, hideControls, controller, onSelectionChange, maxHeight: fitHeight }: DuoSimulationProps) {
+  const [selection, setSelection] = useState<Selection>(INITIAL_SELECTION);
   const [look, setLookState] = useState(0);
   const lookRef = useRef(0);
   const lookFrameRef = useRef(0);
@@ -172,7 +188,7 @@ export function DuoSimulation({ src, poster, chapters, renderSkin }: DuoSimulati
     const area = areaRef.current;
     if (!area) return;
     const measure = () => {
-      const maxHeight = Math.min(720, window.innerHeight - 140);
+      const maxHeight = fitHeight ? fitHeight(window.innerHeight) : Math.min(720, window.innerHeight - 140);
       setUnit(Math.max(0.2, Math.min(area.clientWidth / device.w, maxHeight / device.h)));
     };
     measure();
@@ -359,7 +375,8 @@ export function DuoSimulation({ src, poster, chapters, renderSkin }: DuoSimulati
 
   const select = (next: Selection) => {
     setSelection(next);
-    void goTo(poseFor(next));
+    onSelectionChange?.(next);
+    return goTo(poseFor(next));
   };
 
   /**
@@ -398,6 +415,14 @@ export function DuoSimulation({ src, poster, chapters, renderSkin }: DuoSimulati
     [fullscreen, selection],
   );
 
+  useImperativeHandle(controller, () => ({
+    select: (next: Selection) => {
+      leaveFullscreen();
+      return select(next);
+    },
+    device: () => stageRef.current?.querySelector<HTMLElement>('.pcd-dev-body') ?? null,
+  }));
+
   const fold = 1 - angle / OPEN;
   const lean = orientation === 'vertical' ? leanFor(fold, look) : 0;
   const pick = (next: Selection) => {
@@ -422,6 +447,7 @@ export function DuoSimulation({ src, poster, chapters, renderSkin }: DuoSimulati
 
   return (
     <div className={'pcd-sim'} data-orientation={orientation}>
+      {hideControls ? null : (
       <div className={'pcd-sim-controls'}>
         <div className={'pcd-seg'} role="group" aria-label="Pose">
           {CATEGORIES.map(({ id, label }) => (
@@ -444,6 +470,7 @@ export function DuoSimulation({ src, poster, chapters, renderSkin }: DuoSimulati
           ))}
         </div>
       </div>
+      )}
 
       <div ref={areaRef} className={'pcd-sim-area'}>
         <div
@@ -496,6 +523,43 @@ export function DuoSimulation({ src, poster, chapters, renderSkin }: DuoSimulati
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/** The pose buttons on their own, for a page that drives a simulator through its `controller`. */
+export function DuoPoseBar({ selection, onPick, disabled }: { selection: Selection; onPick: (next: Selection) => void; disabled?: boolean }) {
+  const subLabel = CATEGORIES.find((c) => c.id === selection.category)?.label ?? '';
+  const subOptions =
+    selection.category === 'table'
+      ? (['angled', 'top', 'bottom'] as const).map((view) => ({
+          key: view,
+          label: view === 'angled' ? 'Angled' : view === 'top' ? 'Top' : 'Bottom',
+          pressed: selection.view === view,
+          next: { ...selection, view },
+        }))
+      : (['open', 'closed'] as const).map((f) => ({
+          key: f,
+          label: f === 'open' ? 'Open' : 'Closed',
+          pressed: selection.fold === f,
+          next: { ...selection, fold: f },
+        }));
+  return (
+    <div className={'pcd-sim-controls'}>
+      <div className={'pcd-seg'} role="group" aria-label="Pose">
+        {CATEGORIES.map(({ id, label }) => (
+          <button key={id} type="button" disabled={disabled} aria-pressed={selection.category === id} onClick={() => onPick({ ...selection, category: id })}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className={'pcd-seg pcd-seg--sub'} role="group" aria-label={`${subLabel} options`}>
+        {subOptions.map(({ key, label, pressed, next }) => (
+          <button key={key} type="button" disabled={disabled} aria-pressed={pressed} onClick={() => onPick(next)}>
+            {label}
+          </button>
+        ))}
       </div>
     </div>
   );
