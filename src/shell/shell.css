@@ -132,14 +132,16 @@ body { margin: 0; background: var(--shell-stage); color: var(--shell-ink); font-
 
 /* ---------- Site ---------- */
 .shell-site { margin-left: var(--shell-w); min-height: 100vh; min-height: 100dvh; background: #fff; color: initial; }
-.shell-site:is([data-view='devices'], [data-view='duo']) { background: var(--shell-stage); color: var(--shell-ink); }
+.shell-site[data-view='devices'] { background: var(--shell-stage); color: var(--shell-ink); }
+.shell-site[data-view='duo'] { background: #000; color: var(--shell-ink); }
 .shell-frame-site { min-height: 100vh; background: #fff; color: initial; }
 body:has(.shell-frame-site) { background: #fff; color: initial; }
 
 /* ---------- Duo ---------- */
+.shell-devices.shell-duo { padding: 0; max-width: none; }
 .shell-duo .shell-devices-head { margin: 0; }
-/* The simulator draws its own pose picker and phone; it sits on a dim card, the same as the skin repos' Duo pages. */
-.shell-duo-stage { --bg: #2b2a27; --surface: #363430; --text: #f1efea; --muted: #a9a49b; --border: #46433e; --accent: #f1efea; background: var(--bg); color: var(--text); color-scheme: dark; border-radius: 16px; padding: 24px clamp(8px, 2vw, 24px); overflow: hidden; }
+/* The simulator draws its own pose picker and phone; it sits flush on black, from the top of the view. */
+.shell-duo-stage { --bg: #000; --surface: #1a1a1a; --text: #f1efea; --muted: #a9a49b; --border: #333; --accent: #f1efea; background: var(--bg); color: var(--text); color-scheme: dark; padding: 16px clamp(8px, 2vw, 24px) 32px; overflow: hidden; }
 .shell-duo-loading { margin: 0; padding: 48px 0; text-align: center; color: var(--muted); }
 
 /* ---------- How it will look ---------- */
