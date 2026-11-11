@@ -242,7 +242,7 @@ export default function AllDuos() {
                 hideControls
                 controller={controller}
                 onSelectionChange={setSelection}
-                maxHeight={(h) => Math.max(320, Math.min(620, h - (window.innerWidth < 700 ? 330 : 360)))}
+                maxHeight={(h) => Math.max(340, Math.min(760, h - (window.innerWidth < 700 ? 290 : 280)))}
               />
             </Suspense>
           </div>
