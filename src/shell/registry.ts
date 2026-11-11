@@ -30,7 +30,7 @@ export interface Skin {
   site: string;
   repo: string;
   demo: string;
-  /** The bare skin player, shown as the skin's picture on the homepage. */
+  /** The bare skin player, shown in the device frames. */
   Player: ComponentType;
   /** The skin's iPhone Duo layout, for skins that have one: shown in the fold simulator in the Duo view. */
   duo?: { Player: ComponentType<StageOptions>; demo: string };
@@ -149,7 +149,6 @@ export const SKINS: Skin[] = [
 export type View = 'site' | 'devices' | 'duo';
 
 export type Route =
-  | { page: 'home' }
   | { page: 'duos' }
   | { page: 'devices' }
   | { page: 'player'; skin: Skin }
@@ -157,7 +156,8 @@ export type Route =
 
 /** Hashes that aren't routes (a site's own in-page anchors, like #li-guide) return null and leave the page alone. */
 export function resolve(hash: string): Route | null {
-  if (hash === '' || hash === '#' || hash === '#/') return { page: 'home' };
+  // The front page is All devices.
+  if (hash === '' || hash === '#' || hash === '#/') return { page: 'devices' };
   if (!hash.startsWith('#/')) return null;
   if (hash === '#/duos') return { page: 'duos' };
   if (hash === '#/devices') return { page: 'devices' };
@@ -167,13 +167,12 @@ export function resolve(hash: string): Route | null {
     return { page: 'player', skin };
   }
   const skin = SKINS.find((s) => s.id === first);
-  if (!skin) return { page: 'home' };
+  if (!skin) return { page: 'devices' };
   const variation = skin.variations.find((v) => v.id === second) ?? skin.variations[0];
   const view: View = third === 'devices' ? 'devices' : third === 'duo' && skin.duo ? 'duo' : 'site';
   return { page: 'skin', skin, variation, view };
 }
 
-export const HOME_HREF = '#/';
 export const DUOS_HREF = '#/duos';
 export const DEVICES_HREF = '#/devices';
 

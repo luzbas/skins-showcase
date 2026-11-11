@@ -9,17 +9,6 @@ export function WebsiteIcon() {
   );
 }
 
-export function GridIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="3" width="7.5" height="7.5" rx="1.5" />
-      <rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" />
-      <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" />
-      <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" />
-    </svg>
-  );
-}
-
 export function DevicesIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -4,7 +4,7 @@ Custom [Video.js v10](https://videojs.org) skins, each shown inside real website
 
 ## What's in it
 
-The homepage (`#/`) lists every skin with a live, scaled-down copy of its player as the picture, and links to its website, a "How it will look" view (the skin's player on its own at desktop size and on a phone, upright and sideways in fullscreen, at `#/<skin>/<site>/devices`), its source and its player demo.
+The front page (`#/`) is **All devices**, every skin's player on a monitor and two phones, picked from a cassette rack (below). Each skin also has its website, a "How it will look" view (the skin's player on its own at desktop size and on a phone, upright and sideways in fullscreen, at `#/<skin>/<site>/devices`), its source and its player demo, all linked from the index.
 
 **Papercut** (construction-paper collage skin), shown in the *Cut-Out Cosmos Club*, a Saturday space club for kids designed as a library noticeboard (`#/papercut/noticeboard`):
 
@@ -39,9 +39,9 @@ The homepage (`#/`) lists every skin with a live, scaled-down copy of its player
 - A "what to bring" basket of paper tags to tick off, and the season's programme.
 - A lawn map to claim a blanket spot, with a blanket-tag confirmation.
 
-**iPhone Duo**: Papercut, Clay, ASCII Glitch and Sketch also have a layout for foldable phones. Their **Duo** view (`#/<skin>/<site>/duo`, linked in the index and on the homepage) shows it live on an iPhone Duo in a fold simulator: pick a pose (Horizontal or Vertical, each open or closed, or Table) and the player re-lays itself out without stopping the video. **All devices** (`#/devices`, also under "All skins") is every skin's "How it will look" on one desk: a monitor, a phone held upright and a phone lying sideways in fullscreen, with the skins in a cassette rack beside them. Pick a cassette and all three screens switch to that skin's live player; only the picked skin loads. On a phone it shows one device at a time.
+**iPhone Duo**: Papercut, Clay, ASCII Glitch and Sketch also have a layout for foldable phones. Their **Duo** view (`#/<skin>/<site>/duo`, linked in the index) shows it live on an iPhone Duo in a fold simulator: pick a pose (Horizontal or Vertical, each open or closed, or Table) and the player re-lays itself out without stopping the video. **All devices** (`#/devices`, first in the index) is every skin's "How it will look" on one desk: a monitor, a phone held upright and a phone lying sideways in fullscreen, with the skins in a cassette rack beside them. Pick a cassette and all three screens switch to that skin's live player; only the picked skin loads. On a phone it shows one device at a time.
 
-**All Duos** (`#/duos`, under "All skins" in the index) puts the four Duo phones on one desk: they lie closed along its edge, and the one you pick comes up to the stage as the live player with its own pose bar. Picking another closes the one on stage, sends it back to its spot and brings the new one up, so only one video plays (and loads) at a time. The Duo layouts live in each skin's `duo` folder, the fold detection and simulator in `src/duo-kit`, and they load only when the Duo view opens (`src/lib/duo`).
+**All Duos** (`#/duos`, second in the index) puts the four Duo phones on one desk: they lie closed along its edge, and the one you pick comes up to the stage as the live player with its own pose bar. Picking another closes the one on stage, sends it back to its spot and brings the new one up, so only one video plays (and loads) at a time. The Duo layouts live in each skin's `duo` folder, the fold detection and simulator in `src/duo-kit`, and they load only when the Duo view opens (`src/lib/duo`).
 
 The sites embed their skins through `src/lib/PapercutPlayer.tsx`, `src/lib/ClayPlayer.tsx`, `src/lib/GlitchPlayer.tsx`, `src/lib/SketchPlayer.tsx` and `src/lib/PicnicPlayer.tsx`; `src/lib/use-media.ts` lets page content read the player's time and seek it. Club details and helpers live in `src/lib/club.ts`. Sign-ups and questions are remembered in the browser.
 
