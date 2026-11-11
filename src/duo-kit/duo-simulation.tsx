@@ -82,6 +82,10 @@ function leanFor(fold: number, look: number) {
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/** The phone starts lying sideways, closed: the outer display, with the picture beside its rail of keys. */
+const INITIAL: Selection = { category: 'horizontal', fold: 'closed', view: 'angled' };
+const INITIAL_POSE = poseFor(INITIAL);
+
 export interface DuoSimulationProps {
   /** An HLS or Mux stream; adaptive sources fill the quality, audio and captions menus. */
   src: string;
@@ -95,12 +99,12 @@ export interface DuoSimulationProps {
 }
 
 export function DuoSimulation({ src, poster, chapters, renderSkin }: DuoSimulationProps) {
-  const [selection, setSelection] = useState<Selection>({ category: 'vertical', fold: 'open', view: 'angled' });
+  const [selection, setSelection] = useState<Selection>(INITIAL);
   const [look, setLookState] = useState(0);
   const lookRef = useRef(0);
   const lookFrameRef = useRef(0);
-  const [orientation, setOrientation] = useState<Orientation>('vertical');
-  const [angle, setAngleState] = useState<number>(OPEN);
+  const [orientation, setOrientation] = useState<Orientation>(INITIAL_POSE.orientation);
+  const [angle, setAngleState] = useState<number>(INITIAL_POSE.angle);
   const [animating, setAnimating] = useState(false);
   const [unit, setUnit] = useState(0.5);
 
@@ -108,7 +112,7 @@ export function DuoSimulation({ src, poster, chapters, renderSkin }: DuoSimulati
   const stageRef = useRef<HTMLDivElement>(null);
   const coverCanvasRef = useRef<HTMLCanvasElement>(null);
   const bodyCanvasRef = useRef<HTMLCanvasElement>(null);
-  const angleRef = useRef<number>(OPEN);
+  const angleRef = useRef<number>(INITIAL_POSE.angle);
   const orientationRef = useRef<Orientation>(orientation);
   const frameRef = useRef(0);
   const prevOrientation = useRef<Orientation>(orientation);
