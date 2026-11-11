@@ -32,7 +32,7 @@ export interface Skin {
   /** The bare skin player, shown as the skin's picture on the homepage. */
   Player: ComponentType;
   /** The skin's iPhone Duo layout, for skins that have one: shown in the fold simulator in the Duo view. */
-  duo?: { Player: ComponentType; demo: string; blurb: string };
+  duo?: { Player: ComponentType; demo: string };
   variations: Variation[];
 }
 
@@ -48,7 +48,6 @@ export const SKINS: Skin[] = [
     duo: {
       Player: lazy(() => import('../lib/duo/PapercutDuo')),
       demo: 'https://luzbas.github.io/papercut-player/duo/',
-      blurb: "The paper follows the phone: picture on the top half and a paper board on the bottom when it's propped up, scraps floating over the video when it's open flat, a slim paper rail beside the picture when it's closed.",
     },
     variations: [
       {
@@ -71,8 +70,6 @@ export const SKINS: Skin[] = [
     duo: {
       Player: lazy(() => import('../lib/duo/ClayDuo')),
       demo: 'https://luzbas.github.io/clay-skin-/duo/',
-      blurb:
-        'A clay console on black: propped up, the picture sits in a black clay frame on the top half with the console of controls below; open flat, the picture goes full-bleed with the console beside or over it; closed, every button moves to a rail of clay keys under the camera.',
     },
     variations: [
       {
@@ -95,8 +92,6 @@ export const SKINS: Skin[] = [
     duo: {
       Player: lazy(() => import('../lib/duo/GlitchDuo')),
       demo: 'https://luzbas.github.io/glitch-skin/duo/',
-      blurb:
-        'The terminal board on a foldable: propped up, the units lie on the bottom half under the picture; open flat, they float over the video; closed, the keys line up on a rail beside the feed. Pause anywhere and the picture turns to glyphs.',
     },
     variations: [
       {
@@ -119,7 +114,6 @@ export const SKINS: Skin[] = [
     duo: {
       Player: lazy(() => import('../lib/duo/SketchDuo')),
       demo: 'https://luzbas.github.io/sketch-skin/duo/',
-      blurb: "The pencil schematic on a foldable: propped up, the parts lie on the bottom half under the picture; open flat, they're drawn over the video; closed, they line up on a rail beside it.",
     },
     variations: [
       {

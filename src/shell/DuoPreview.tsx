@@ -11,12 +11,7 @@ export default function DuoPreview({ skin }: { skin: Skin }) {
   return (
     <div className="shell-devices shell-duo">
       <header className="shell-devices-head">
-        <h1>{skin.name} on the iPhone Duo</h1>
-        <p>{duo.blurb}</p>
-        <p>
-          Pick a pose to fold or turn the phone. The same layouts follow a real foldable through the browser's posture
-          and screen-segment signals.
-        </p>
+        <h1 className="visually-hidden">{skin.name} on the iPhone Duo</h1>
         <a className="shell-home-pill shell-duo-link" href={duo.demo} target="_blank" rel="noreferrer">
           <PlayerIcon />
           Open the Duo demo
