@@ -29,6 +29,8 @@ const PLACE: Record<DeviceId, { x: number; y: number; screen: number; tilt: numb
   'phone-fs': { x: 110, y: 560, screen: 380, tilt: 1.5 },
 };
 const FLICKER_MS = 180;
+/** The skin on the screens when the page opens. */
+const DEFAULT_SKIN = 'annotated';
 const NARROW = '(max-width: 760px)';
 
 function useNarrow() {
@@ -77,7 +79,8 @@ function Device({ id, skin, width, dim }: { id: DeviceId; skin: Skin | null; wid
 
 export default function AllDevices() {
   const narrow = useNarrow();
-  const [skin, setSkin] = useState<Skin | null>(null);
+  // Opens with Annotated Page on every screen; Put back clears them.
+  const [skin, setSkin] = useState<Skin | null>(() => SKINS.find((s) => s.id === DEFAULT_SKIN) ?? null);
   const [dim, setDim] = useState(false);
   const [single, setSingle] = useState<DeviceId>('phone');
   const timers = useRef<number[]>([]);
