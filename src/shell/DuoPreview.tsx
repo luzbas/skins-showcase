@@ -2,7 +2,6 @@
 // for the inner display, the propped-up split or the closed outer display, without stopping the video.
 import { Suspense } from 'react';
 import type { Skin } from './registry';
-import { PlayerIcon } from './icons';
 
 export default function DuoPreview({ skin }: { skin: Skin }) {
   const duo = skin.duo;
@@ -12,11 +11,6 @@ export default function DuoPreview({ skin }: { skin: Skin }) {
     <div className="shell-devices shell-duo">
       <header className="shell-devices-head">
         <h1 className="visually-hidden">{skin.name} on the iPhone Duo</h1>
-        <a className="shell-home-pill shell-duo-link" href={duo.demo} target="_blank" rel="noreferrer">
-          <PlayerIcon />
-          Open the Duo demo
-          <span className="visually-hidden"> (opens in a new tab)</span>
-        </a>
       </header>
       <div className="shell-duo-stage">
         <Suspense fallback={<p className="shell-duo-loading">Loading the phone…</p>}>

@@ -116,6 +116,11 @@ export default function App() {
                     <a className="shell-icon" href={s.demo} target="_blank" rel="noreferrer" aria-label={`${s.name} live player demo (opens in a new tab)`} title="Live player demo">
                       <PlayerIcon />
                     </a>
+                    {s.duo && (
+                      <a className="shell-icon" href={s.duo.demo} target="_blank" rel="noreferrer" aria-label={`${s.name} live Duo demo (opens in a new tab)`} title="Live Duo demo">
+                        <FoldIcon />
+                      </a>
+                    )}
                   </div>
                 </div>
                 <div className="shell-links">
