@@ -45,6 +45,16 @@ export default function App() {
     else document.title = IS_FRAME ? `${route.skin.site} · ${route.skin.name} skin` : `${route.skin.name} skin · ${viewName}`;
   }, [route, viewName]);
 
+  // Esc closes the drawer.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
   if (IS_FRAME) {
     if (route.page === 'player') {
       return DEVICE ? <DeviceFrame skin={route.skin} /> : <PlayerFrame skin={route.skin} />;
@@ -88,7 +98,22 @@ export default function App() {
         </button>
       </header>
 
-      <nav id="skin-index" className="shell-index" aria-label="Skin index">
+      {/* On wide screens the drawer opens from a tab on the left edge, which travels with it. */}
+      <button
+        type="button"
+        className="shell-tab"
+        aria-expanded={open}
+        aria-controls="skin-index"
+        aria-label={open ? 'Close the skin index' : 'Open the skin index'}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d={open ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6'} />
+        </svg>
+        <span>Skins</span>
+      </button>
+
+      <nav id="skin-index" className="shell-index" aria-label="Skin index" inert={!open}>
         <div className="shell-head">
           <span className="shell-head-title">Skins</span>
           <span className="shell-head-count">{String(SKINS.length).padStart(2, '0')}</span>

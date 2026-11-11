@@ -34,7 +34,7 @@ body { margin: 0; background: var(--shell-stage); color: var(--shell-ink); font-
 }
 .shell-skip:focus { top: 12px; }
 
-/* ---------- Index ---------- */
+/* ---------- Index: a drawer, hidden until opened ---------- */
 .shell-index {
   position: fixed;
   inset: 0 auto 0 0;
@@ -49,7 +49,49 @@ body { margin: 0; background: var(--shell-stage); color: var(--shell-ink); font-
   display: flex;
   flex-direction: column;
   gap: 20px;
+  translate: -100% 0;
+  transition: translate 0.28s cubic-bezier(0.3, 0.9, 0.3, 1), box-shadow 0.28s ease;
 }
+.shell[data-open] .shell-index { translate: 0 0; box-shadow: 12px 0 40px rgb(0 0 0 / 0.5); }
+.shell[data-open] .shell-scrim {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  border: 0;
+  background: rgb(0 0 0 / 0.5);
+  cursor: default;
+}
+
+/* The tab on the drawer's edge (wide screens; phones use the bar at the top). */
+.shell-tab {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  z-index: 55;
+  translate: 0 -50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 7px;
+  border: 1px solid var(--shell-line-hi);
+  border-left: 0;
+  border-radius: 0 12px 12px 0;
+  background: var(--shell-bg);
+  color: var(--shell-ink);
+  font-family: var(--shell-font);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 4px 0 16px rgb(0 0 0 / 0.35);
+  transition: left 0.28s cubic-bezier(0.3, 0.9, 0.3, 1), background-color 0.15s ease;
+}
+.shell-tab span { writing-mode: vertical-rl; rotate: 180deg; }
+.shell-tab:hover { background: var(--shell-hover); }
+.shell-tab:focus-visible { outline: 2px solid var(--shell-ink); outline-offset: 2px; }
+.shell[data-open] .shell-tab { left: var(--shell-w); }
 
 .shell-head {
   display: flex;
@@ -131,7 +173,7 @@ body { margin: 0; background: var(--shell-stage); color: var(--shell-ink); font-
 .shell-link[aria-current='page'] { background: var(--shell-ink); color: var(--shell-bg); }
 
 /* ---------- Site ---------- */
-.shell-site { margin-left: var(--shell-w); min-height: 100vh; min-height: 100dvh; background: #fff; color: initial; }
+.shell-site { min-height: 100vh; min-height: 100dvh; background: #fff; color: initial; }
 .shell-site[data-view='devices'] { background: var(--shell-stage); color: var(--shell-ink); }
 .shell-site[data-view='duo'] { background: #000; color: var(--shell-ink); }
 .shell-frame-site { min-height: 100vh; background: #fff; color: initial; }
@@ -210,21 +252,11 @@ body:has(.shell-device-frame[data-scroll]) { overflow: auto; }
     cursor: pointer;
   }
   .shell-bar-toggle:focus-visible { outline: 2px solid var(--shell-ink); outline-offset: 2px; }
-  .shell-index { translate: -100% 0; transition: translate 0.25s ease; box-shadow: none; }
-  .shell[data-open] .shell-index { translate: 0 0; box-shadow: 12px 0 40px rgb(0 0 0 / 0.5); }
-  .shell[data-open] .shell-scrim {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 45;
-    border: 0;
-    background: rgb(0 0 0 / 0.55);
-  }
-  .shell-site { margin-left: 0; }
+  .shell-tab { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shell-index, .shell-link, .shell-icon { transition: none; }
+  .shell-index, .shell-tab, .shell-link, .shell-icon { transition: none; }
 }
 
 .visually-hidden {
