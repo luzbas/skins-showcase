@@ -8,9 +8,10 @@ import clayImg from '../lib/devices/clay.webp';
 import glitchImg from '../lib/devices/glitch.webp';
 import sketchImg from '../lib/devices/sketch.webp';
 import picnicImg from '../lib/devices/picnic.webp';
+import annotatedImg from '../lib/devices/annotated.webp';
 import './all-devices.css';
 
-const LABELS: Record<string, string> = { papercut: papercutImg, clay: clayImg, glitch: glitchImg, sketch: sketchImg, picnic: picnicImg };
+const LABELS: Record<string, string> = { papercut: papercutImg, clay: clayImg, glitch: glitchImg, sketch: sketchImg, picnic: picnicImg, annotated: annotatedImg };
 
 type DeviceId = 'desktop' | 'phone' | 'phone-fs';
 /** Each device's screen, in CSS px of the page it shows, and the query that sets its frame up. */
@@ -123,10 +124,12 @@ export default function AllDevices() {
               <span className="dv-bar-name" aria-live="polite">
                 {skin.name}
               </span>
-              <span className="dv-bar-site">in {skin.site}</span>
-              <a className="dv-pill" href={href(skin, variation)}>
-                Open the website
-              </a>
+              {skin.site && <span className="dv-bar-site">in {skin.site}</span>}
+              {variation.Site && (
+                <a className="dv-pill" href={href(skin, variation)}>
+                  Open the website
+                </a>
+              )}
               <button type="button" className="dv-pill" onClick={() => pick(null)}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6L6 18" />

@@ -11,6 +11,7 @@ import { ClayPlayer } from '../lib/ClayPlayer';
 import { GlitchPlayer } from '../lib/GlitchPlayer';
 import { SketchPlayer } from '../lib/SketchPlayer';
 import { PicnicPlayer } from '../lib/PicnicPlayer';
+import { AnnotatedPlayer } from '../lib/AnnotatedPlayer';
 
 export interface Variation {
   id: string;
@@ -19,21 +20,26 @@ export interface Variation {
   fit: string;
   /** Three colours for the little swatch in the index. */
   swatch: [string, string, string];
-  Site: ComponentType;
+  /** The website; left out for a skin that isn't in one yet. */
+  Site?: ComponentType;
 }
+
+/** A skin that isn't in a website yet: its views (How it will look, Duo) hang off this stand-in, which has no site. */
+const PLAYER_ONLY = { id: 'player', name: 'Player only', fit: '', swatch: ['#000', '#000', '#000'] as [string, string, string] };
 
 export interface Skin {
   id: string;
   name: string;
   description: string;
-  /** The website the skin is shown in. */
-  site: string;
-  repo: string;
-  demo: string;
+  /** The website the skin is shown in (none yet for a skin that's only a player so far). */
+  site?: string;
+  /** Its source and its live player demo, once it has them. */
+  repo?: string;
+  demo?: string;
   /** The bare skin player, shown in the device frames. */
   Player: ComponentType;
   /** The skin's iPhone Duo layout, for skins that have one: shown in the fold simulator in the Duo view. */
-  duo?: { Player: ComponentType<StageOptions>; demo: string };
+  duo?: { Player: ComponentType<StageOptions>; demo?: string };
   variations: Variation[];
 }
 
@@ -144,6 +150,14 @@ export const SKINS: Skin[] = [
       },
     ],
   },
+  {
+    id: 'annotated',
+    name: 'Annotated Page',
+    description: 'A player laid out as an open book: the film a figure on the left page, the controls a sentence on the right, the extras footnotes.',
+    Player: AnnotatedPlayer,
+    duo: { Player: lazy(() => import('../lib/duo/AnnotatedDuo')) },
+    variations: [PLAYER_ONLY],
+  },
 ];
 
 export type View = 'site' | 'devices' | 'duo';
@@ -169,7 +183,9 @@ export function resolve(hash: string): Route | null {
   const skin = SKINS.find((s) => s.id === first);
   if (!skin) return { page: 'devices' };
   const variation = skin.variations.find((v) => v.id === second) ?? skin.variations[0];
-  const view: View = third === 'devices' ? 'devices' : third === 'duo' && skin.duo ? 'duo' : 'site';
+  let view: View = third === 'devices' ? 'devices' : third === 'duo' && skin.duo ? 'duo' : 'site';
+  // No website yet: its first view is How it will look.
+  if (view === 'site' && !variation.Site) view = 'devices';
   return { page: 'skin', skin, variation, view };
 }
 

@@ -8,6 +8,7 @@ import papercutImg from '../lib/duo/desk/papercut.webp';
 import clayImg from '../lib/duo/desk/clay.webp';
 import glitchImg from '../lib/duo/desk/glitch.webp';
 import sketchImg from '../lib/duo/desk/sketch.webp';
+import annotatedImg from '../lib/duo/desk/annotated.webp';
 import './all-duos.css';
 
 /** Each phone's picture as it lies closed on the desk (the same pose the simulator starts in), and its tilt. */
@@ -16,6 +17,7 @@ const DESK: Record<string, { img: string; tilt: number }> = {
   clay: { img: clayImg, tilt: 3 },
   glitch: { img: glitchImg, tilt: -3 },
   sketch: { img: sketchImg, tilt: 5 },
+  annotated: { img: annotatedImg, tilt: -2 },
 };
 const IMG_ASPECT = 895 / 1158;
 const FLIGHT_MS = 650;

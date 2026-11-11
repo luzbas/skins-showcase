@@ -1,0 +1,945 @@
+/*
+ * Annotated Page: the Default skin's controls laid out as an open book.
+ * Left page: the film as a figure, its caption and a highlighter timeline. Right page: the controls written as a
+ * sentence with highlighted words, extras as footnotes. Fullscreen: the film fills the screen and the right page turns
+ * in over it while paused; while playing a paper strip comes and goes with the controls, then a hairline stays.
+ * Everything sits in its own layer, declared after the Default skin's layers, so it wins without !important, and every
+ * rule is scoped to `.annotated-skin`, so nothing here reaches the other skins on the page.
+ */
+@layer annotated {
+  /* ---------- Tokens ---------- */
+  .annotated-skin {
+    --ap-paper: #f5efe2;
+    --ap-paper-deep: #e6dcc8;
+    --ap-paper-edge: #cbc2b0;
+    --ap-card: #fbf8f1;
+    --ap-ink: #1e1b16;
+    --ap-ink-soft: #4a4339;
+    --ap-ink-faint: #6d6455;
+    --ap-pencil: #8b8273;
+    --ap-teal: #1f6f6b;
+    --ap-teal-strong: #134c49;
+    --ap-film: #0d141a;
+    --ap-hl-yellow: #fbe38e;
+    --ap-hl-pink: #f7c6d3;
+    --ap-hl-green: #cdefc4;
+    --ap-hl-blue: #c9e3f5;
+    --ap-hl-lavender: #d9ccf5;
+    --ap-hl-paper: #ede6d6;
+    --ap-serif: 'Spectral', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+    --ap-hand: 'Kalam', 'Bradley Hand', 'Segoe Print', cursive;
+
+    /* Popups (menus, the volume slider, tooltips) become paper cards. */
+    --media-background: transparent;
+    --media-popover: var(--ap-card);
+    --media-popover-foreground: var(--ap-ink);
+    --media-primary: var(--ap-teal);
+    --media-ring: var(--ap-teal);
+    --media-border: rgb(30 27 22 / 0.18);
+    --media-backdrop-filter-surface: none;
+    --media-video-border-radius: 6px;
+    --media-font-family: var(--ap-serif);
+
+    color: var(--ap-ink);
+    font-family: var(--ap-serif);
+    border-radius: 0;
+  }
+
+  .annotated-skin.media-container::after {
+    display: none;
+  }
+
+  .annotated-skin.media-container:focus-visible {
+    outline: 2px solid var(--ap-teal);
+    outline-offset: 2px;
+  }
+
+  .annotated-skin .ap-sr {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .annotated-skin .ap-num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- The spread ---------- */
+  .annotated-skin .ap-stage {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 6px 8px 14px;
+  }
+
+  .annotated-skin .ap-page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-inline-size: 0;
+    background-color: var(--ap-paper);
+  }
+
+  .annotated-skin .ap-page--left {
+    padding: clamp(20px, 4cqi, 44px) clamp(18px, 3.4cqi, 40px) 52px;
+    background-image: linear-gradient(to left, var(--ap-paper-deep) 0, var(--ap-paper) 44px);
+    border-radius: 4px 0 0 4px;
+    box-shadow: -2px 3px 0 var(--ap-paper-edge);
+  }
+
+  .annotated-skin .ap-page--right {
+    gap: 18px;
+    padding: clamp(28px, 5cqi, 64px) clamp(20px, 4cqi, 48px) 52px clamp(22px, 4.4cqi, 52px);
+    background-image: linear-gradient(to right, var(--ap-paper-deep) 0, var(--ap-paper) 44px);
+    border-radius: 0 4px 4px 0;
+    box-shadow: 2px 3px 0 var(--ap-paper-edge);
+  }
+
+  .annotated-skin .ap-head {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .annotated-skin .ap-kicker {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ap-ink-faint);
+  }
+
+  .annotated-skin .ap-title {
+    margin: 0;
+    font-size: clamp(22px, 2.5cqi, 32px);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--ap-ink);
+  }
+
+  /* The Video.js title is an overlay by default; here it's printed type on the page. */
+  .annotated-skin .media-title.ap-title,
+  .annotated-skin .media-title.ap-figcaption-title,
+  .annotated-skin .media-title.ap-title:not([data-visible]),
+  .annotated-skin .media-title.ap-figcaption-title:not([data-visible]) {
+    position: static;
+    inset: auto;
+    z-index: auto;
+    display: block;
+    padding: 0;
+    color: var(--ap-ink);
+    text-shadow: none;
+    opacity: 1;
+    translate: none;
+    scale: none;
+    filter: none;
+    pointer-events: auto;
+  }
+
+  .annotated-skin .media-title.ap-title::before,
+  .annotated-skin .media-title.ap-figcaption-title::before {
+    display: none;
+  }
+
+  .annotated-skin .media-title.ap-figcaption-title {
+    display: inline;
+    font: inherit;
+    letter-spacing: normal;
+  }
+
+  .annotated-skin .ap-folio {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 18px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--ap-ink-faint);
+  }
+
+  /* ---------- The film, as a figure ---------- */
+  .annotated-skin .ap-figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .annotated-skin .ap-screen {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background-color: var(--ap-film);
+    box-shadow: 0 1px 0 #d8cfbc, 0 12px 28px -18px rgb(30 27 22 / 0.5);
+    cursor: pointer;
+    container: ap-screen / inline-size;
+  }
+
+  .annotated-skin .ap-screen video {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    border-radius: 0;
+    object-fit: contain;
+  }
+
+  .annotated-skin .ap-pilcrow {
+    position: absolute;
+    top: 12px;
+    inset-inline-start: 16px;
+    z-index: 4;
+    font-family: var(--ap-hand);
+    font-size: clamp(15px, 3.4cqi, 22px);
+    color: var(--ap-paper);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
+    opacity: 0;
+    translate: 0 -4px;
+    transition: opacity 0.25s ease, translate 0.25s ease;
+    pointer-events: none;
+  }
+
+  .annotated-skin .ap-stage[data-paused] .ap-pilcrow {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  .annotated-skin .ap-figcaption {
+    font-size: clamp(15px, 1.6cqi, 19px);
+    line-height: 1.45;
+  }
+
+  .annotated-skin .ap-fig {
+    margin-inline-end: 8px;
+    font-size: 0.68em;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ap-ink-faint);
+  }
+
+  .annotated-skin .ap-figcaption-title {
+    display: inline;
+  }
+
+  /* Captions on the film. */
+  /* Literal values only: some browsers don't resolve custom properties inside ::cue, and Safari paints its own
+   * black backdrop behind cues. Light text on a dark ink sheet reads in every browser and caption setting. */
+  .annotated-skin video::cue {
+    font-family: 'Spectral', 'Iowan Old Style', Georgia, serif;
+    color: #f5efe2;
+    background-color: rgb(30 27 22 / 0.86);
+  }
+
+  .annotated-skin video::-webkit-media-text-track-display-backdrop {
+    background-color: rgb(30 27 22 / 0.86);
+  }
+
+  /* ---------- Highlighter timeline ---------- */
+  .annotated-skin .ap-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--ap-ink);
+  }
+
+  .annotated-skin .ap-time-slider {
+    flex: none;
+    inline-size: 100%;
+    block-size: 34px;
+    --media-slider-height: 34px;
+  }
+
+  .annotated-skin .ap-timeline--strip .ap-time-slider {
+    flex: 1;
+    inline-size: auto;
+  }
+
+  .annotated-skin .ap-time-slider .media-slider-track[data-orientation='horizontal'] {
+    block-size: 16px;
+    border-radius: 0;
+  }
+
+  /* The pencil line runs through the middle of the track. */
+  .annotated-skin .ap-time-slider .media-slider-track::before {
+    inset: 50% 0 auto;
+    block-size: 0;
+    border-radius: 0;
+    background: none;
+    border-top: 1.5px dashed var(--ap-pencil);
+  }
+
+  .annotated-skin .ap-time-slider .media-slider-buffer::before {
+    inset: 50% 0 auto;
+    block-size: 0;
+    border-radius: 0;
+    background: none;
+    border-top: 1.5px solid var(--ap-pencil);
+  }
+
+  .annotated-skin .ap-time-slider .media-slider-fill::before {
+    border-radius: 2px 7px 3px 8px / 8px 3px 7px 2px;
+    background-color: var(--ap-hl-yellow);
+  }
+
+  /* Chapters: a small tick where each one starts. */
+  .annotated-skin .ap-time-slider .media-time-slider-chapter {
+    --media-chapter-inset-start: 0.5;
+    --media-chapter-inset-end: 0.5;
+  }
+
+  .annotated-skin .ap-time-slider .media-time-slider-chapter + .media-time-slider-chapter::before {
+    content: '';
+    position: absolute;
+    left: var(--media-slider-chapter-start, 0%);
+    top: 50%;
+    block-size: 24px;
+    margin-block-start: -12px;
+    border-inline-start: 1.5px solid var(--ap-teal);
+    pointer-events: none;
+  }
+
+  .annotated-skin .ap-time-slider .media-time-slider-chapter:first-of-type {
+    --media-chapter-inset-start: 0;
+  }
+
+  .annotated-skin .ap-time-slider .media-time-slider-chapter:last-of-type {
+    --media-chapter-inset-end: 0;
+  }
+
+  /* The playhead: an ink stroke. */
+  .annotated-skin .ap-time-slider .media-time-slider-thumb,
+  .annotated-skin .ap-time-slider .media-time-slider-thumb[data-interactive] {
+    inline-size: 3px;
+    block-size: 30px;
+    border-radius: 2px;
+    background-color: var(--ap-ink);
+    box-shadow: none;
+    opacity: 1;
+    scale: 1;
+  }
+
+  .annotated-skin .ap-time-slider .media-time-slider-thumb::after {
+    display: none;
+  }
+
+  .annotated-skin .media-slider-thumb:focus-visible {
+    outline: 2px solid var(--ap-teal);
+    outline-offset: 3px;
+  }
+
+  .annotated-skin .media-time-slider-value,
+  .annotated-skin .media-time-slider-chapter-title {
+    font-family: var(--ap-serif);
+    color: var(--ap-ink);
+    text-shadow: none;
+  }
+
+  .annotated-skin .ap-time {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ap-ink-soft);
+  }
+
+  .annotated-skin .ap-of {
+    font-style: italic;
+  }
+
+  /* ---------- The sentence ---------- */
+  .annotated-skin .ap-sentence {
+    margin: 0;
+    font-size: clamp(18px, 2.15cqi, 27px);
+    line-height: 2;
+    color: var(--ap-ink);
+  }
+
+  .annotated-skin .ap-dropcap {
+    float: left;
+    margin: 0.1em 0.04em 0 0;
+    font-size: 2.9em;
+    font-weight: 600;
+    line-height: 0.9;
+    color: var(--ap-teal);
+  }
+
+  .annotated-skin .ap-chip {
+    display: inline;
+    margin: 0 1px;
+    padding: 0.06em 0.42em 0.14em;
+    border: 0;
+    border-radius: 6px 10px 7px 12px / 12px 6px 10px 7px;
+    background-color: var(--ap-hl-paper);
+    box-shadow: 0 2px 0 rgb(30 27 22 / 0.16);
+    color: var(--ap-ink);
+    font: inherit;
+    line-height: 1.35;
+    cursor: pointer;
+    text-decoration: none;
+    transition: box-shadow 0.12s ease, translate 0.12s ease, background-color 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .annotated-skin .ap-chip[data-tone='pink'] { background-color: var(--ap-hl-pink); }
+  .annotated-skin .ap-chip[data-tone='green'] { background-color: var(--ap-hl-green); }
+  .annotated-skin .ap-chip[data-tone='yellow'] { background-color: var(--ap-hl-yellow); }
+  .annotated-skin .ap-chip[data-tone='blue'] { background-color: var(--ap-hl-blue); }
+  .annotated-skin .ap-chip[data-tone='lavender'] { background-color: var(--ap-hl-lavender); }
+  .annotated-skin .ap-chip[data-tone='paper'] { background-color: var(--ap-hl-paper); }
+
+  .annotated-skin .ap-chip[data-off] {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--ap-hl-blue), 0 2px 0 rgb(30 27 22 / 0.1);
+  }
+
+  /* Hover only where there is a real pointer to hover with: not on phones, and not on the Duo (data-input='touch'),
+     which stays touch-only even when its simulator is driven with a mouse. */
+  @media (hover: hover) {
+    .annotated-skin:not([data-input='touch']) .ap-chip:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 1.5px;
+      text-underline-offset: 0.22em;
+    }
+
+    .annotated-skin:not([data-input='touch']) .ap-fn:hover .ap-fn-label {
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
+  }
+
+  .annotated-skin .ap-chip:active {
+    translate: 0 1px;
+    box-shadow: 0 1px 0 rgb(30 27 22 / 0.16);
+  }
+
+  .annotated-skin .ap-chip:focus-visible,
+  .annotated-skin .ap-fn:focus-visible {
+    outline: 2px solid var(--ap-teal);
+    outline-offset: 2px;
+  }
+
+  .annotated-skin .ap-chip[data-popup-open],
+  .annotated-skin .ap-chip[aria-expanded='true'] {
+    background-color: var(--ap-card);
+    box-shadow: inset 0 0 0 1.5px var(--ap-ink-faint);
+  }
+
+  .annotated-skin .ap-plain {
+    font-style: italic;
+    color: var(--ap-ink-soft);
+  }
+
+  @media (pointer: coarse) {
+    .annotated-skin .ap-chip {
+      display: inline-block;
+      min-block-size: 44px;
+      padding-block: 0.2em 0.28em;
+      vertical-align: middle;
+    }
+  }
+
+  /* ---------- Margin note and footnotes ---------- */
+  .annotated-skin .ap-margin-note {
+    margin: 0;
+    align-self: flex-end;
+    max-inline-size: 18em;
+    font-family: var(--ap-hand);
+    font-size: 17px;
+    line-height: 1.25;
+    color: var(--ap-teal);
+    rotate: -2.5deg;
+    transition: opacity 0.3s ease;
+  }
+
+  .annotated-skin .ap-footnotes {
+    margin-block-start: auto;
+    padding-block-start: 8px;
+    border-block-start: 1px solid #b9ae98;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 20px;
+    counter-reset: ap-fn;
+    transition: opacity 0.3s ease;
+  }
+
+  .annotated-skin .ap-fn {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-block-size: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ap-ink);
+    font: inherit;
+    font-size: 16px;
+    text-align: start;
+    cursor: pointer;
+    counter-increment: ap-fn;
+    align-items: center;
+  }
+
+  .annotated-skin .ap-fn::before {
+    content: counter(ap-fn);
+    font-size: 0.72em;
+    vertical-align: super;
+    align-self: flex-start;
+    margin-block-start: 0.55em;
+    color: var(--ap-teal);
+  }
+
+  .annotated-skin .ap-footnotes[data-compact] {
+    margin: 0;
+    padding: 0 0 0 10px;
+    border: 0;
+    border-inline-start: 1px solid #b9ae98;
+    display: flex;
+    gap: 0;
+  }
+
+  .annotated-skin .ap-footnotes[data-compact] .ap-fn {
+    justify-content: center;
+    min-inline-size: 44px;
+    font-size: 20px;
+  }
+
+  .annotated-skin .ap-footnotes[data-compact] .ap-fn::before {
+    margin: 0;
+    font-size: 1em;
+    vertical-align: baseline;
+    align-self: center;
+  }
+
+  .annotated-skin .ap-footnotes[data-compact] .ap-fn-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* While the film plays, the notes rest. */
+  .annotated-skin .ap-stage:not([data-paused]) .ap-margin-note {
+    opacity: 0.35;
+  }
+
+  .annotated-skin .ap-stage:not([data-paused], [data-touch]) .ap-page--right .ap-footnotes:not(:hover, :focus-within) {
+    opacity: 0.62;
+  }
+
+  /* On touch there's nothing to hover, so the footnotes rest with the controls and wake with a tap. */
+  .annotated-skin .ap-stage[data-touch]:not([data-paused], [data-awake]) .ap-page--right .ap-footnotes:not(:focus-within) {
+    opacity: 0.62;
+  }
+
+  .annotated-skin .ap-stage[data-touch] .ap-page--right .ap-footnotes {
+    transition: opacity 0.3s ease;
+  }
+
+  /* A press answers the finger instead: the word dips like a key, the footnote's label underlines. */
+  .annotated-skin[data-input='touch'] .ap-chip:active {
+    translate: 0 2px;
+    box-shadow: none;
+    filter: brightness(0.94);
+  }
+
+  .annotated-skin[data-input='touch'] .ap-fn:active .ap-fn-label {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  /* ---------- Popups as paper cards ---------- */
+  .annotated-skin .ap-popup,
+  .annotated-skin .media-tooltip {
+    border-radius: 6px;
+    box-shadow:
+      0 0 0 1px rgb(30 27 22 / 0.15),
+      0 14px 30px -14px rgb(30 27 22 / 0.45);
+    font-family: var(--ap-serif);
+    color: var(--ap-ink);
+    text-shadow: none;
+  }
+
+  .annotated-skin .ap-menu-chapter {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    inline-size: 100%;
+    font-size: 16px;
+  }
+
+  .annotated-skin .ap-menu-num {
+    min-inline-size: 2.2em;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--ap-teal);
+  }
+
+  .annotated-skin .ap-menu-time {
+    margin-inline-start: auto;
+    padding-inline-start: 16px;
+    font-size: 13px;
+    color: var(--ap-ink-faint);
+  }
+
+  .annotated-skin .ap-volume-popup {
+    padding: 10px 16px;
+  }
+
+  .annotated-skin .ap-volume-slider {
+    inline-size: 180px;
+    color: var(--ap-ink);
+  }
+
+  .annotated-skin .ap-volume-slider .media-slider-fill::before {
+    background-color: var(--ap-hl-lavender);
+    box-shadow: inset 0 0 0 1px rgb(30 27 22 / 0.25);
+  }
+
+  .annotated-skin .media-menu-radio-item[data-checked],
+  .annotated-skin .media-menu-radio-item[aria-checked='true'] {
+    background-color: color-mix(in oklab, var(--ap-hl-yellow) 70%, transparent);
+    color: var(--ap-ink);
+  }
+
+  .annotated-skin .ap-popup [role^='menuitem'][data-highlighted],
+  .annotated-skin .ap-popup [role^='menuitem']:focus-visible {
+    background-color: var(--ap-hl-yellow);
+    color: var(--ap-ink);
+  }
+
+  .annotated-skin .ap-popup .media-menu-item-indicator {
+    color: var(--ap-teal);
+  }
+
+  /* The video's own indicators (volume, seek) stay white on the film. */
+  .annotated-skin .ap-screen .video-status-indicators {
+    color: #fff;
+  }
+
+  /* ---------- Phone width: one page ---------- */
+  @container media-root (width < 760px) {
+    .annotated-skin .ap-stage[data-layout='spread'] {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 0;
+    }
+
+    .annotated-skin .ap-stage[data-layout='spread'] .ap-page {
+      background-image: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .annotated-skin .ap-stage[data-layout='spread'] .ap-page--left {
+      padding: 22px 0 6px;
+      gap: 10px;
+    }
+
+    .annotated-skin .ap-stage[data-layout='spread'] .ap-head,
+    .annotated-skin .ap-stage[data-layout='spread'] .ap-figcaption,
+    .annotated-skin .ap-stage[data-layout='spread'] .ap-timeline {
+      padding-inline: 20px;
+    }
+
+    .annotated-skin .ap-stage[data-layout='spread'] .ap-screen {
+      box-shadow: none;
+    }
+
+    .annotated-skin .ap-stage[data-layout='spread'] .ap-page--right {
+      padding: 4px 20px 36px;
+      gap: 12px;
+    }
+
+    .annotated-skin .ap-stage[data-layout='spread'] .ap-page--left .ap-folio {
+      display: none;
+    }
+
+    .annotated-skin .ap-stage[data-layout='spread'] .ap-folio {
+      bottom: 10px;
+    }
+
+    .annotated-skin .ap-sentence {
+      font-size: 20px;
+      line-height: 2.15;
+    }
+
+    .annotated-skin .ap-margin-note {
+      display: none;
+    }
+
+    .annotated-skin .ap-footnotes {
+      column-gap: 14px;
+    }
+
+    .annotated-skin .ap-fn {
+      font-size: 15px;
+    }
+  }
+
+  /* ---------- Fullscreen ---------- */
+  .annotated-skin .ap-stage[data-layout='fullscreen'] {
+    position: absolute;
+    inset: 0;
+    display: block;
+    padding: 0;
+    background-color: var(--ap-film);
+    overflow: hidden;
+  }
+
+  .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-page--left {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-figure {
+    position: absolute;
+    inset: 0;
+  }
+
+  .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-screen {
+    position: absolute;
+    inset: 0;
+    aspect-ratio: auto;
+    box-shadow: none;
+    transition: inset-inline-end 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  /* Paused: the film slides aside to make room for the page, so captions never run under it. */
+  .annotated-skin .ap-stage[data-layout='fullscreen'][data-paused] .ap-screen {
+    inset-inline-end: min(520px, 42%);
+  }
+
+  .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background-color: rgb(10 14 18 / 0.35);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  .annotated-skin .ap-stage[data-layout='fullscreen'][data-paused] .ap-screen::after {
+    opacity: 1;
+  }
+
+  .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-pilcrow {
+    top: 32px;
+    inset-inline-start: 40px;
+  }
+
+  /* The figure's caption becomes a printed strip, bottom left, while paused. */
+  .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-figcaption {
+    position: absolute;
+    inset-inline-start: 40px;
+    top: 76px;
+    z-index: 3;
+    max-inline-size: min(560px, calc(100% - min(520px, 42%) - 80px));
+    padding: 10px 16px;
+    background-color: var(--ap-paper);
+    box-shadow: 0 10px 24px -14px rgb(0 0 0 / 0.6);
+    opacity: 0;
+    translate: 0 8px;
+    transition: opacity 0.3s ease, translate 0.3s ease;
+    pointer-events: none;
+  }
+
+  .annotated-skin .ap-stage[data-layout='fullscreen'][data-paused] .ap-figcaption {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /* The right page turns in from the edge while paused. */
+  .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-page--right {
+    position: absolute;
+    top: 0;
+    inset-inline-end: 0;
+    z-index: 5;
+    inline-size: min(520px, 42%);
+    block-size: 100%;
+    box-sizing: border-box;
+    padding: 56px 52px 48px 60px;
+    overflow-y: auto;
+    border-radius: 0;
+    background-image: linear-gradient(to right, #ddd4c1 0, var(--ap-paper) 40px);
+    box-shadow: -24px 0 40px -20px rgb(0 0 0 / 0.65);
+    transform-origin: right center;
+    transition:
+      transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1),
+      opacity 0.35s ease;
+  }
+
+  .annotated-skin .ap-stage[data-layout='fullscreen']:not([data-paused]) .ap-page--right {
+    transform: perspective(1600px) translateX(102%) rotateY(-24deg);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .annotated-skin .ap-title--panel {
+    font-size: clamp(22px, 2.2vw, 30px);
+  }
+
+  .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-sentence {
+    font-size: clamp(19px, 1.7vw, 25px);
+  }
+
+  .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-page--right .ap-folio {
+    bottom: 16px;
+  }
+
+  /* Playing: a paper strip with the timeline and the short sentence, shown with the controls. */
+  .annotated-skin .ap-strip {
+    position: absolute;
+    inset-inline: 40px;
+    bottom: 28px;
+    z-index: 6;
+    padding: 6px 24px 10px;
+    border-radius: 3px;
+    background-color: var(--ap-paper);
+    box-shadow: 0 14px 30px -14px rgb(0 0 0 / 0.7);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: opacity 0.25s ease, translate 0.25s ease;
+  }
+
+  .annotated-skin .ap-strip:not([data-visible]):not(:focus-within) {
+    opacity: 0;
+    translate: 0 10px;
+    pointer-events: none;
+  }
+
+  .annotated-skin .ap-timeline--strip {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .annotated-skin .ap-timeline--strip .ap-time {
+    white-space: nowrap;
+  }
+
+  .annotated-skin .ap-strip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .annotated-skin .ap-sentence--compact {
+    font-size: clamp(16px, 1.5vw, 21px);
+    line-height: 1.9;
+  }
+
+  /* Idle: only a thin line of progress along the bottom edge. */
+  .annotated-skin .ap-hairline {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 4;
+    block-size: 5px;
+    background-color: rgb(245 239 226 / 0.12);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  .annotated-skin .ap-hairline[data-visible] {
+    opacity: 1;
+  }
+
+  .annotated-skin .ap-hairline span {
+    display: block;
+    block-size: 100%;
+    background-color: var(--ap-hl-yellow);
+    opacity: 0.85;
+  }
+
+  .annotated-skin .ap-screen video {
+    --media-caption-track-y: -10px;
+  }
+
+  .annotated-skin .ap-stage[data-layout='fullscreen'] video {
+    --media-caption-track-y: -24px;
+  }
+
+  /* Lift the captions clear of the paper strip while it shows. */
+  .annotated-skin[data-controls-visible] .ap-stage[data-layout='fullscreen']:not([data-paused]) video {
+    --media-caption-track-y: -150px;
+  }
+
+  .annotated-skin .ap-stage[data-layout='fullscreen'] video::cue {
+    font-size: clamp(18px, 2.4vw, 30px);
+  }
+
+  /* Small fullscreen (a phone on its side): the page takes more room, the strip wraps. */
+  @container media-root (width < 760px) {
+    .annotated-skin .ap-stage[data-layout='fullscreen'][data-paused] .ap-screen {
+      inset-inline-end: min(400px, 52%);
+    }
+
+    .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-page--right {
+      inline-size: min(400px, 52%);
+      padding: 18px 22px 12px 30px;
+      gap: 8px;
+    }
+
+    .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-page--right .ap-folio,
+    .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-margin-note {
+      display: none;
+    }
+
+    .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-sentence {
+      font-size: 16px;
+      line-height: 2.1;
+    }
+
+    .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-figcaption {
+      inset-inline-start: 20px;
+      top: 52px;
+      font-size: 14px;
+      max-inline-size: calc(100% - min(400px, 52%) - 40px);
+    }
+
+    .annotated-skin .ap-strip {
+      inset-inline: 16px;
+      bottom: 12px;
+      padding: 2px 14px 6px;
+    }
+
+    .annotated-skin .ap-strip-row {
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .annotated-skin .ap-sentence--compact {
+      font-size: 15px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .annotated-skin .ap-stage[data-layout='fullscreen'] .ap-page--right,
+    .annotated-skin .ap-strip,
+    .annotated-skin .ap-pilcrow,
+    .annotated-skin .ap-figcaption {
+      transition-duration: 0.01s;
+    }
+
+    .annotated-skin .ap-stage[data-layout='fullscreen']:not([data-paused]) .ap-page--right {
+      transform: translateX(102%);
+    }
+  }
+
+  @media (pointer: fine) {
+    .annotated-skin.video-skin:not([data-controls-visible]) .ap-stage[data-layout='fullscreen']:not([data-paused]) {
+      cursor: none;
+    }
+  }
+}

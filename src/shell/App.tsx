@@ -42,7 +42,7 @@ export default function App() {
     if (route.page === 'duos') document.title = 'All Duos · Video.js skin showcase';
     else if (route.page === 'devices') document.title = 'All devices · Video.js skin showcase';
     else if (route.page === 'player') document.title = `${route.skin.name} skin player`;
-    else document.title = IS_FRAME ? `${route.skin.site} · ${route.skin.name} skin` : `${route.skin.name} skin · ${viewName}`;
+    else document.title = IS_FRAME ? `${route.skin.site ?? route.skin.name} · ${route.skin.name} skin` : `${route.skin.name} skin · ${viewName}`;
   }, [route, viewName]);
 
   // Esc closes the drawer.
@@ -61,11 +61,7 @@ export default function App() {
     }
     if (route.page === 'skin') {
       const Site = route.variation.Site;
-      return (
-        <main className="shell-frame-site">
-          <Site />
-        </main>
-      );
+      return <main className="shell-frame-site">{Site && <Site />}</main>;
     }
   }
 
@@ -141,13 +137,17 @@ export default function App() {
                     <span>{s.name}</span>
                   </h2>
                   <div className="shell-skin-ext">
-                    <a className="shell-icon" href={s.repo} target="_blank" rel="noreferrer" aria-label={`${s.name} source on GitHub (opens in a new tab)`} title="Source on GitHub">
-                      <CodeIcon />
-                    </a>
-                    <a className="shell-icon" href={s.demo} target="_blank" rel="noreferrer" aria-label={`${s.name} live player demo (opens in a new tab)`} title="Live player demo">
-                      <PlayerIcon />
-                    </a>
-                    {s.duo && (
+                    {s.repo && (
+                      <a className="shell-icon" href={s.repo} target="_blank" rel="noreferrer" aria-label={`${s.name} source on GitHub (opens in a new tab)`} title="Source on GitHub">
+                        <CodeIcon />
+                      </a>
+                    )}
+                    {s.demo && (
+                      <a className="shell-icon" href={s.demo} target="_blank" rel="noreferrer" aria-label={`${s.name} live player demo (opens in a new tab)`} title="Live player demo">
+                        <PlayerIcon />
+                      </a>
+                    )}
+                    {s.duo?.demo && (
                       <a className="shell-icon" href={s.duo.demo} target="_blank" rel="noreferrer" aria-label={`${s.name} live Duo demo (opens in a new tab)`} title="Live Duo demo">
                         <FoldIcon />
                       </a>
@@ -155,10 +155,12 @@ export default function App() {
                   </div>
                 </div>
                 <div className="shell-links">
-                  <a className="shell-link" href={href(s, v)} aria-current={on && view === 'site' ? 'page' : undefined}>
-                    <WebsiteIcon />
-                    Website
-                  </a>
+                  {v.Site && (
+                    <a className="shell-link" href={href(s, v)} aria-current={on && view === 'site' ? 'page' : undefined}>
+                      <WebsiteIcon />
+                      Website
+                    </a>
+                  )}
                   <a
                     className="shell-link"
                     href={href(s, v, 'devices')}
