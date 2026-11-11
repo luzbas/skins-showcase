@@ -48,3 +48,12 @@ export function PlayerIcon() {
     </svg>
   );
 }
+
+export function FoldIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <path d="M4 12h16" strokeDasharray="2 2.2" />
+    </svg>
+  );
+}

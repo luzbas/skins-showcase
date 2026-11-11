@@ -1,0 +1,281 @@
+/*
+ * Clay · Duo — the clay console on the iPhone Duo. Positions and sizes come inline from clay-duo-skin.tsx, in the
+ * console's scene units (--ci-u px each); this file places the stage and the picture, turns the console's controls
+ * into square clay keys where the design has keys, and adds the Duo's own bits (the crease, the outer display's
+ * camera). The pieces-and-spots engine and the clay controls are the island's and the clay skin's styles.
+ *
+ * Declared after the island's layer, so these rules win whatever the import order.
+ */
+@layer clay, clay-island, clay-duo;
+
+@layer clay-duo {
+  /* The simulation sizes and rounds the screen; the player just fills it. Every layout is on black. */
+  .clay-skin.clay-island.clay-duo {
+    --cdu-black: #0f0e14;
+    --cdu-key-white: url('./assets/key-white.webp');
+    --cdu-key-orange: url('./assets/key-orange.webp');
+    --cdu-key-leaf: url('./assets/key-leaf.webp');
+    --cdu-key-pink: url('./assets/key-pink.webp');
+    --cdu-key-cream: url('./assets/key-cream.webp');
+    --cdu-key-yellow: url('./assets/key-yellow.webp');
+    --cdu-key-sky: url('./assets/key-sky.webp');
+    position: relative;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    border-radius: inherit;
+    background: var(--cdu-black);
+  }
+
+  .clay-duo .ci-screen {
+    background: var(--cdu-black);
+  }
+
+  .clay-duo .cdu-picture {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .clay-duo .cdu-picture video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .clay-duo .cdu-frame {
+    position: absolute;
+    z-index: 2;
+    max-width: none;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .clay-duo .cdu-stage {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    overflow: clip;
+  }
+
+  .clay-duo .cdu-crease,
+  .clay-duo .cdu-camera {
+    display: none;
+  }
+
+  /* ---------- Square clay keys ----------
+     The clay skin draws every button's clay from --clay-disc; a key just swaps in a square picture (same margin). */
+  .clay-duo .cdu-key > .media-button {
+    border-radius: 24%;
+  }
+  .clay-duo .cdu-key--white > .media-button { --clay-disc: var(--cdu-key-white); }
+  .clay-duo .cdu-key--orange > .media-button { --clay-disc: var(--cdu-key-orange); }
+  .clay-duo .cdu-key--leaf > .media-button { --clay-disc: var(--cdu-key-leaf); }
+  .clay-duo .cdu-key--pink > .media-button { --clay-disc: var(--cdu-key-pink); }
+  .clay-duo .cdu-key--cream > .media-button { --clay-disc: var(--cdu-key-cream); }
+  .clay-duo .cdu-key--yellow > .media-button { --clay-disc: var(--cdu-key-yellow); }
+  .clay-duo .cdu-key--sky > .media-button { --clay-disc: var(--cdu-key-sky); }
+
+  /* Cast and AirPlay hide themselves where the browser can't use them; their key stays, so the row has no gap. */
+  .clay-duo .cdu-key:is(.ci-spot--cast, .ci-spot--airplay) {
+    background: var(--cdu-key-pink) center / contain no-repeat;
+    border-radius: 0;
+  }
+  .clay-duo .cdu-key.ci-spot--airplay {
+    background-image: var(--cdu-key-cream);
+  }
+
+  .clay-duo .cdu-key > .media-button:focus-visible {
+    border-radius: 24%;
+  }
+
+  /* ---------- Title: a cream clay label with the title and the chapter now, in one line ---------- */
+  .clay-duo .ci-spot--title {
+    box-sizing: border-box;
+    border-style: solid;
+    border-color: transparent;
+    border-image: var(--ca-bar-cream) 0 110 fill / 0 calc(var(--ci-h) / 2) / 0 stretch;
+    filter: var(--clay-shadow);
+    padding-inline: calc(var(--ci-h) * 0.6);
+  }
+
+  .clay-duo .ci-title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .clay-duo .ci-title-main,
+  .clay-duo .ci-title-main:not([data-visible]) {
+    font-size: calc(var(--ci-h) * 0.4);
+  }
+
+  .clay-duo .ci-title-main,
+  .clay-duo .ci-title-chapter {
+    line-height: 1;
+  }
+
+  .clay-duo .ci-title-chapter {
+    margin: 0;
+    font-size: calc(var(--ci-h) * 0.34);
+    min-width: 0;
+  }
+
+  .clay-duo .ci-title-chapter::before {
+    content: '— ';
+  }
+
+  /* ---------- Volume fader: the slider stood up on the console ---------- */
+  .clay-duo .ci-spot--volume .media-volume-slider[data-orientation='vertical'] {
+    --clay-track-h: calc(var(--ci-w) * 0.42);
+    width: 100%;
+    height: 100%;
+  }
+
+  .clay-duo .ci-spot--volume .media-volume-slider[data-orientation='vertical'] .media-volume-slider-thumb {
+    width: calc(var(--ci-w) * 0.85);
+    height: calc(var(--ci-w) * 0.85);
+  }
+
+  /* The settings key carries its menu: above every other control, so nothing (the volume knob) shows through it. */
+  .clay-duo .ci-spot--settings {
+    z-index: 30; /* the sliders' thumbs sit at 10 */
+  }
+
+  /* ---------- Menus: wide enough for their values ("English (Generated)"), never wider than the screen ---------- */
+  .clay-duo .cdu-menu .media-menu-content {
+    min-width: min(17em, calc(var(--ci-u) * 10));
+  }
+
+  .clay-duo .cdu-menu .media-menu-hint-label {
+    max-width: calc(var(--ci-u) * 4.8);
+  }
+
+  /* ================= Propped up (split) =================
+     The framed picture fills the top viewport segment; the console fills the bottom one. Positions come from the
+     segment variables set by useFoldable (the device, or the simulation), falling back to halves. */
+  .clay-duo[data-mode='split'] .cdu-screen {
+    inset: var(--seg0-top, 0px) 0 auto;
+    height: var(--seg0-height, 50%);
+    border-radius: 0;
+  }
+
+  .clay-duo[data-mode='split'] .cdu-stage {
+    inset: var(--seg1-top, 50%) 0 auto;
+    height: var(--seg1-height, 50%);
+    background: var(--cdu-black);
+  }
+
+  /* The fold: a faint pressed seam along the top of the console half. */
+  .clay-duo[data-mode='split'] .cdu-crease {
+    display: block;
+    position: absolute;
+    inset-inline: 0;
+    top: var(--seg1-top, 50%);
+    height: calc(var(--pcd-sim-pt, 1px) * 8);
+    z-index: 4;
+    background: linear-gradient(to bottom, rgb(255 255 255 / 0.08), transparent);
+    pointer-events: none;
+  }
+
+  /* ================= Closed (outer display) =================
+     The camera sits top trailing, above the rail, in a ring of teal clay. */
+  .clay-duo[data-layout^='outer'] .cdu-camera {
+    --pt: var(--pcd-sim-pt, 1px);
+    display: block;
+    position: absolute;
+    z-index: 4;
+    top: calc(var(--pt) * 22);
+    right: calc(var(--pt) * 18);
+    width: calc(var(--pt) * 37);
+    height: calc(var(--pt) * 37);
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, #2c3340 0 14%, #07080a 15% 100%);
+    box-shadow:
+      0 0 0 calc(var(--pt) * 5) #2c5e73,
+      0 0 0 calc(var(--pt) * 6) rgb(0 0 0 / 0.4);
+    pointer-events: none;
+  }
+
+  @media (forced-colors: active) {
+    .clay-duo .cdu-frame {
+      display: none;
+    }
+    .clay-duo .ci-spot--title {
+      border-image: none;
+      border: 1px solid CanvasText;
+      border-radius: 999px;
+    }
+    .clay-duo[data-mode='split'] .cdu-stage {
+      background: Canvas;
+    }
+  }
+}
+
+/* ---------- Settings menu on the board (split) ----------
+   An ordinary child of the settings disc, not a popover, so it lies on the bottom half and tilts with it. Video.js
+   still writes anchor positioning inline; these override it, opening the menu above the key, left-aligned with it.
+   Unlayered on purpose: a layered !important loses to the base styles' own. */
+.clay-duo .cdu-menu[data-on-board] {
+  position: absolute !important;
+  top: auto !important;
+  left: 0 !important;
+  right: auto !important;
+  bottom: calc(100% + var(--ci-u) * 0.2) !important;
+  margin: 0 !important;
+  translate: none !important;
+  z-index: 5;
+  /* Sized to the console: as wide as the space right of the key, tall enough for every row above it. */
+  width: calc(var(--ci-u) * 10.2) !important;
+  min-width: 0;
+  max-height: calc(var(--ci-u) * 6.4) !important;
+  overflow: auto;
+}
+
+.clay-duo .cdu-menu[data-on-board] .media-menu-content {
+  width: 100% !important;
+  min-width: 0;
+}
+
+.clay-duo .cdu-menu[data-on-board][hidden] {
+  display: none !important;
+}
+
+/* ---------- Tabletop in the simulation: the live player bends with the phone ----------
+   As for Papercut · Duo (simulation.css): the framed picture folds up with the cover, the console stays on the body. That needs
+   one 3D context from the device down to the picture, so everything between keeps its children in 3D. */
+.pcd-dev-screen[data-tabletop] .clay-duo {
+  overflow: visible;
+  isolation: auto;
+  transform-style: preserve-3d;
+  background: transparent;
+}
+
+.pcd-dev-screen[data-tabletop] .clay-duo .cdu-screen {
+  overflow: hidden;
+  border-radius: calc(var(--u) * 43) calc(var(--u) * 43) 0 0;
+  transform-origin: center bottom;
+  transform: rotateX(calc(var(--fold) * -180deg)) translateZ(3px);
+  backface-visibility: hidden;
+}
+
+.pcd-dev-screen[data-tabletop] .clay-duo .cdu-stage {
+  overflow: clip;
+  border-radius: 0 0 calc(var(--u) * 43) calc(var(--u) * 43);
+}
+
+.pcd-dev[data-flat] .pcd-dev-screen[data-tabletop] .clay-duo .cdu-stage {
+  transform: translateZ(1px);
+}
+
+/* Chrome's 3D hit-testing, measured on the tilted console: a positioned layer with a z-index between the console and
+   its controls (the island's controls layer sits at z-index 2) sends every click to the page behind the phone. Propped
+   up, nothing overlaps the console, so the layer doesn't need one. The controls are placed with transforms for the
+   same reason (see placeAt in clay-duo-skin.tsx). */
+.pcd-dev-screen[data-tabletop] .clay-duo .ci-controls {
+  z-index: auto;
+}

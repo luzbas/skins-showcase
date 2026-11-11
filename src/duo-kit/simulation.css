@@ -1,0 +1,386 @@
+/*
+ * iPhone Duo fold simulation (see duo-simulation.tsx). Everything is in device units, --u: one inner-display point.
+ *
+ * Horizontal (open 934 × 670 u): the hinge runs top to bottom at x = 467. The cover is the leading half and folds
+ * over the trailing one, so a closed phone shows its outer display where the trailing half was, hinge on its leading
+ * edge and camera on its trailing edge. Vertical (670 × 934 u) is the same phone a quarter turn round: the cover is
+ * the top half and folds down. --fold runs from 0 (open) to 1 (closed).
+ */
+.pcd-sim {
+  margin-top: 8px;
+}
+
+/* ---------- Controls ---------- */
+.pcd-sim-controls {
+  /* Kept above the stage: the phone swinging toward you grows in perspective and would otherwise cover the buttons
+     and swallow their clicks. */
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px 20px;
+  margin-bottom: 28px;
+}
+
+.pcd-seg {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--border, #e3e0da);
+  border-radius: 999px;
+  background: var(--surface, #ffffff);
+}
+
+.pcd-seg button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted, #6b6862);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pcd-seg button[aria-pressed='true'] {
+  background: var(--text, #1c1b19);
+  color: var(--bg, #f6f5f2);
+}
+
+.pcd-seg button {
+  transition: background-color 220ms ease, color 220ms ease, scale 160ms ease;
+}
+
+.pcd-seg button:active {
+  scale: 0.96;
+}
+
+.pcd-seg button:focus-visible {
+  outline: 2px solid var(--accent, #1c1b19);
+  outline-offset: 2px;
+}
+
+/* The categories and the sub-choice read as one control: no wrap gap between them while there's room. */
+.pcd-sim-controls {
+  column-gap: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pcd-seg button {
+    transition-duration: 0ms;
+  }
+}
+
+/* ---------- Stage ---------- */
+.pcd-sim-area {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  display: grid;
+  justify-items: center;
+  /* Room for the cover swinging out towards you. */
+  padding-block: 12px 40px;
+  perspective: 2600px;
+}
+
+.pcd-stage {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.pcd-dev {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: translateX(calc(var(--u) * -233.5 * var(--fold)));
+}
+
+/* Vertical: as the hinge bends, the phone also leans back, so in tabletop the bottom half lies like a keyboard and
+   the top half stands up like a laptop screen. Flat again when open or shut. --lean (set by the simulation) is that
+   lean, tilted further toward the top or bottom half when Table is seen square-on from either. */
+[data-orientation='vertical'] .pcd-dev {
+  transform-origin: center bottom;
+  transform: translateY(calc(var(--u) * -233.5 * var(--fold))) rotateX(var(--lean, 0deg));
+}
+
+/* The two halves of the phone, each a piece of grey card. */
+.pcd-dev-body,
+.pcd-dev-cover {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.pcd-dev-body::before,
+.pcd-dev-cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  /* Dark grey card. */
+  background: linear-gradient(160deg, #55555b, #303034);
+  filter: url(#pcd-lumpy) drop-shadow(0 calc(var(--u) * 3) calc(var(--u) * 2) rgb(0 0 0 / 0.45));
+}
+
+.pcd-dev-body {
+  box-shadow: 0 calc(var(--u) * 24) calc(var(--u) * 40) rgb(0 0 0 / 0.35);
+}
+
+/* Horizontal: cover = leading half, body = trailing half. */
+.pcd-dev-cover {
+  left: 0;
+  top: 0;
+  width: calc(var(--u) * 467);
+  height: calc(var(--u) * 670);
+  border-radius: calc(var(--u) * 64) calc(var(--u) * 10) calc(var(--u) * 10) calc(var(--u) * 64);
+  transform-origin: right center;
+  transform: rotateY(calc(var(--fold) * 180deg));
+}
+
+.pcd-dev-body {
+  left: calc(var(--u) * 467);
+  top: 0;
+  width: calc(var(--u) * 467);
+  height: calc(var(--u) * 670);
+  border-radius: calc(var(--u) * 10) calc(var(--u) * 64) calc(var(--u) * 64) calc(var(--u) * 10);
+}
+
+/* Vertical: cover = top half, body = bottom half. */
+[data-orientation='vertical'] .pcd-dev-cover {
+  width: calc(var(--u) * 670);
+  height: calc(var(--u) * 467);
+  border-radius: calc(var(--u) * 64) calc(var(--u) * 64) calc(var(--u) * 10) calc(var(--u) * 10);
+  transform-origin: center bottom;
+  transform: rotateX(calc(var(--fold) * -180deg));
+}
+
+[data-orientation='vertical'] .pcd-dev-body {
+  left: 0;
+  top: calc(var(--u) * 467);
+  width: calc(var(--u) * 670);
+  height: calc(var(--u) * 467);
+  border-radius: calc(var(--u) * 10) calc(var(--u) * 10) calc(var(--u) * 64) calc(var(--u) * 64);
+}
+
+/* ---------- Faces: what each half shows while the hinge moves ---------- */
+.pcd-face {
+  position: absolute;
+  overflow: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(1px);
+}
+
+/* Inner faces dim as the phone closes, the outer one as it opens (the screens turn off away from you). */
+.pcd-face::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: calc(var(--fold) * 0.8);
+  pointer-events: none;
+}
+
+.pcd-face--outer::after {
+  opacity: calc((1 - var(--fold)) * 0.85);
+}
+
+/* Cover front: the leading (horizontal) or top (vertical) half of the open screen. */
+.pcd-face--cover {
+  inset: calc(var(--u) * 22) 0 calc(var(--u) * 22) calc(var(--u) * 22);
+  border-radius: calc(var(--u) * 43) 0 0 calc(var(--u) * 43);
+  background: #000;
+}
+
+[data-orientation='vertical'] .pcd-face--cover {
+  inset: calc(var(--u) * 22) calc(var(--u) * 22) 0;
+  border-radius: calc(var(--u) * 43) calc(var(--u) * 43) 0 0;
+}
+
+.pcd-face-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Body front: the other half of the open screen. */
+.pcd-face--body {
+  inset: calc(var(--u) * 22) calc(var(--u) * 22) calc(var(--u) * 22) 0;
+  border-radius: 0 calc(var(--u) * 43) calc(var(--u) * 43) 0;
+  background: #000;
+}
+
+/* Once shut, the body's screen runs to the hinge where the cover's bezel doesn't reach, so it switches off at the
+   last moment. */
+.pcd-face--body {
+  opacity: clamp(0, calc((1 - var(--fold)) * 40), 1);
+}
+
+[data-orientation='vertical'] .pcd-face--body {
+  inset: 0 calc(var(--u) * 22) calc(var(--u) * 22);
+  border-radius: 0 0 calc(var(--u) * 43) calc(var(--u) * 43);
+}
+
+/* Outer display (cover back). Flipped so it reads upright once the phone is shut; its hinge edge is leading
+   (horizontal) or top (vertical). */
+.pcd-face--outer {
+  inset: 0;
+  overflow: visible;
+  transform: rotateY(180deg) translateZ(1px);
+}
+
+[data-orientation='vertical'] .pcd-face--outer {
+  transform: rotateX(180deg) translateZ(1px);
+}
+
+.pcd-face--outer::after {
+  inset: auto;
+}
+
+.pcd-outer-glass {
+  position: absolute;
+  left: calc(var(--u) * 15);
+  top: calc(var(--u) * 22);
+  width: calc(var(--u) * 430);
+  height: calc(var(--u) * 626);
+  overflow: hidden;
+  border-radius: calc(var(--u) * 3) calc(var(--u) * 46) calc(var(--u) * 46) calc(var(--u) * 3);
+  background: #000;
+}
+
+[data-orientation='vertical'] .pcd-outer-glass {
+  left: calc(var(--u) * 22);
+  top: calc(var(--u) * 15);
+  width: calc(var(--u) * 626);
+  height: calc(var(--u) * 430);
+  border-radius: calc(var(--u) * 3) calc(var(--u) * 3) calc(var(--u) * 46) calc(var(--u) * 46);
+}
+
+/* The dimming sits on the glass only, not the card around it. */
+.pcd-outer-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: calc((1 - var(--fold)) * 0.85);
+}
+
+.pcd-outer-rail {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: calc(var(--u) * 67);
+  background: linear-gradient(to bottom, #4a2142, #34172f);
+}
+
+.pcd-outer-camera {
+  position: absolute;
+  top: calc(var(--u) * 20);
+  right: calc(var(--u) * 16.5);
+  width: calc(var(--u) * 34);
+  height: calc(var(--u) * 34);
+  border-radius: 50%;
+  background: #07080a;
+}
+
+/* ---------- The live screen ---------- */
+/* Sits on whichever display faces you once the hinge settles; hidden (but still playing) while it moves. */
+.pcd-dev-screen {
+  position: absolute;
+  overflow: hidden;
+  opacity: 0;
+  /* In front of the shut cover, whose outer display lies at 1px. */
+  transform: translateZ(4px);
+  transition: opacity 0.18s ease-out;
+  pointer-events: none;
+}
+
+.pcd-dev-screen[data-visible] {
+  opacity: 1;
+  pointer-events: auto;
+  transition-duration: 0.28s;
+}
+
+.pcd-dev-screen[data-screen='inner-l'] {
+  left: calc(var(--u) * 22);
+  top: calc(var(--u) * 22);
+  width: calc(var(--u) * 890);
+  height: calc(var(--u) * 626);
+  border-radius: calc(var(--u) * 43);
+}
+
+.pcd-dev-screen[data-screen='inner-p'] {
+  left: calc(var(--u) * 22);
+  top: calc(var(--u) * 22);
+  width: calc(var(--u) * 626);
+  height: calc(var(--u) * 890);
+  border-radius: calc(var(--u) * 43);
+}
+
+.pcd-dev-screen[data-screen='outer-p'] {
+  left: calc(var(--u) * 482);
+  top: calc(var(--u) * 22);
+  width: calc(var(--u) * 430);
+  height: calc(var(--u) * 626);
+  border-radius: calc(var(--u) * 3) calc(var(--u) * 46) calc(var(--u) * 46) calc(var(--u) * 3);
+}
+
+.pcd-dev-screen[data-screen='outer-l'] {
+  left: calc(var(--u) * 22);
+  top: calc(var(--u) * 482);
+  width: calc(var(--u) * 626);
+  height: calc(var(--u) * 430);
+  border-radius: calc(var(--u) * 3) calc(var(--u) * 3) calc(var(--u) * 46) calc(var(--u) * 46);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pcd-dev-screen,
+  .pcd-dev-screen[data-visible] {
+    transition-duration: 0s;
+  }
+}
+
+/* ---------- Tabletop: the live player bends with the phone ---------- */
+/* The player's top segment (the picture) folds up with the cover; the board stays on the body. That needs one 3D
+   context from the device down to the picture, so everything between drops the properties that would flatten it
+   (overflow clipping, isolation), and each segment rounds its own outer corners instead. */
+.pcd-dev-screen[data-tabletop] {
+  overflow: visible;
+  transform-style: preserve-3d;
+  border-radius: 0;
+}
+
+.pcd-dev-screen[data-tabletop] .papercut-duo {
+  overflow: visible;
+  isolation: auto;
+  transform-style: preserve-3d;
+  background: transparent;
+}
+
+.pcd-dev-screen[data-tabletop] .papercut-duo .pcd-top {
+  overflow: hidden;
+  border-radius: calc(var(--u) * 43) calc(var(--u) * 43) 0 0;
+  transform-origin: center bottom;
+  /* translateZ lifts it off the cover along the cover's own normal, so the two never share a plane. */
+  transform: rotateX(calc(var(--fold) * -180deg)) translateZ(3px);
+  backface-visibility: hidden;
+}
+
+/* With the live player showing, the cover's and body's still frames aren't needed. Left in place they sit almost in
+   the same plane as the tilted picture and cut through it. */
+.pcd-dev:has(.pcd-dev-screen[data-tabletop]) :is(.pcd-face--cover, .pcd-face--body) {
+  visibility: hidden;
+}
+
+.pcd-dev-screen[data-tabletop] .papercut-duo .pcd-board {
+  overflow: hidden;
+  border-radius: 0 0 calc(var(--u) * 43) calc(var(--u) * 43);
+}
+
+/* Chrome's 3D hit-testing workaround, measured: with the phone lying within ~1° of flat (Table seen from the bottom)
+   clicks on the board reach its rows, not its buttons, unless the board is lifted off the body; at any larger tilt
+   the lift itself makes the buttons unreachable. So it's lifted only while nearly flat (data-flat, set by the
+   simulation). */
+.pcd-dev[data-flat] .pcd-dev-screen[data-tabletop] .papercut-duo .pcd-board {
+  transform: translateZ(1px);
+}

@@ -28,7 +28,7 @@ function MenuChevron({ back = false }: { back?: boolean } = {}) {
   return <ChevronIconPrimitive className={back ? 'media-menu-back-chevron' : 'media-menu-forward-chevron'} />;
 }
 
-function QualityMenu() {
+export function QualityMenu() {
   return (
     <Menu.Root>
       <QualityRadioGroup.Root>
@@ -66,7 +66,7 @@ function QualityMenu() {
   );
 }
 
-function AudioTrackMenu() {
+export function AudioTrackMenu() {
   return (
     <Menu.Root>
       <AudioTrackRadioGroup.Root>
@@ -100,7 +100,7 @@ function AudioTrackMenu() {
   );
 }
 
-function PlaybackRateMenu() {
+export function PlaybackRateMenu() {
   return (
     <Menu.Root>
       <PlaybackRateRadioGroup.Root>
@@ -134,7 +134,7 @@ function PlaybackRateMenu() {
   );
 }
 
-function CaptionsMenu() {
+export function CaptionsMenu() {
   return (
     <Menu.Root>
       <CaptionsRadioGroup.Root>

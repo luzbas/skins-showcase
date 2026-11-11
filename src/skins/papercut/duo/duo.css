@@ -1,0 +1,1170 @@
+/*
+ * Papercut · Duo — construction paper on the iPhone Duo's inner display (portrait, 626 × 890 pt).
+ *
+ * Geometry follows the Duo × iOS 27 kit: everything is laid out in points (1pt = player width / 626), the crease is
+ * the horizontal centreline (y = 445) with a 24 pt keep-out band, the inner display's margin is 20 pt, its corner
+ * radius 43 pt, and every tappable tile is far above the 44 pt minimum. Liquid Glass is swapped for its paper
+ * equivalent: one layer of tiles over one board, never paper stacked on paper stacked on paper.
+ *
+ * Declared after the Default skin's layers, so these rules win without !important whatever the import order.
+ */
+@layer base, components, utilities, papercut-duo;
+
+@layer papercut-duo {
+  /* ---------- Tokens ---------- */
+  .papercut-duo {
+    --pc-ink: #2a2320;
+    --pc-cream: #fff9ea;
+    --pc-red: #cc3b2b;
+    --pc-blue: #2f7bc0;
+    --pc-green: #3e9b4f;
+    --pc-orange: #e8a21c;
+    --pc-yellow: #f6c531;
+    /* The boards: night paper behind the picture, aubergine card under the controls (the reference's dark plum). */
+    --pcd-night: #1f1b22;
+    --pcd-board: #4a2142;
+    --pcd-board-deep: #34172f;
+
+    /* 1pt = player width / the screen's width in points: 890 landscape, 626 portrait (the Duo's inner display).
+       The simulation sets the exact scale instead (--pcd-sim-pt), see below. */
+    --w: 890;
+    --pt: calc(100cqi / var(--w));
+    --pcd-margin: calc(var(--pt) * 20);
+    --pcd-edge: url(#pcd-lumpy-sm);
+    --pcd-shadow: drop-shadow(0 calc(var(--pt) * 2) calc(var(--pt) * 1) rgb(20 8 16 / 0.55))
+      drop-shadow(0 calc(var(--pt) * 7) calc(var(--pt) * 9) rgb(20 8 16 / 0.35));
+    --pcd-shadow-lifted: drop-shadow(0 calc(var(--pt) * 5) calc(var(--pt) * 3) rgb(20 8 16 / 0.45))
+      drop-shadow(0 calc(var(--pt) * 16) calc(var(--pt) * 18) rgb(20 8 16 / 0.35));
+    --pcd-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+
+    --media-default-accent-color: var(--pc-yellow);
+    --media-default-accent-text-color: var(--pc-ink);
+    --media-accent: transparent;
+    --media-accent-foreground: currentColor;
+    --media-font-family: 'Gaegu', 'Comic Sans MS', ui-rounded, system-ui, sans-serif;
+    --media-popover: var(--pc-cream);
+    --media-popover-foreground: var(--pc-ink);
+    --media-ring: var(--pc-cream);
+    --media-backdrop-filter-surface: none;
+    --media-shadow-surface: none;
+    --media-shadow-thumb: none;
+    --media-surface-border: transparent;
+    --media-frame-border: transparent;
+    --media-hidden-icon-scale: 1;
+
+    /* The simulation sizes and rounds the screen; the player just fills it. */
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background-color: #000;
+    color: var(--pc-cream);
+  }
+
+  @media (orientation: portrait) {
+    .papercut-duo {
+      --w: 626;
+    }
+  }
+
+  .papercut-duo[data-simulated] {
+    --pt: var(--pcd-sim-pt, calc(100cqi / var(--w)));
+  }
+
+  /* ================= Split (folded, segments stacked) — the default rules below =================
+     The picture fills the top viewport segment, the paper board the bottom one. Positions come from the segment
+     variables set by useFoldable (window.viewport.segments, or the simulation), falling back to halves. */
+
+  /* ---------- Top segment: just the picture ---------- */
+  /* The video spans the full width of the top display and sits centred above the fold; the rest stays black. */
+  .papercut-duo .pcd-top {
+    position: absolute;
+    inset: var(--seg0-top, 0px) 0 auto;
+    height: var(--seg0-height, 50%);
+    display: grid;
+    place-items: center;
+    background-color: #000;
+  }
+
+  .papercut-duo .pcd-video {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .papercut-duo .pcd-video video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* ---------- The crease: a soft fold across y = 445, nothing tappable on it ---------- */
+  .papercut-duo .pcd-crease {
+    position: absolute;
+    inset-inline: 0;
+    top: calc(var(--seg1-top, 50%) - var(--pt) * 12);
+    height: calc(var(--pt) * 24);
+    z-index: 4;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(0 0 0 / 0.35) 46%,
+      rgb(0 0 0 / 0.55) 50%,
+      rgb(255 255 255 / 0.1) 53%,
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  /* ---------- Bottom half: the paper board ---------- */
+  .papercut-duo .pcd-board {
+    position: absolute;
+    inset: var(--seg1-top, 50%) 0 auto;
+    height: var(--seg1-height, 50%);
+    display: grid;
+    grid-template-rows: calc(var(--pt) * 70) calc(var(--pt) * 128) calc(var(--pt) * 64) calc(var(--pt) * 72);
+    align-content: start;
+    gap: calc(var(--pt) * 14);
+    /* Starts 26 pt below the fold, clear of the keep-out band; 40 pt left for the home indicator. */
+    padding: calc(var(--pt) * 26) var(--pcd-margin) calc(var(--pt) * 40);
+    background:
+      var(--pcd-grain),
+      radial-gradient(90% 70% at 18% 20%, rgb(150 50 110 / 0.35), transparent 70%),
+      linear-gradient(to bottom, var(--pcd-board), var(--pcd-board-deep));
+    font-size: calc(var(--pt) * 20);
+  }
+
+  /* Home indicator: a thin cream scrap. */
+  .papercut-duo .pcd-board::after {
+    content: '';
+    position: absolute;
+    bottom: calc(var(--pt) * 14);
+    left: 50%;
+    width: calc(var(--pt) * 150);
+    height: calc(var(--pt) * 6);
+    border-radius: 99px;
+    background-color: rgb(255 249 234 / 0.75);
+    translate: -50% 0;
+    filter: var(--pcd-edge);
+  }
+
+  .papercut-duo .pcd-row {
+    display: grid;
+    gap: calc(var(--pt) * 14);
+    min-height: 0;
+  }
+
+  .papercut-duo .pcd-row--head {
+    grid-template-columns: calc(var(--pt) * 92) 1fr calc(var(--pt) * 92);
+  }
+  .papercut-duo .pcd-row--head[data-no-fullscreen] {
+    grid-template-columns: calc(var(--pt) * 92) 1fr;
+  }
+  .papercut-duo .pcd-row--transport {
+    grid-template-columns: 1fr 1.3fr 1fr;
+  }
+  .papercut-duo .pcd-row--extras {
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+  }
+
+  /* ---------- Tiles: shapes cut from coloured paper, each at its own tilt ---------- */
+  .papercut-duo .pcd-tile {
+    --paper: var(--pc-cream);
+    --ink: var(--pc-ink);
+    --tilt: 0deg;
+
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    border-radius: calc(var(--pt) * 18);
+    color: var(--ink);
+    background-color: transparent;
+    rotate: var(--tilt);
+    transition-property: rotate, translate, scale, color;
+    transition-duration: var(--media-duration, 0.15s);
+  }
+
+  .papercut-duo .pcd-tile::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: calc(var(--pt) * 20) calc(var(--pt) * 15) calc(var(--pt) * 21) calc(var(--pt) * 16) /
+      calc(var(--pt) * 16) calc(var(--pt) * 21) calc(var(--pt) * 15) calc(var(--pt) * 20);
+    background-color: var(--paper);
+    filter: var(--pcd-edge) var(--pcd-shadow);
+    transition-property: filter;
+    transition-duration: var(--media-duration, 0.15s);
+  }
+
+  .papercut-duo .pcd-tile .media-button-icon {
+    width: calc(var(--pt) * 34);
+    height: calc(var(--pt) * 34);
+    filter: var(--pcd-edge);
+  }
+
+  /* Colours and tilts. Light ink sits on the darker papers (blue, green, red), dark ink on the light ones. */
+  .papercut-duo .pcd-stop {
+    --paper: var(--pc-red);
+    --ink: var(--pc-cream);
+    --tilt: -2.5deg;
+  }
+  .papercut-duo .pcd-title {
+    --tilt: 0.8deg;
+  }
+  .papercut-duo .pcd-fullscreen {
+    --paper: var(--pc-green);
+    --ink: var(--pc-cream);
+    --tilt: 2.4deg;
+  }
+  .papercut-duo .pcd-seek--back {
+    --paper: var(--pc-blue);
+    --ink: var(--pc-cream);
+    --tilt: -2deg;
+  }
+  .papercut-duo .pcd-play {
+    --paper: var(--pc-yellow);
+    --tilt: 1deg;
+  }
+  .papercut-duo .pcd-seek--fwd {
+    --paper: var(--pc-green);
+    --ink: var(--pc-cream);
+    --tilt: 2.2deg;
+  }
+  .papercut-duo .pcd-timeline {
+    --paper: var(--pc-red);
+    --ink: var(--pc-cream);
+    --tilt: -0.6deg;
+  }
+  .papercut-duo .pcd-cc {
+    --paper: var(--pc-orange);
+    --tilt: 1.8deg;
+  }
+  .papercut-duo .pcd-mute {
+    --tilt: -1.5deg;
+  }
+  .papercut-duo .pcd-settings {
+    --paper: var(--pc-blue);
+    --ink: var(--pc-cream);
+    --tilt: 2.4deg;
+  }
+
+  /* Pointer feedback: the piece lifts off the board and tips a little further. */
+  @media (hover: hover) {
+    .papercut-duo .pcd-tile.media-button:not([aria-disabled='true']):hover {
+      background-color: transparent;
+      color: var(--ink);
+      translate: 0 calc(var(--pt) * -3);
+      rotate: calc(var(--tilt) * 1.8 + 0.5deg);
+    }
+
+    .papercut-duo .pcd-tile.media-button:not([aria-disabled='true']):hover::before {
+      filter: var(--pcd-edge) var(--pcd-shadow-lifted);
+    }
+  }
+
+  .papercut-duo .pcd-tile.media-button:not([aria-disabled='true']):active {
+    translate: 0 calc(var(--pt) * 1);
+    scale: 0.96;
+  }
+
+  .papercut-duo .pcd-tile.media-button:where(:focus-visible, [aria-expanded='true'], [data-highlighted]) {
+    background-color: transparent;
+    color: var(--ink);
+  }
+
+  /* Focus: a dashed "cut here" line round the piece. */
+  .papercut-duo .pcd-tile:focus-visible,
+  .papercut-duo .media-time-toggle:focus-visible,
+  .papercut-duo .media-slider-thumb:focus-visible {
+    outline: 3px dashed var(--pc-cream);
+    outline-offset: calc(var(--pt) * 5);
+  }
+
+  .papercut-duo.media-container:focus-visible {
+    outline: 3px dashed var(--pc-ink);
+    outline-offset: 6px;
+  }
+
+  /* ---------- Row 1: close + title ---------- */
+  .papercut-duo .pcd-stop .media-button-icon {
+    width: calc(var(--pt) * 36);
+    height: calc(var(--pt) * 36);
+  }
+
+  .papercut-duo .pcd-title {
+    display: grid;
+    align-content: center;
+    padding-inline: calc(var(--pt) * 24);
+    line-height: 1.05;
+  }
+
+  .papercut-duo .pcd-title-main {
+    font-size: calc(var(--pt) * 28);
+    font-weight: 700;
+  }
+
+  .papercut-duo .pcd-title-sub {
+    font-size: calc(var(--pt) * 19);
+    color: rgb(42 35 32 / 0.78);
+  }
+
+  .papercut-duo .pcd-title-main,
+  .papercut-duo .pcd-title-sub {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* ---------- Row 2: skip back, play, skip forward ---------- */
+  .papercut-duo .pcd-seek .media-button-icon {
+    width: calc(var(--pt) * 48);
+    height: calc(var(--pt) * 48);
+  }
+
+  .papercut-duo .pcd-seek .media-seek-button-label {
+    bottom: calc(var(--pt) * -4);
+    font-size: calc(var(--pt) * 21);
+    font-weight: 700;
+  }
+
+  .papercut-duo .pcd-seek .media-seek-button-backward-label {
+    left: calc(var(--pt) * -3);
+  }
+  .papercut-duo .pcd-seek .media-seek-button-forward-label {
+    right: calc(var(--pt) * -3);
+  }
+
+  /* Play: a cream disc pasted on the yellow tile, holding an ink icon. */
+  .papercut-duo .pcd-play::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: -1;
+    width: calc(var(--pt) * 92);
+    height: calc(var(--pt) * 92);
+    border-radius: 54% 46% 50% 48% / 46% 52% 48% 54%;
+    background-color: var(--pc-cream);
+    box-shadow: 0 0 0 calc(var(--pt) * 2.5) var(--pc-ink);
+    translate: -50% -50%;
+    rotate: -8deg;
+    filter: var(--pcd-edge) drop-shadow(0 calc(var(--pt) * 2) calc(var(--pt) * 1) rgb(42 35 32 / 0.35));
+  }
+
+  .papercut-duo .pcd-play .media-button-icon {
+    width: calc(var(--pt) * 46);
+    height: calc(var(--pt) * 46);
+    /* Play, pause and replay flip like a card. */
+    rotate: y 90deg;
+    transition-property: opacity, rotate;
+    transition-duration: var(--media-duration-slow, 0.3s);
+  }
+
+  .papercut-duo .pcd-play[data-started]:not([data-paused]):not([data-ended]) .media-play-button-pause-icon,
+  .papercut-duo .pcd-play:not([data-ended]):not([data-started]) .media-play-button-play-icon,
+  .papercut-duo .pcd-play:not([data-ended])[data-paused] .media-play-button-play-icon,
+  .papercut-duo .pcd-play[data-ended] .media-play-button-restart-icon {
+    rotate: y 0deg;
+  }
+
+  /* ---------- Row 3: the timeline, a red strip with a cream track and a googly-eye playhead ---------- */
+  .papercut-duo .pcd-timeline {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pt) * 18);
+    padding-inline: calc(var(--pt) * 22);
+  }
+
+  .papercut-duo .pcd-time {
+    flex-shrink: 0;
+    min-width: 2.6em;
+    font-size: calc(var(--pt) * 24);
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--pc-cream);
+  }
+
+  .papercut-duo .media-time-toggle.pcd-time {
+    text-align: end;
+    /* A 44 pt-tall target on a 64 pt strip. */
+    padding-block: calc(var(--pt) * 10);
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .papercut-duo .media-time-slider {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .papercut-duo .media-slider-track {
+    filter: url(#pcd-lumpy-xs) drop-shadow(0 2px 1px rgb(42 35 32 / 0.4));
+  }
+
+  .papercut-duo .media-slider-track::before {
+    border-radius: 3px;
+    background-color: var(--pc-cream);
+  }
+
+  .papercut-duo .media-slider-track[data-orientation='horizontal'] {
+    height: calc(var(--pt) * 11);
+  }
+
+  .papercut-duo .media-slider-buffer::before {
+    background-color: rgb(42 35 32 / 0.1);
+  }
+
+  .papercut-duo .media-slider-fill::before {
+    background-color: var(--media-primary);
+    box-shadow: inset 0 0 0 2px var(--pc-ink);
+  }
+
+  .papercut-duo .media-time-slider .media-slider-fill[data-orientation='horizontal'] {
+    clip-path: inset(-2px 0);
+  }
+
+  .papercut-duo .media-time-slider .media-slider-fill[data-orientation='horizontal']::before {
+    inset: -2px 0;
+    width: auto;
+    height: auto;
+    border-radius: 3px;
+  }
+
+  /* Chapter breaks: narrow notches, so a short phone timeline doesn't read as a dashed line. */
+  .papercut-duo .media-time-slider-chapter {
+    --media-chapter-inset-start: 0.5;
+    --media-chapter-inset-end: 0.5;
+  }
+  .papercut-duo .media-time-slider-chapter:first-of-type {
+    --media-chapter-inset-start: 0;
+  }
+  .papercut-duo .media-time-slider-chapter:last-of-type {
+    --media-chapter-inset-end: 0;
+  }
+
+  .papercut-duo .media-time-slider-thumb,
+  .papercut-duo .media-time-slider-thumb[data-interactive] {
+    width: calc(var(--pt) * 30);
+    height: calc(var(--pt) * 30);
+    background:
+      radial-gradient(circle at 36% 30%, rgb(255 255 255 / 0.9) 0 9%, transparent 10%),
+      radial-gradient(circle at 56% 56%, var(--pc-ink) 0 30%, transparent 31%), #fff;
+    box-shadow: inset 0 0 0 3px var(--pc-ink);
+    filter: drop-shadow(0 2px 1px rgb(42 35 32 / 0.5)) drop-shadow(0 6px 8px rgb(42 35 32 / 0.25));
+    opacity: 1;
+    scale: 1;
+  }
+
+  /* The scrub preview: a cream scrap with the time on it. No thumbnails on this stream, so no frame. */
+  .papercut-duo .media-slider-thumbnail {
+    display: none;
+  }
+
+  .papercut-duo .media-time-slider-preview-content {
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: calc(var(--pt) * 20);
+    font-weight: 700;
+    background-color: var(--pc-cream);
+    color: var(--pc-ink);
+    rotate: -3deg;
+    filter: var(--pcd-edge) var(--pcd-shadow);
+  }
+
+  /* ---------- Row 4: sound, captions, settings ---------- */
+  /* No captions on the media: the CC button reports data-hidden and leaves; the others close up. */
+  .papercut-duo .pcd-cc[data-hidden] {
+    display: none;
+  }
+
+  /* Captions on show the CC paper turned over: ink paper, orange glyph. */
+  .papercut-duo .pcd-cc[data-active] {
+    --paper: var(--pc-ink);
+    --ink: var(--pc-orange);
+  }
+
+  /* Volume levels swap with a small wobble, as on the main papercut player. */
+  .papercut-duo .pcd-mute .media-button-icon {
+    rotate: -25deg;
+    transition-property: opacity, rotate;
+    transition-duration: var(--media-duration-slow, 0.3s);
+    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .papercut-duo .pcd-mute:not([data-muted]):not([data-volume-level='low']) .media-mute-button-high-icon,
+  .papercut-duo .pcd-mute:not([data-muted])[data-volume-level='low'] .media-mute-button-low-icon,
+  .papercut-duo .pcd-mute[data-muted] .media-mute-button-off-icon {
+    rotate: 0deg;
+  }
+
+  .papercut-duo .pcd-rail,
+  .papercut-duo .pcd-camera {
+    display: none;
+  }
+
+  /* ================= Full (flat screen, any orientation) =================
+     A continuous screen plays full bleed like the web papercut player: the picture edge to edge, paper controls
+     floating over it, hidden while playing. Top: close + title leading, fullscreen trailing. Centre: skip back, play, skip forward (play sits on the fold, as in Apple's TV app).
+     Bottom: a red pinking-shear strip with the timeline, speed, sound and PiP. */
+  .papercut-duo[data-layout='full'] {
+    --pcd-zig: calc(var(--pt) * 12);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-top {
+    inset: 0;
+    height: auto;
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-crease {
+    display: none;
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-board {
+    inset: 0;
+    height: auto;
+    display: block;
+    padding: 0;
+    background: none;
+    pointer-events: none;
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-row {
+    display: contents;
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-board > *,
+  .papercut-duo[data-layout='full'] .pcd-row > :not(.pcd-menu) {
+    position: absolute;
+    pointer-events: auto;
+  }
+
+  /* The strip: red paper along the bottom with a pinking-shear top edge, bleeding off the sides and bottom. */
+  .papercut-duo[data-layout='full'] .pcd-board::before {
+    content: '';
+    position: absolute;
+    inset: auto calc(var(--pt) * -30) calc(var(--pt) * -30);
+    height: calc(var(--pt) * (96 + 30));
+    background-color: var(--pc-red);
+    clip-path: polygon(
+        0% var(--pcd-zig),
+        2% 2px,
+        4% var(--pcd-zig),
+        6% 2px,
+        8% var(--pcd-zig),
+        10% 2px,
+        12% var(--pcd-zig),
+        14% 2px,
+        16% var(--pcd-zig),
+        18% 2px,
+        20% var(--pcd-zig),
+        22% 2px,
+        24% var(--pcd-zig),
+        26% 2px,
+        28% var(--pcd-zig),
+        30% 2px,
+        32% var(--pcd-zig),
+        34% 2px,
+        36% var(--pcd-zig),
+        38% 2px,
+        40% var(--pcd-zig),
+        42% 2px,
+        44% var(--pcd-zig),
+        46% 2px,
+        48% var(--pcd-zig),
+        50% 2px,
+        52% var(--pcd-zig),
+        54% 2px,
+        56% var(--pcd-zig),
+        58% 2px,
+        60% var(--pcd-zig),
+        62% 2px,
+        64% var(--pcd-zig),
+        66% 2px,
+        68% var(--pcd-zig),
+        70% 2px,
+        72% var(--pcd-zig),
+        74% 2px,
+        76% var(--pcd-zig),
+        78% 2px,
+        80% var(--pcd-zig),
+        82% 2px,
+        84% var(--pcd-zig),
+        86% 2px,
+        88% var(--pcd-zig),
+        90% 2px,
+        92% var(--pcd-zig),
+        94% 2px,
+        96% var(--pcd-zig),
+        98% 2px,
+        100% var(--pcd-zig),
+        100% 100%,
+        0 100%
+      );
+    filter: url(#pcd-lumpy) var(--pcd-shadow);
+    transition-property: translate, opacity;
+    transition-duration: var(--media-duration-slow, 0.3s);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-board::after {
+    content: none;
+  }
+
+  /* Discs instead of tiles. */
+  .papercut-duo[data-layout='full'] .pcd-tile.media-button::before {
+    border-radius: 54% 46% 50% 48% / 46% 52% 48% 54%;
+  }
+
+  /* Top leading: close and title. */
+  .papercut-duo[data-layout='full'] .pcd-stop {
+    top: calc(var(--pt) * 20);
+    left: calc(var(--pt) * 20);
+    width: calc(var(--pt) * 52);
+    height: calc(var(--pt) * 52);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-stop .media-button-icon {
+    width: calc(var(--pt) * 26);
+    height: calc(var(--pt) * 26);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-title {
+    top: calc(var(--pt) * 18);
+    left: calc(var(--pt) * 86);
+    width: auto;
+    max-width: calc(var(--pt) * 330);
+    height: calc(var(--pt) * 58);
+    padding-inline: calc(var(--pt) * 18);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-title-main {
+    font-size: calc(var(--pt) * 24);
+  }
+  .papercut-duo[data-layout='full'] .pcd-title-sub {
+    font-size: calc(var(--pt) * 16);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-fullscreen {
+    top: calc(var(--pt) * 20);
+    right: calc(var(--pt) * 20);
+    width: calc(var(--pt) * 52);
+    height: calc(var(--pt) * 52);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-fullscreen .media-button-icon {
+    width: calc(var(--pt) * 26);
+    height: calc(var(--pt) * 26);
+  }
+
+  /* Centre: skip back, play, skip forward. */
+  .papercut-duo[data-layout='full'] .pcd-play {
+    top: calc(50% - var(--pt) * 56);
+    left: calc(50% - var(--pt) * 52);
+    width: calc(var(--pt) * 104);
+    height: calc(var(--pt) * 104);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-play::before {
+    /* An ink rim keeps the disc readable over bright frames. */
+    box-shadow: 0 0 0 calc(var(--pt) * 2.5) var(--pc-ink);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-play::after {
+    width: calc(var(--pt) * 74);
+    height: calc(var(--pt) * 74);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-play .media-button-icon {
+    width: calc(var(--pt) * 38);
+    height: calc(var(--pt) * 38);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-seek {
+    top: calc(50% - var(--pt) * 42);
+    width: calc(var(--pt) * 76);
+    height: calc(var(--pt) * 76);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-seek::before {
+    box-shadow: 0 0 0 calc(var(--pt) * 2.5) var(--pc-ink);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-seek--back {
+    left: calc(50% - var(--pt) * (52 + 44 + 76));
+  }
+  .papercut-duo[data-layout='full'] .pcd-seek--fwd {
+    left: calc(50% + var(--pt) * (52 + 44));
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-seek .media-button-icon {
+    width: calc(var(--pt) * 34);
+    height: calc(var(--pt) * 34);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-seek .media-seek-button-label {
+    font-size: calc(var(--pt) * 16);
+  }
+
+  /* Bottom strip: the timeline straight on the red paper, then three cream / orange / blue discs. */
+  .papercut-duo[data-layout='full'] .pcd-timeline {
+    left: calc(var(--pt) * 14);
+    right: calc(var(--pt) * (20 + 58 * 3 + 16 * 2 + 24));
+    bottom: calc(var(--pt) * 12);
+    width: auto;
+    height: calc(var(--pt) * 64);
+    rotate: none;
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-timeline::before {
+    content: none;
+  }
+
+  /* Sound, captions and settings sit at the trailing end of the strip, in a row that closes up when CC is absent. */
+  .papercut-duo[data-layout='full'] .pcd-row--extras {
+    display: flex;
+    gap: calc(var(--pt) * 16);
+    right: calc(var(--pt) * 20);
+    bottom: calc(var(--pt) * 16);
+  }
+
+  /* Only the buttons: the settings menu's popup lives in this row too and sizes itself. */
+  .papercut-duo[data-layout='full'] .pcd-row--extras > .pcd-tile {
+    position: relative;
+    width: calc(var(--pt) * 58);
+    height: calc(var(--pt) * 58);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-row--extras .media-button-icon {
+    width: calc(var(--pt) * 26);
+    height: calc(var(--pt) * 26);
+  }
+
+  .papercut-duo[data-layout='full']:has(.pcd-cc[data-hidden]) .pcd-timeline {
+    right: calc(var(--pt) * (20 + 58 * 2 + 16 + 24));
+  }
+
+  /* Hiding while playing: the strip and its controls drop out of the picture, the rest fades. Video.js keeps the
+     controls up while paused and brings them back on any pointer movement, tap or key press. */
+  .papercut-duo[data-layout='full'] .pcd-board > *,
+  .papercut-duo[data-layout='full'] .pcd-row > :not(.pcd-menu) {
+    transition-property: opacity, translate, scale, rotate;
+    transition-duration: var(--media-duration-slow, 0.3s);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-board:not([data-visible])::before,
+  .papercut-duo[data-layout='full'] .pcd-board:not([data-visible]) :is(.pcd-timeline, .pcd-row--extras) {
+    translate: 0 calc(var(--pt) * 130);
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-board:not([data-visible]) :is(.pcd-stop, .pcd-title, .pcd-fullscreen, .pcd-seek, .pcd-play) {
+    opacity: 0;
+    scale: 0.9;
+  }
+
+  .papercut-duo[data-layout='full'] .pcd-board:not([data-visible]),
+  .papercut-duo[data-layout='full'] .pcd-board:not([data-visible]) * {
+    pointer-events: none;
+  }
+
+  /* ================= Outer display (closed) =================
+     Chrome moves into a 73 pt rail on the trailing edge, under the camera; the picture gets the leading side.
+     The board's wrappers step aside (display: contents) so every control is placed on the display directly. */
+  .papercut-duo[data-layout^='outer'] .pcd-top,
+  .papercut-duo[data-layout^='outer'] .pcd-row {
+    display: contents;
+  }
+
+  /* The board becomes the rail's stack: one evenly spaced column of discs, centred in the rail below the camera.
+     It spans the whole display so the title and timeline can still be placed on the leading side. */
+  .papercut-duo[data-layout^='outer'] .pcd-board {
+    inset: 0;
+    z-index: 1;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: calc(var(--pt) * 14);
+    padding: calc(var(--pt) * 70) calc(var(--pt) * 8.5) calc(var(--pt) * 23) 0;
+    background: none;
+    pointer-events: none;
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-board * {
+    pointer-events: auto;
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-board::after,
+  .papercut-duo[data-layout^='outer'] .pcd-crease,
+  .papercut-duo[data-layout^='outer'] .pcd-stop {
+    display: none;
+  }
+
+  /* Fullscreen is the last disc on the rail, below Settings. */
+  .papercut-duo[data-layout^='outer'] .pcd-fullscreen.media-button {
+    order: 1;
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-rail {
+    display: block;
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: calc(var(--pt) * 73);
+    isolation: isolate;
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-rail::before {
+    content: '';
+    position: absolute;
+    /* Bleeds past the display edge, so only the cut on the leading side shows. */
+    inset: calc(var(--pt) * -20) calc(var(--pt) * -20) calc(var(--pt) * -20) 0;
+    z-index: -1;
+    background: var(--pcd-grain), linear-gradient(to bottom, var(--pcd-board), var(--pcd-board-deep));
+    filter: url(#pcd-lumpy) drop-shadow(calc(var(--pt) * -3) 0 calc(var(--pt) * 5) rgb(0 0 0 / 0.5));
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-camera {
+    display: block;
+    position: absolute;
+    top: calc(var(--pt) * 22);
+    right: calc(var(--pt) * 18);
+    width: calc(var(--pt) * 37);
+    height: calc(var(--pt) * 37);
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, #2c3340 0 14%, #07080a 15% 100%);
+    box-shadow: 0 0 0 calc(var(--pt) * 2) rgb(0 0 0 / 0.6);
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-video {
+    position: absolute;
+    left: calc(var(--pt) * 11);
+    width: calc(var(--pt) * var(--pcd-content-w));
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border-radius: calc(var(--pt) * 6);
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-title,
+  .papercut-duo[data-layout^='outer'] .pcd-timeline {
+    position: absolute;
+    left: calc(var(--pt) * 11);
+    width: calc(var(--pt) * var(--pcd-content-w));
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-title {
+    height: calc(var(--pt) * 70);
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-timeline {
+    height: calc(var(--pt) * 64);
+  }
+
+  /* Rail controls: 48 pt paper discs (the play disc a little bigger), centred in the rail. */
+  /* Rail controls: 48 pt paper discs (the play disc 56 pt and first in line), centred in the rail. */
+  .papercut-duo[data-layout^='outer'] .pcd-tile.media-button {
+    flex: none;
+    width: calc(var(--pt) * 48);
+    height: calc(var(--pt) * 48);
+    margin-inline-end: calc(var(--pt) * 4);
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-play.media-button {
+    order: -1;
+    width: calc(var(--pt) * 56);
+    height: calc(var(--pt) * 56);
+    margin-inline-end: 0;
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-tile.media-button::before {
+    border-radius: 54% 46% 50% 48% / 46% 52% 48% 54%;
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-tile.media-button .media-button-icon {
+    width: calc(var(--pt) * 24);
+    height: calc(var(--pt) * 24);
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-play::after {
+    content: none;
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-play .media-button-icon {
+    width: calc(var(--pt) * 28);
+    height: calc(var(--pt) * 28);
+  }
+
+  .papercut-duo[data-layout^='outer'] .pcd-seek .media-seek-button-label {
+    bottom: calc(var(--pt) * -3);
+    font-size: calc(var(--pt) * 13);
+  }
+
+  /* ---------- Outer · portrait (466 × 678 pt) ---------- */
+  .papercut-duo[data-layout='outer-p'] {
+    --pcd-content-w: 371;
+  }
+
+  /* Title, picture and timeline stacked, reading top to bottom, centred in the leading 382 pt. */
+  .papercut-duo[data-layout='outer-p'] .pcd-title {
+    top: calc(var(--pt) * 151);
+  }
+  .papercut-duo[data-layout='outer-p'] .pcd-video {
+    top: calc(var(--pt) * 237);
+  }
+  .papercut-duo[data-layout='outer-p'] .pcd-timeline {
+    top: calc(var(--pt) * 462);
+  }
+
+  /* ---------- Outer · portrait wallpaper ----------
+     Cut-paper primitive shapes behind everything on the leading side (see duo-wallpaper.tsx). Only on this display, and
+     not in its fullscreen, where the picture takes the whole screen. */
+  .papercut-duo .pcd-wallpaper {
+    display: none;
+  }
+
+  .papercut-duo[data-layout='outer-p']:not([data-outer-fullscreen]) .pcd-wallpaper {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: calc(var(--pt) * 393);
+    height: calc(var(--pt) * 678);
+    pointer-events: none;
+  }
+
+  .pcd-wallpaper .pcw-cream { fill: var(--pc-cream); }
+  .pcd-wallpaper .pcw-yellow { fill: var(--pc-yellow); }
+  .pcd-wallpaper .pcw-orange { fill: var(--pc-orange); }
+  .pcd-wallpaper .pcw-red { fill: var(--pc-red); }
+  .pcd-wallpaper .pcw-red-deep { fill: #9e2a1f; }
+  .pcd-wallpaper .pcw-blue { fill: var(--pc-blue); }
+  .pcd-wallpaper .pcw-green { fill: var(--pc-green); }
+  .pcd-wallpaper .pcw-green-deep { fill: #2b7139; }
+  .pcd-wallpaper .pcw-ink { fill: var(--pc-ink); }
+
+  /* Squares, triangles and bars wiggle a few degrees about their centre; circles drift a touch. Each on its own
+     beat; the big anchor pieces stay put. Still for reduced motion. */
+  .pcd-wallpaper .pcw-wiggle {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pcw-wiggle 5s ease-in-out infinite;
+  }
+
+  @keyframes pcw-wiggle {
+    0%, 100% { rotate: -4deg; }
+    50% { rotate: 4deg; }
+  }
+
+  .pcd-wallpaper .pcw-drift {
+    animation: pcw-drift 4s ease-in-out infinite;
+  }
+
+  @keyframes pcw-drift {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 -3px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pcd-wallpaper :is(.pcw-wiggle, .pcw-drift) {
+      animation: none;
+    }
+  }
+
+  /* ---------- Outer · landscape (678 × 466 pt) ---------- */
+  .papercut-duo[data-layout='outer-l'] {
+    --pcd-content-w: 583;
+  }
+
+  .papercut-duo[data-layout='outer-l'] .pcd-title {
+    display: none;
+  }
+
+  /* Seven discs in a 466 pt tall rail: a little smaller and closer together than on the portrait display. */
+  .papercut-duo[data-layout='outer-l'] .pcd-board {
+    gap: calc(var(--pt) * 9);
+  }
+  .papercut-duo[data-layout='outer-l'] .pcd-tile.media-button {
+    width: calc(var(--pt) * 44);
+    height: calc(var(--pt) * 44);
+    margin-inline-end: calc(var(--pt) * 6);
+  }
+  .papercut-duo[data-layout='outer-l'] .pcd-play.media-button {
+    width: calc(var(--pt) * 52);
+    height: calc(var(--pt) * 52);
+    margin-inline-end: calc(var(--pt) * 2);
+  }
+
+  .papercut-duo[data-layout='outer-l'] .pcd-video {
+    top: calc(var(--pt) * 31);
+  }
+  .papercut-duo[data-layout='outer-l'] .pcd-timeline {
+    top: calc(var(--pt) * 371);
+  }
+
+  /* ---------- Outer · fullscreen (simulation) ----------
+     The picture takes the whole outer display, edge to edge. The rail and the timeline float over it and, like the
+     inner fullscreen, step away while playing; Video.js brings them back on a tap, pointer move or key press. */
+  .papercut-duo[data-outer-fullscreen] .pcd-video {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    border-radius: 0;
+  }
+
+  .papercut-duo[data-outer-fullscreen] .pcd-title {
+    display: none;
+  }
+
+  .papercut-duo[data-outer-fullscreen] .pcd-timeline {
+    top: auto;
+    bottom: calc(var(--pt) * 16);
+  }
+
+  .papercut-duo[data-outer-fullscreen] :is(.pcd-rail, .pcd-board > *, .pcd-row > *) {
+    transition-property: opacity, translate;
+    transition-duration: var(--media-duration-slow, 0.3s);
+  }
+
+  .papercut-duo[data-outer-fullscreen]:has(.pcd-board:not([data-visible])) .pcd-rail,
+  .papercut-duo[data-outer-fullscreen] .pcd-board:not([data-visible]) :is(.pcd-board > *, .pcd-row > *) {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .papercut-duo[data-outer-fullscreen]:has(.pcd-board:not([data-visible])) .pcd-rail {
+    translate: calc(var(--pt) * 30) 0;
+  }
+
+  .papercut-duo[data-outer-fullscreen] .pcd-board:not([data-visible]) .pcd-timeline {
+    translate: 0 calc(var(--pt) * 30);
+  }
+
+  /* ================= Settings menu: a loose cream card =================
+     Sized in points like everything else, so it reads at phone scale. The card is drawn with ::after (the popup's
+     ::before is its hover bridge to the trigger). */
+  .papercut-duo .pcd-menu {
+    --media-popover-foreground: var(--pc-ink);
+    --media-menu-item-radius: 4px;
+    isolation: isolate;
+    /* Video.js caps menus at 224 px, which is shorter than five finger-sized rows; allow up to 420 pt, still
+       within the space it measures as available. */
+    max-height: min(var(--media-menu-available-height, calc(var(--pt) * 420)), calc(var(--pt) * 420));
+    max-width: calc(var(--pt) * 360);
+    background-color: transparent;
+    color: var(--pc-ink);
+    box-shadow: none;
+    font-size: calc(var(--pt) * 21);
+    rotate: -1deg;
+  }
+
+  .papercut-duo .pcd-menu::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: calc(var(--pt) * 10);
+    background-color: var(--pc-cream);
+    filter: var(--pcd-edge) var(--pcd-shadow);
+  }
+
+  /* Settings menu on the board (split layout): an ordinary child of the board, not a popover, so it lies on the
+     bottom half and tilts with it. Placed above the extras row at the right margin. The board's rows start 26 pt
+     down and the extras row sits 330 pt down, so the menu ends 12 pt above it and may use the space up to the
+     board's top padding. */
+  .papercut-duo .pcd-menu[data-on-board] {
+    position: absolute !important;
+    inset: auto var(--pcd-margin) auto auto !important;
+    top: auto !important;
+    bottom: calc(100% - var(--pt) * 318) !important;
+    margin: 0 !important;
+    translate: none !important;
+    z-index: 5;
+    max-height: calc(var(--pt) * 292);
+    overflow: auto;
+  }
+
+  .papercut-duo .pcd-menu[data-on-board][hidden] {
+    display: none !important;
+  }
+
+  /* No hover bridge needed: there's nothing between the board and the menu. */
+  .papercut-duo .pcd-menu[data-on-board]::before {
+    content: none;
+  }
+
+  /* Rows at least 44 pt tall, for fingers. */
+  .papercut-duo .pcd-menu [role^='menuitem'] {
+    min-height: calc(var(--pt) * 44);
+  }
+
+  .papercut-duo .pcd-menu .media-menu-separator {
+    background: none;
+    border-top: 2px dashed rgb(42 35 32 / 0.35);
+  }
+
+  .papercut-duo .pcd-menu [role^='menuitem'][data-highlighted] {
+    background-color: var(--media-primary);
+    color: var(--media-primary-foreground);
+    rotate: -0.6deg;
+  }
+
+  .papercut-duo .pcd-menu [role^='menuitem']:focus-visible {
+    outline: 3px dashed var(--pc-ink);
+    outline-offset: -3px;
+  }
+
+  .papercut-duo .pcd-menu .media-menu-item-indicator {
+    display: grid;
+    place-items: center;
+    width: calc(var(--pt) * 26);
+    height: calc(var(--pt) * 26);
+    border-radius: 50%;
+    background-color: var(--media-primary);
+    color: var(--media-primary-foreground);
+    rotate: -8deg;
+    filter: var(--pcd-edge) drop-shadow(0 1px 1px rgb(42 35 32 / 0.35));
+  }
+
+  /* Picture in picture: a checkbox row, ticked while the video is popped out. */
+  .papercut-duo .pcd-menu-check .media-menu-item-indicator {
+    opacity: 0;
+    margin-inline-start: auto;
+  }
+
+  .papercut-duo .pcd-menu-check[aria-checked='true'] .media-menu-item-indicator {
+    opacity: 1;
+  }
+
+  /* Row icons in ink, not Video.js's faint default. */
+  .papercut-duo .pcd-menu .media-menu-trigger-item-icon {
+    color: var(--pc-ink);
+    opacity: 0.85;
+  }
+
+  .papercut-duo .pcd-menu .media-menu-back-item {
+    font-weight: 700;
+  }
+
+  /* Captions: native cues draw inside the video box, so they stay with the picture (in the top segment when split,
+     never across the fold). Lifting them above the full-screen strip happens in duo-skin.tsx (VTTCue.line), since
+     browsers ignore CSS offsets on native captions. Video.js's own CSS offset is neutralised so it can't double up. */
+  .papercut-duo,
+  .papercut-duo[data-controls-visible] video {
+    --media-caption-controls-y: 0px;
+    --media-caption-track-y: 0px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .papercut-duo .pcd-tile,
+    .papercut-duo .pcd-tile .media-button-icon {
+      transition-duration: 0s;
+    }
+  }
+}
+

@@ -39,6 +39,8 @@ The homepage (`#/`) lists every skin with a live, scaled-down copy of its player
 - A "what to bring" basket of paper tags to tick off, and the season's programme.
 - A lawn map to claim a blanket spot, with a blanket-tag confirmation.
 
+**iPhone Duo**: Papercut, Clay, ASCII Glitch and Sketch also have a layout for foldable phones. Their **Duo** view (`#/<skin>/<site>/duo`, linked in the index and on the homepage) shows it live on an iPhone Duo in a fold simulator: pick a pose (Horizontal or Vertical, each open or closed, or Table) and the player re-lays itself out without stopping the video. The Duo layouts live in each skin's `duo` folder, the fold detection and simulator in `src/duo-kit`, and they load only when the Duo view opens (`src/lib/duo`).
+
 The sites embed their skins through `src/lib/PapercutPlayer.tsx`, `src/lib/ClayPlayer.tsx`, `src/lib/GlitchPlayer.tsx`, `src/lib/SketchPlayer.tsx` and `src/lib/PicnicPlayer.tsx`; `src/lib/use-media.ts` lets page content read the player's time and seek it. Club details and helpers live in `src/lib/club.ts`. Sign-ups and questions are remembered in the browser.
 
 ## Run

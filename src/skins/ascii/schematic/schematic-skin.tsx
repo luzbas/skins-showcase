@@ -63,13 +63,13 @@ import './schematic.css';
 
 type Drawer = 'chapters' | 'settings' | null;
 
-function formatTime(seconds: number) {
+export function formatTime(seconds: number) {
   const s = Math.max(0, Math.floor(seconds));
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
 
 /** Whether this browser can fullscreen an element (not just a bare <video>, as on iPhone). */
-function canFullscreenElements() {
+export function canFullscreenElements() {
   if (typeof document === 'undefined') return true;
   const doc = document as Document & { webkitFullscreenEnabled?: boolean };
   return Boolean(doc.fullscreenEnabled || doc.webkitFullscreenEnabled);
@@ -88,7 +88,7 @@ function Unit({ area, title, chip, children }: { area: string; title: string; ch
 }
 
 /** The chapter playing now, from the media's chapters track. */
-function useChapters() {
+export function useChapters() {
   const cues = usePlayer(selectTextTrack)?.chaptersCues ?? [];
   const time = usePlayer(selectTime);
   const now = time?.currentTime ?? 0;
@@ -97,7 +97,7 @@ function useChapters() {
 }
 
 /** INDEX: CHAPTERS — every chapter as a row; the playing one is marked, and a row jumps there. */
-function ChapterIndex({ onPick }: { onPick?: () => void }) {
+export function ChapterIndex({ onPick }: { onPick?: () => void }) {
   const { cues, active, seek } = useChapters();
   if (!cues.length) return <p className={'sx-empty'}>&gt; no chapters on this signal</p>;
   return (
@@ -203,7 +203,7 @@ function OptionGroup({ title, result }: { title: string; result: RadioGroupResul
   );
 }
 
-function SettingsGroups() {
+export function SettingsGroups() {
   return (
     <>
       <OptionGroup title="speed" result={usePlaybackRateOptions()} />

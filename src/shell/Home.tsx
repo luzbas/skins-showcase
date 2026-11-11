@@ -1,7 +1,7 @@
 // The homepage: an editorial index of every skin, each pictured by its own player.
 import { useEffect, useRef, useState } from 'react';
 import { SKINS, href, type Skin } from './registry';
-import { CodeIcon, DevicesIcon, PlayerIcon, WebsiteIcon } from './icons';
+import { CodeIcon, DevicesIcon, FoldIcon, PlayerIcon, WebsiteIcon } from './icons';
 
 type Layout = 'list' | 'grid';
 const LAYOUT_KEY = 'showcase-home-layout';
@@ -123,6 +123,12 @@ export default function Home() {
                     <DevicesIcon />
                     How it will look
                   </a>
+                  {s.duo && (
+                    <a className="shell-home-pill" href={href(s, v, 'duo')}>
+                      <FoldIcon />
+                      Duo
+                    </a>
+                  )}
                   <span className="shell-home-divider" aria-hidden="true" />
                   <a className="shell-icon" href={s.repo} target="_blank" rel="noreferrer" aria-label={`${s.name} source on GitHub (opens in a new tab)`} title="Source on GitHub">
                     <CodeIcon />

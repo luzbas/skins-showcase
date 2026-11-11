@@ -2,11 +2,12 @@
 import { useEffect, useState } from 'react';
 import { HOME_HREF, SKINS, href, resolve, type Route } from './registry';
 import DevicePreview from './DevicePreview';
+import DuoPreview from './DuoPreview';
 import Home from './Home';
 import PlayerFrame from './PlayerFrame';
 import DeviceFrame from './DeviceFrame';
 import { DEVICE } from './emulate';
-import { CodeIcon, DevicesIcon, GridIcon, PlayerIcon, WebsiteIcon } from './icons';
+import { CodeIcon, DevicesIcon, FoldIcon, GridIcon, PlayerIcon, WebsiteIcon } from './icons';
 
 /** The current route. A hash that isn't a route (a site's in-page anchor) keeps the page as it is. */
 function useRoute() {
@@ -31,7 +32,8 @@ export default function App() {
   const skin = route.page === 'home' ? null : route.skin;
   const variation = route.page === 'skin' ? route.variation : null;
   const view = route.page === 'skin' ? route.view : null;
-  const viewName = route.page === 'home' ? 'All skins' : view === 'devices' ? 'How it will look' : 'Website';
+  const viewName =
+    route.page === 'home' ? 'All skins' : view === 'devices' ? 'How it will look' : view === 'duo' ? 'Duo' : 'Website';
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -129,6 +131,12 @@ export default function App() {
                     <DevicesIcon />
                     How it will look
                   </a>
+                  {s.duo && (
+                    <a className="shell-link" href={href(s, v, 'duo')} aria-current={on && view === 'duo' ? 'page' : undefined}>
+                      <FoldIcon />
+                      Duo
+                    </a>
+                  )}
                 </div>
               </li>
             );
@@ -145,7 +153,13 @@ export default function App() {
         key={route.page === 'skin' ? `${route.skin.id}/${route.variation.id}/${route.view}` : 'home'}
       >
         {route.page === 'skin' && variation && skin ? (
-          view === 'devices' ? <DevicePreview skin={skin} variation={variation} /> : Site && <Site />
+          view === 'devices' ? (
+            <DevicePreview skin={skin} variation={variation} />
+          ) : view === 'duo' ? (
+            <DuoPreview skin={skin} />
+          ) : (
+            Site && <Site />
+          )
         ) : (
           <Home />
         )}

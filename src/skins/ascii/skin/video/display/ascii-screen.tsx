@@ -236,9 +236,10 @@ export function AsciiScreen() {
 
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const rect = canvas.getBoundingClientRect();
-      width = Math.max(1, Math.round(rect.width * dpr));
-      height = Math.max(1, Math.round(rect.height * dpr));
+      // Layout size, not getBoundingClientRect: inside a transformed parent (the Duo simulation turns and tilts the
+      // phone) the bounding box is the rotated one, and the glyph grid would be stretched.
+      width = Math.max(1, Math.round((canvas.clientWidth || 1) * dpr));
+      height = Math.max(1, Math.round((canvas.clientHeight || 1) * dpr));
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
         canvas.height = height;

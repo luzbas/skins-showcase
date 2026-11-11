@@ -1,0 +1,826 @@
+/*
+ * Sketch · Duo — the pencil schematic on the iPhone Duo.
+ *
+ * Geometry follows the Duo × iOS 27 kit, as Papercut · Duo does: everything is in points (1pt = player width / 626
+ * portrait, / 890 landscape; the simulation sets the exact scale as --pcd-sim-pt), the crease is the horizontal
+ * centreline with a 24 pt keep-out band, the inner display's margin is 20 pt, and every part is at least 44 pt.
+ * The paper, pencils and pen lines are the Sketch skin's; this file only lays the parts out.
+ *
+ * Declared after the Sketch skin's own layer, so these rules win whatever the import order.
+ */
+@layer sketch, sketch-duo;
+
+@layer sketch-duo {
+  /* ---------- Tokens ---------- */
+  .sketch-duo {
+    --w: 890;
+    --pt: calc(100cqi / var(--w));
+    --sdu-margin: calc(var(--pt) * 20);
+    --sketch-label-size: calc(var(--pt) * 11);
+
+    /* The simulation sizes and rounds the screen; the player just fills it. */
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    border-radius: inherit;
+    overflow: hidden;
+    background-color: #000;
+    color: var(--sketch-graphite);
+    font-family: var(--media-font-family);
+  }
+
+  @media (orientation: portrait) {
+    .sketch-duo {
+      --w: 626;
+    }
+  }
+
+  .sketch-duo[data-simulated] {
+    --pt: var(--pcd-sim-pt, calc(100cqi / var(--w)));
+  }
+
+  /* Paper for the board, the rail and the closed phone's display: the Sketch board's cream with its dot grid. */
+  .sketch-duo :is(.sdu-board, .sdu-rail),
+  .sketch-duo[data-layout^="duo-outer"] {
+    --sdu-paper: var(--sketch-paper)
+      radial-gradient(var(--sketch-dots) calc(var(--pt) * 1), transparent calc(var(--pt) * 1.3)) 0 0 /
+      calc(var(--pt) * 16) calc(var(--pt) * 16);
+  }
+
+  .sketch-duo .sketch-label {
+    position: static;
+    font-size: var(--sketch-label-size);
+  }
+
+  /* Propped up on a table, and on the closed phone's outer display, the parts are drawn in white pencil on black
+     card: the same lines, inverted. Set on the
+     whole player so every colour derived from the pencils (text, icons, menus) follows. */
+  .sketch-duo:is([data-layout="duo-split"], [data-layout^="duo-outer"]) {
+    --sketch-paper: #121211;
+    --sketch-graphite: #f3f0e9;
+    --sketch-graphite-soft: #bdb8ad;
+    --sketch-graphite-faint: #6f6b62;
+    --sketch-dots: #2b2a27;
+    --sketch-red-pencil: #ef6a58;
+    --sketch-shadow: rgb(0 0 0 / 0);
+    --media-foreground: var(--sketch-graphite);
+    --media-muted-foreground: var(--sketch-graphite-soft);
+    --media-default-accent-color: var(--sketch-red-pencil);
+    --media-accent-foreground: #121211;
+    --media-popover: var(--sketch-paper);
+    --media-popover-foreground: var(--sketch-graphite);
+    --media-scrollbar-thumb-color: var(--sketch-graphite-soft);
+    color: var(--sketch-graphite);
+  }
+
+  /* Captions follow the inverted pencils: white type on a strip of the black card. */
+  .sketch-duo:is([data-layout="duo-split"], [data-layout^="duo-outer"]) .sketch-captions-text {
+    background-color: rgb(18 18 17 / 0.88);
+    color: var(--sketch-graphite);
+  }
+
+  /* ================= Split (folded, segments stacked) — the default rules =================
+     The picture fills the top viewport segment, the paper board the bottom one. Positions come from the segment
+     variables set by useFoldable (the device, or the simulation), falling back to halves. */
+
+  .sketch-duo .sdu-top {
+    position: absolute;
+    inset: var(--seg0-top, 0px) 0 auto;
+    height: var(--seg0-height, 50%);
+    background-color: #000;
+  }
+
+  .sketch-duo .sdu-video {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .sketch-duo .sdu-video video {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 0;
+  }
+
+  /* Captions sit on the picture, at its bottom; lifted clear of the parts while they show over it. */
+  .sketch-duo .sketch-captions {
+    position: absolute;
+    inset: 0;
+    --sketch-caption-size: calc(var(--pt) * 17);
+    --sketch-caption-bottom: calc(var(--pt) * 14);
+  }
+
+  .sketch-duo .sdu-buffering {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+  }
+
+  /* The fold: a dashed pencil line across the board's top edge. */
+  .sketch-duo .sdu-crease {
+    position: absolute;
+    inset-inline: 0;
+    top: calc(var(--seg1-top, 50%) + var(--pt) * 6);
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pt) * 8);
+    padding-inline: var(--sdu-margin);
+    pointer-events: none;
+  }
+
+  .sketch-duo .sdu-crease::before {
+    content: "";
+    flex: 1;
+    height: 0;
+    border-top: calc(var(--pt) * 1.2) dashed var(--sketch-graphite-faint);
+  }
+
+  .sketch-duo .sdu-crease .sketch-label {
+    font-size: calc(var(--pt) * 9);
+    color: var(--sketch-graphite-faint);
+  }
+
+  /* ---------- Bottom half: the paper board ---------- */
+  .sketch-duo .sdu-board {
+    position: absolute;
+    inset: var(--seg1-top, 50%) 0 auto;
+    height: var(--seg1-height, 50%);
+    background: var(--sdu-paper);
+    font-size: calc(var(--pt) * 14);
+  }
+
+  /* Each part is its own layer. That keeps its paper (drawn at z-index -1) above the board's paper, and it is what
+     lets Chrome find the parts on the tilted board: in the propped-up phone's 3D scene it only hit-tests elements with
+     their own layer, and only while the board itself does not isolate them. */
+  .sketch-duo .sdu-board :is(.media-button, .media-time-slider, .sdu-menu, .sdu-menu [role^="menuitem"]) {
+    will-change: scale;
+  }
+
+  .sketch-duo .sdu-title {
+    isolation: isolate;
+  }
+
+  .sketch-duo .sdu-board > * {
+    position: absolute;
+  }
+
+  /* Home indicator: a short pencil stroke. */
+  .sketch-duo .sdu-board::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--pt) * 12);
+    width: calc(var(--pt) * 140);
+    height: calc(var(--pt) * 5);
+    translate: -50% 0;
+    border-radius: 999px;
+    background-color: var(--sketch-graphite);
+    opacity: 0.8;
+  }
+
+  .sketch-duo .sdu-frame,
+  .sketch-duo .sdu-rail,
+  .sketch-duo .sdu-camera {
+    display: none;
+  }
+
+  /* Row 1: the title, U1, and the chapter playing now. */
+  .sketch-duo .sdu-title {
+    left: var(--sdu-margin);
+    right: var(--sdu-margin);
+    top: calc(var(--pt) * 34);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--pt) * 3);
+    min-width: 0;
+  }
+
+  .sketch-duo .sdu-title > .media-sketch-surface {
+    display: none;
+  }
+
+  .sketch-duo .sdu-title p {
+    position: relative;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sketch-duo .sdu-title-main {
+    font-size: calc(var(--pt) * 22);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .sketch-duo .sdu-title-sub {
+    font-size: calc(var(--pt) * 12);
+    letter-spacing: 0.08em;
+    color: var(--sketch-graphite-soft);
+    text-transform: uppercase;
+  }
+
+  /* Row 2: −10, play, +10 as test pads, wired together; references printed under them. */
+  .sketch-duo .sdu-pads {
+    left: 0;
+    right: 0;
+    top: calc(var(--pt) * 100);
+    height: calc(var(--pt) * 104);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--pt) * 40);
+  }
+
+  .sketch-duo .sdu-pads-lead {
+    position: absolute;
+    left: calc(var(--pt) * 120);
+    right: calc(var(--pt) * 120);
+    top: calc(50% - 4px);
+    height: 8px;
+  }
+
+  .sketch-duo .sdu-part {
+    position: relative;
+    flex: none;
+  }
+
+  .sketch-duo .sdu-part .sdu-label {
+    position: absolute;
+    left: 50%;
+    top: calc(100% + var(--pt) * 7);
+    translate: -50% 0;
+  }
+
+  .sketch-duo .sdu-part-back,
+  .sketch-duo .sdu-part-forward {
+    width: calc(var(--pt) * 64);
+    height: calc(var(--pt) * 64);
+  }
+
+  .sketch-duo .sdu-part-play {
+    width: calc(var(--pt) * 96);
+    height: calc(var(--pt) * 96);
+  }
+
+  .sketch-duo .sdu-part > .media-button,
+  .sketch-duo .sdu-part > .sdu-settings {
+    width: 100%;
+    height: 100%;
+  }
+
+  .sketch-duo .sketch-pad-text {
+    font-size: calc(var(--pt) * 14);
+  }
+
+  .sketch-duo .sketch-pad-play-icon {
+    width: 40% !important;
+    height: 40% !important;
+  }
+
+  /* Row 3: the time slider as a row of chip pins, the times at its ends. */
+  .sketch-duo .sdu-timeline {
+    left: var(--sdu-margin);
+    right: var(--sdu-margin);
+    top: calc(var(--pt) * 238);
+    height: calc(var(--pt) * 44);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pt) * 12);
+    --sketch-pin-h: calc(var(--pt) * 18);
+  }
+
+  .sketch-duo .sdu-pins {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+  }
+
+  .sketch-duo .sdu-pins .video-controls-slider-row,
+  .sketch-duo .sdu-pins .media-time-slider {
+    width: 100%;
+    height: 100%;
+  }
+
+  .sketch-duo .sdu-pins .media-time-slider-thumb {
+    width: calc(var(--pt) * 14);
+    height: calc(var(--sketch-pin-h) + var(--pt) * 6);
+  }
+
+  .sketch-duo .sdu-pins .sketch-playhead {
+    width: calc(var(--pt) * 14);
+    height: calc(var(--pt) * 22);
+  }
+
+  .sketch-duo .sdu-time {
+    flex: none;
+    min-width: 3.4em;
+    font-size: calc(var(--pt) * 14);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sketch-duo .sdu-time.media-time-value {
+    color: var(--media-accent);
+  }
+
+  .sketch-duo .sdu-time.sdu-time-remaining {
+    color: var(--sketch-graphite-soft);
+    text-align: end;
+  }
+
+  /* Row 4: connectors, J-numbered; absent ones (no captions) leave no gap in the row or the count. */
+  .sketch-duo .sdu-jacks {
+    left: 0;
+    right: 0;
+    top: calc(var(--pt) * 306);
+    display: flex;
+    justify-content: center;
+    gap: calc(var(--pt) * 40);
+    counter-reset: jack;
+  }
+
+  .sketch-duo .sdu-jacks > .sdu-part {
+    width: calc(var(--pt) * 56);
+    height: calc(var(--pt) * 56);
+    counter-increment: jack;
+  }
+
+  .sketch-duo .sdu-jacks > .sdu-part:has([data-hidden]) {
+    display: none;
+  }
+
+  .sketch-duo .sdu-jacks .sdu-label::before {
+    content: "J" counter(jack) " · ";
+  }
+
+  /* ================= Full (flat screen, any orientation) =================
+     The picture fills the display; the parts lie over it inside a pencil frame, cut from paper with paper halos on
+     every line, and step away while playing until a tap or pointer move. */
+  .sketch-duo[data-layout="duo-full"] .sdu-top {
+    inset: 0;
+    height: auto;
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-crease {
+    display: none;
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-board {
+    inset: 0;
+    height: auto;
+    background: linear-gradient(to bottom, rgb(8 10 16 / 0.45), transparent 22%, transparent 70%, rgb(8 10 16 / 0.55));
+    pointer-events: none;
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-board::after {
+    display: none;
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-board :is(button, [role="slider"], .media-time-slider) {
+    pointer-events: auto;
+  }
+
+  .sketch-duo:is([data-layout="duo-full"], [data-outer-fullscreen]) :is(.media-sketch-ink, .media-sketch-scribble-ink, .media-sketch-pins-red-ink) {
+    stroke: var(--sketch-paper);
+    stroke-width: 2.4px;
+    stroke-linejoin: round;
+    paint-order: stroke;
+  }
+
+  /* Title on a paper tag, top leading. */
+  .sketch-duo[data-layout="duo-full"] .sdu-title {
+    left: calc(var(--pt) * 28);
+    right: auto;
+    top: calc(var(--pt) * 26);
+    max-width: calc(100% - var(--pt) * 130);
+    padding: calc(var(--pt) * 8) calc(var(--pt) * 14);
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-title > .media-sketch-surface {
+    display: block;
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-title-main {
+    font-size: calc(var(--pt) * 18);
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-title-sub {
+    font-size: calc(var(--pt) * 11);
+  }
+
+  /* Pads in the middle of the picture; the wire and references stay on the board layouts. */
+  .sketch-duo[data-layout="duo-full"] .sdu-pads {
+    top: calc(50% - var(--pt) * 52);
+    gap: calc(var(--pt) * 44);
+  }
+
+  .sketch-duo[data-layout="duo-full"] :is(.sdu-pads-lead, .sdu-label) {
+    display: none;
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-part-play {
+    width: calc(var(--pt) * 104);
+    height: calc(var(--pt) * 104);
+  }
+
+  .sketch-duo[data-layout="duo-full"] :is(.sdu-part-back, .sdu-part-forward) {
+    width: calc(var(--pt) * 72);
+    height: calc(var(--pt) * 72);
+  }
+
+  /* Pin row along the bottom, the times on paper tags at its ends. */
+  .sketch-duo[data-layout="duo-full"] .sdu-timeline {
+    left: calc(var(--pt) * 28);
+    right: calc(var(--pt) * 28);
+    top: auto;
+    bottom: calc(var(--pt) * 26);
+    height: calc(var(--pt) * 40);
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-time {
+    min-width: 0;
+    padding: calc(var(--pt) * 3) calc(var(--pt) * 8);
+    background-color: var(--sketch-paper);
+    border: 1px solid var(--sketch-graphite);
+    border-radius: var(--sketch-cut-small);
+    box-shadow: 2px 2px 0 var(--sketch-shadow);
+    font-size: calc(var(--pt) * 13);
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-pins .sketch-playhead {
+    display: none;
+  }
+
+  /* Connectors: fullscreen top trailing; sound, captions and settings bottom trailing, above the pins. */
+  .sketch-duo[data-layout="duo-full"] .sdu-jacks {
+    display: contents;
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-jacks > .sdu-part {
+    position: absolute;
+    width: calc(var(--pt) * 52);
+    height: calc(var(--pt) * 52);
+    bottom: calc(var(--pt) * 80);
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-part-settings {
+    right: calc(var(--pt) * 28);
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-part-captions {
+    right: calc(var(--pt) * (28 + 52 + 16));
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-part-mute {
+    right: calc(var(--pt) * (28 + (52 + 16) * 2));
+  }
+
+  /* No captions: sound moves up next to settings. */
+  .sketch-duo[data-layout="duo-full"] .sdu-jacks:has(.sdu-part-captions [data-hidden]) .sdu-part-mute {
+    right: calc(var(--pt) * (28 + 52 + 16));
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-jacks > .sdu-part-fullscreen {
+    top: calc(var(--pt) * 26);
+    bottom: auto;
+    right: calc(var(--pt) * 28);
+  }
+
+  .sketch-duo[data-layout="duo-full"][data-controls-shown] .sketch-captions {
+    --sketch-caption-bottom: calc(var(--pt) * 150);
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sketch-captions {
+    --sketch-caption-bottom: calc(var(--pt) * 30);
+    --sketch-caption-size: calc(var(--pt) * 20);
+    transition: padding-bottom var(--media-duration-controls, 200ms) ease-out;
+  }
+
+  /* ================= Outer display (closed) =================
+     The picture is a chip on paper on the leading side; the parts line up on a 73 pt rail along the trailing edge,
+     under the camera. The board's groups step aside (display: contents) so every part lands in the rail's column. */
+  .sketch-duo[data-layout^="duo-outer"] {
+    background: var(--sdu-paper);
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-crease {
+    display: none;
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-top {
+    left: calc(var(--pt) * 14);
+    top: calc(var(--pt) * var(--sdu-video-top));
+    width: calc(var(--pt) * var(--sdu-content-w));
+    height: auto;
+    aspect-ratio: 16 / 9;
+    background-color: #000;
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-board {
+    inset: 0;
+    height: auto;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: calc(var(--pt) * 12);
+    padding: calc(var(--pt) * 70) calc(var(--pt) * 12.5) calc(var(--pt) * 23) 0;
+    background: none;
+    pointer-events: none;
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-board::after,
+  .sketch-duo[data-layout^="duo-outer"] .sdu-label,
+  .sketch-duo[data-layout^="duo-outer"] .sdu-pads-lead {
+    display: none;
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] :is(.sdu-pads, .sdu-jacks) {
+    display: contents;
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-board :is(button, [role="slider"], .media-time-slider) {
+    pointer-events: auto;
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-part {
+    position: relative;
+    width: calc(var(--pt) * 48);
+    height: calc(var(--pt) * 48);
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-part-play {
+    order: -1;
+    width: calc(var(--pt) * 56);
+    height: calc(var(--pt) * 56);
+    margin-inline-end: calc(var(--pt) * -4);
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sketch-pad-text {
+    font-size: calc(var(--pt) * 11);
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-part-fullscreen {
+    order: 1;
+  }
+
+  /* The chip's package around the picture. */
+  .sketch-duo[data-layout^="duo-outer"] .sdu-frame {
+    display: block;
+    left: calc(var(--pt) * 6);
+    top: calc(var(--pt) * (var(--sdu-video-top) - 8));
+    width: calc(var(--pt) * (var(--sdu-content-w) + 16));
+    height: calc(var(--pt) * (var(--sdu-content-w) * 9 / 16 + 16));
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-frame .media-sketch-frame-pins {
+    display: none;
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] :is(.sdu-title, .sdu-timeline) {
+    position: absolute;
+    left: calc(var(--pt) * 14);
+    right: auto;
+    width: calc(var(--pt) * var(--sdu-content-w));
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-title-main {
+    font-size: calc(var(--pt) * 20);
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-timeline {
+    height: calc(var(--pt) * 40);
+    gap: calc(var(--pt) * 8);
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-time {
+    min-width: 0;
+    font-size: calc(var(--pt) * 12);
+  }
+
+  /* The rail: a strip of paper ruled off in pencil, and the camera at its top. */
+  .sketch-duo[data-layout^="duo-outer"] .sdu-rail {
+    display: block;
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: calc(var(--pt) * 73);
+    background: var(--sdu-paper);
+    background-color: color-mix(in oklab, var(--sketch-paper) 88%, var(--sketch-graphite));
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-rail-edge {
+    position: absolute;
+    left: -4px;
+    top: calc(var(--pt) * 10);
+    bottom: calc(var(--pt) * 10);
+    width: 8px;
+  }
+
+  .sketch-duo[data-layout^="duo-outer"] .sdu-camera {
+    display: block;
+    position: absolute;
+    top: calc(var(--pt) * 22);
+    right: calc(var(--pt) * 18);
+    width: calc(var(--pt) * 37);
+    height: calc(var(--pt) * 37);
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, #2c3340 0 14%, #07080a 15% 100%);
+    box-shadow: 0 0 0 calc(var(--pt) * 2) rgb(0 0 0 / 0.6);
+  }
+
+  /* ---------- Outer · portrait (466 × 678 pt) ---------- */
+  .sketch-duo[data-layout="duo-outer-p"] {
+    --sdu-content-w: 366;
+    --sdu-video-top: 250;
+  }
+
+  .sketch-duo[data-layout="duo-outer-p"] .sdu-title {
+    top: calc(var(--pt) * 160);
+  }
+
+  .sketch-duo[data-layout="duo-outer-p"] .sdu-timeline {
+    top: calc(var(--pt) * 476);
+  }
+
+  /* The schematic sheet behind the leading side: decoration for the empty paper, under everything else. */
+  .sketch-duo .sdu-wallpaper {
+    display: none;
+  }
+
+  .sketch-duo[data-layout="duo-outer-p"]:not([data-outer-fullscreen]) .sdu-wallpaper {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: calc(var(--pt) * 393);
+    height: calc(var(--pt) * 678);
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .sketch-duo .sdu-wallpaper-ink {
+    fill: var(--sketch-graphite-soft);
+  }
+
+  .sketch-duo .sdu-wallpaper-soft {
+    fill: var(--sketch-graphite-faint);
+  }
+
+  /* ---------- Outer · landscape (678 × 466 pt) ---------- */
+  .sketch-duo[data-layout="duo-outer-l"] {
+    --sdu-content-w: 572;
+    --sdu-video-top: 36;
+  }
+
+  .sketch-duo[data-layout="duo-outer-l"] .sdu-title {
+    display: none;
+  }
+
+  .sketch-duo[data-layout="duo-outer-l"] .sdu-board {
+    gap: calc(var(--pt) * 8);
+  }
+
+  .sketch-duo[data-layout="duo-outer-l"] .sdu-part {
+    width: calc(var(--pt) * 44);
+    height: calc(var(--pt) * 44);
+  }
+
+  .sketch-duo[data-layout="duo-outer-l"] .sdu-part-play {
+    width: calc(var(--pt) * 52);
+    height: calc(var(--pt) * 52);
+  }
+
+  .sketch-duo[data-layout="duo-outer-l"] .sdu-timeline {
+    top: calc(var(--pt) * 386);
+  }
+
+  /* ---------- Outer · fullscreen (simulation) ----------
+     The picture takes the whole outer display; the rail and the pins lie over it and step away while playing. */
+  .sketch-duo[data-outer-fullscreen] {
+    background: #000;
+  }
+
+  .sketch-duo[data-outer-fullscreen] .sdu-top {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .sketch-duo[data-outer-fullscreen] :is(.sdu-title, .sdu-frame) {
+    display: none;
+  }
+
+  .sketch-duo[data-outer-fullscreen] .sdu-timeline {
+    top: auto;
+    bottom: calc(var(--pt) * 14);
+  }
+
+  .sketch-duo[data-outer-fullscreen] .sdu-time {
+    color: var(--sketch-paper);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.7);
+  }
+
+  /* ---------- Hiding while playing (full, and outer fullscreen) ---------- */
+  .sketch-duo:is([data-layout="duo-full"], [data-outer-fullscreen]) :is(.sdu-rail, .sdu-board > *, .sdu-jacks > *, .sdu-pads > *) {
+    transition-property: opacity, translate;
+    transition-duration: var(--media-duration-controls, 0.3s);
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-board {
+    transition: opacity var(--media-duration-controls, 0.3s);
+  }
+
+  .sketch-duo[data-layout="duo-full"] .sdu-board:not([data-visible]) {
+    opacity: 0;
+  }
+
+  .sketch-duo[data-outer-fullscreen]:has(.sdu-board:not([data-visible])) .sdu-rail,
+  .sketch-duo[data-outer-fullscreen] .sdu-board:not([data-visible]) :is(.sdu-board > *, .sdu-jacks > *, .sdu-pads > *) {
+    opacity: 0;
+  }
+
+  .sketch-duo[data-outer-fullscreen]:has(.sdu-board:not([data-visible])) .sdu-rail {
+    translate: calc(var(--pt) * 30) 0;
+  }
+
+  .sketch-duo:is([data-layout="duo-full"], [data-outer-fullscreen]) .sdu-board:not([data-visible]) * {
+    pointer-events: none;
+  }
+
+  /* ================= Settings menu: a paper card, sized in points ================= */
+  .sketch-duo .sdu-menu {
+    max-height: min(var(--media-menu-available-height, calc(var(--pt) * 380)), calc(var(--pt) * 380));
+    max-width: calc(var(--pt) * 340);
+    font-size: calc(var(--pt) * 15);
+  }
+
+  .sketch-duo .sdu-menu [role^="menuitem"] {
+    min-height: calc(var(--pt) * 44);
+  }
+
+  /* On the board (split): an ordinary child, not a popover, so it lies on the bottom half and tilts with it. It
+     opens above the settings connector, right-aligned with it, and stays clear of the board's top padding. */
+  .sketch-duo .sdu-menu[data-on-board] {
+    position: absolute !important;
+    inset: auto 0 calc(100% + var(--pt) * 26) auto !important;
+    margin: 0 !important;
+    translate: none !important;
+    z-index: 5;
+    width: max-content;
+    min-width: calc(var(--pt) * 270);
+    max-height: calc(var(--pt) * 236);
+    overflow: auto;
+  }
+
+  .sketch-duo .sdu-menu[data-on-board][hidden] {
+    display: none !important;
+  }
+
+  .sketch-duo .sdu-menu[data-on-board]::before {
+    content: none;
+  }
+
+  @media (forced-colors: active) {
+    .sketch-duo .sdu-crease::before {
+      border-color: CanvasText;
+    }
+  }
+}
+
+/* ---------- Tabletop in the simulation: the live player bends with the phone ----------
+   As for Papercut · Duo (simulation.css): the picture folds up with the cover, the board stays on the body. That
+   needs one 3D context from the device down to the picture, so everything between keeps its children in 3D. */
+.pcd-dev-screen[data-tabletop] .sketch-duo {
+  overflow: visible;
+  isolation: auto;
+  transform-style: preserve-3d;
+  background: transparent;
+}
+
+.pcd-dev-screen[data-tabletop] .sketch-duo .sdu-top {
+  overflow: hidden;
+  border-radius: calc(var(--u) * 43) calc(var(--u) * 43) 0 0;
+  transform-origin: center bottom;
+  transform: rotateX(calc(var(--fold) * -180deg)) translateZ(3px);
+  backface-visibility: hidden;
+}
+
+.pcd-dev-screen[data-tabletop] .sketch-duo .sdu-board {
+  overflow: hidden;
+  border-radius: 0 0 calc(var(--u) * 43) calc(var(--u) * 43);
+}
+
+.pcd-dev[data-flat] .pcd-dev-screen[data-tabletop] .sketch-duo .sdu-board {
+  transform: translateZ(1px);
+}

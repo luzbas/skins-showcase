@@ -1,0 +1,1129 @@
+/*
+ * ASCII Glitch · Duo — the ASCII skin's schematic board on the iPhone Duo.
+ *
+ * Geometry follows the Duo kit as Papercut · Duo and Sketch · Duo do: everything is in points (1pt = player width / 626
+ * portrait, / 890 landscape; the simulation sets the exact scale as --pcd-sim-pt), the crease is the horizontal
+ * centreline with a 24 pt keep-out band, the inner display's margin is 20 pt, and every key is at least 44 pt.
+ * Colours are the schematic layout's warm earthy set (ochre, terracotta and sage on espresso); the glyph screen, RGB
+ * split, segmented sliders and terminal chrome come from the ASCII skin (../skin/styles/ascii.css), re-coloured here.
+ *
+ * Declared after the ASCII skin's own layer, so these rules win whatever the import order.
+ */
+@layer base, components, utilities, ascii, ascii-duo;
+
+@layer ascii-duo {
+  /* ---------- Tokens ---------- */
+  .ascii-duo {
+    --w: 890;
+    --pt: calc(100cqi / var(--w));
+    --adu-margin: calc(var(--pt) * 20);
+
+    --adu-espresso: #150d08;
+    --adu-panel: rgb(30 19 12 / 0.94);
+    --adu-ochre: #ffb22e;
+    --adu-terra: #ff6236;
+    --adu-sage: #b9dc5a;
+    --adu-cream: #fff0d6;
+    --adu-on-ochre: #1d1009;
+
+    /* Re-colour the ASCII skin: its "green" becomes ochre, its "magenta" terracotta. */
+    --ax-black: var(--adu-espresso);
+    --ax-ink: var(--adu-cream);
+    --ax-green: var(--adu-ochre);
+    --ax-magenta: var(--adu-terra);
+    --ax-red: #ff3b1f;
+    --ax-dim: rgb(255 178 46 / 0.45);
+    --ax-faint: rgb(255 178 46 / 0.16);
+    --ax-split-text:
+      -1px 0 rgb(255 178 46 / 0.85),
+      1px 0 rgb(255 98 54 / 0.85);
+    --ax-split-icon: drop-shadow(-1px 0 rgb(255 178 46 / 0.9)) drop-shadow(1px 0 rgb(255 98 54 / 0.9));
+    --ax-columns: 120;
+    --ax-tint: 0.85;
+    --ax-pal-a: #c2361a;
+    --ax-pal-b: #ffb22e;
+    --ax-pal-c: #fff3dc;
+
+    --media-background: #000;
+    --media-popover: rgb(21 13 8 / 0.95);
+    --media-control-size: calc(var(--pt) * 44);
+    --media-icon-size: calc(var(--pt) * 22);
+
+    /* Paper of the board and the closed phone's display: espresso with a faint dot grid. */
+    --adu-paper: radial-gradient(rgb(255 178 46 / 0.1) calc(var(--pt) * 1), transparent calc(var(--pt) * 1.3)) 0 0 /
+        calc(var(--pt) * 16) calc(var(--pt) * 16),
+      radial-gradient(120% 90% at 50% 30%, #241509 0%, var(--adu-espresso) 75%);
+
+    /* The Default container isolates itself, which stops Chrome hit-testing the keys on the propped-up phone's
+       tilted board (its 3D scene only finds controls on their own layers, and only when nothing above isolates them). */
+    isolation: auto;
+
+    /* The simulation sizes and rounds the screen; the player just fills it. */
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    border-radius: inherit;
+    overflow: hidden;
+    background-color: #000;
+    color: var(--adu-cream);
+    font-family: var(--ax-mono);
+  }
+
+  @media (orientation: portrait) {
+    .ascii-duo {
+      --w: 626;
+    }
+  }
+
+  .ascii-duo[data-simulated] {
+    --pt: var(--pcd-sim-pt, calc(100cqi / var(--w)));
+  }
+
+  /* ================= Split (propped up, segments stacked) — the default rules =================
+     The picture fills the top viewport segment, the terminal board the bottom one. Positions come from the segment
+     variables set by useFoldable (the device, or the simulation), falling back to halves. */
+
+  .ascii-duo .adu-top {
+    position: absolute;
+    inset: var(--seg0-top, 0px) 0 auto;
+    height: var(--seg0-height, 50%);
+    background-color: #000;
+  }
+
+  .ascii-duo .adu-video {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .ascii-duo .adu-video video {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 0;
+  }
+
+  .ascii-duo .adu-feed-tab {
+    display: none;
+  }
+
+  /* Click the picture to play or pause (mouse); touch taps go to the gesture layer in the overlay layouts. */
+  .ascii-duo .adu-surface {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  @media (pointer: coarse) {
+    .ascii-duo:is([data-layout="duo-full"], [data-outer-fullscreen]) .adu-surface {
+      pointer-events: none;
+    }
+  }
+
+  /* The prompt lives on the transport here: the centre keeps only > EOF_. */
+  .ascii-duo .ax-stage-row {
+    display: none;
+  }
+
+  .ascii-duo .ax-end-banner {
+    font-size: calc(var(--pt) * 44);
+  }
+
+  .ascii-duo .ax-cue-layer {
+    bottom: calc(var(--pt) * 12);
+    translate: none;
+  }
+
+  .ascii-duo .ax-cue {
+    font-size: calc(var(--pt) * 15);
+  }
+
+  .ascii-duo video::cue {
+    font-family: var(--ax-mono);
+    background-color: rgb(21 13 8 / 0.85);
+    color: var(--adu-cream);
+  }
+
+  /* The fold: a dashed rule across the board's top edge. */
+  .ascii-duo .adu-crease {
+    position: absolute;
+    inset-inline: 0;
+    top: calc(var(--seg1-top, 50%) + var(--pt) * 6);
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pt) * 8);
+    padding-inline: var(--adu-margin);
+    color: rgb(255 178 46 / 0.55);
+    font: 600 calc(var(--pt) * 9) / 1 var(--ax-mono);
+    letter-spacing: 0.08em;
+    pointer-events: none;
+  }
+
+  .ascii-duo .adu-crease::before {
+    content: '';
+    flex: 1;
+    height: 0;
+    border-top: 1px dashed rgb(255 178 46 / 0.35);
+  }
+
+  .ascii-duo :is(.adu-rail, .adu-camera) {
+    display: none;
+  }
+
+  /* ---------- Bottom half: the terminal board ---------- */
+  .ascii-duo .adu-board {
+    position: absolute;
+    inset: var(--seg1-top, 50%) 0 auto;
+    height: var(--seg1-height, 50%);
+    background: var(--adu-paper);
+    font-size: calc(var(--pt) * 14);
+  }
+
+  .ascii-duo .adu-board > * {
+    position: absolute;
+  }
+
+  /* Each control is its own layer: that is what lets Chrome hit-test it on the tilted board of the propped-up phone. */
+  .ascii-duo :is(.adu-board, .adu-panel) :is(button, .media-button, .media-time-slider, [role='slider']) {
+    will-change: scale;
+  }
+
+  /* Home indicator: a short ochre stroke. */
+  .ascii-duo .adu-board::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--pt) * 10);
+    width: calc(var(--pt) * 140);
+    height: calc(var(--pt) * 5);
+    translate: -50% 0;
+    border-radius: 999px;
+    background-color: var(--adu-cream);
+    opacity: 0.7;
+  }
+
+  /* Row 1: title, chapter, status. */
+  .ascii-duo .adu-head {
+    left: var(--adu-margin);
+    right: var(--adu-margin);
+    top: calc(var(--pt) * 28);
+  }
+
+  .ascii-duo .adu-head p {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ascii-duo .adu-title {
+    font: 800 calc(var(--pt) * 20) / 1.1 var(--ax-mono);
+    letter-spacing: 0.1em;
+    color: var(--adu-cream);
+    text-shadow:
+      -2px 0 rgb(255 178 46 / 0.9),
+      2px 0 rgb(255 98 54 / 0.9);
+  }
+
+  .ascii-duo .adu-title .ax-cursor {
+    color: var(--adu-ochre);
+  }
+
+  .ascii-duo .adu-head .adu-sub {
+    margin-top: calc(var(--pt) * 4);
+    color: var(--adu-ochre);
+    font: calc(var(--pt) * 12) / 1.3 var(--ax-mono);
+    text-shadow: var(--ax-split-text);
+  }
+
+  .ascii-duo .adu-head .adu-status {
+    margin-top: calc(var(--pt) * 2);
+    color: rgb(255 240 214 / 0.75);
+    font: calc(var(--pt) * 10) / 1.3 var(--ax-mono);
+  }
+
+  .ascii-duo .adu-st-play {
+    color: var(--adu-sage);
+  }
+
+  .ascii-duo .adu-st-pause {
+    display: none;
+    color: var(--adu-terra);
+  }
+
+  .ascii-duo:has(.adu-play[data-paused]) .adu-st-play {
+    display: none;
+  }
+
+  .ascii-duo:has(.adu-play[data-paused]) .adu-st-pause {
+    display: inline;
+  }
+
+  /* Units: a panel with its title as an inverted tab above it. */
+  .ascii-duo .adu-unit {
+    border: 1px solid var(--ax-dim);
+    background-color: var(--adu-panel);
+    box-shadow:
+      -3px 0 0 rgb(255 98 54 / 0.3),
+      3px 0 0 rgb(255 178 46 / 0.16);
+  }
+
+  .ascii-duo .adu-tab {
+    margin: 0;
+    height: calc(var(--pt) * 18);
+    padding: 0 calc(var(--pt) * 6);
+    background-color: var(--adu-ochre);
+    color: var(--adu-on-ochre);
+    font: 800 calc(var(--pt) * 10) / calc(var(--pt) * 18) var(--ax-mono);
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    text-shadow: none;
+    box-shadow: -2px 0 0 var(--adu-terra);
+  }
+
+  .ascii-duo .adu-unit > .adu-tab {
+    position: absolute;
+    left: -1px;
+    bottom: 100%;
+  }
+
+  /* Row 2: transport — << 10, play, 10 >>. */
+  .ascii-duo .adu-transport {
+    left: 50%;
+    top: calc(var(--pt) * 112);
+    translate: -50% 0;
+  }
+
+  .ascii-duo .adu-transport-keys {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pt) * 14);
+    padding: calc(var(--pt) * 8) calc(var(--pt) * 14);
+  }
+
+  .ascii-duo .adu-transport .media-seek-button {
+    width: calc(var(--pt) * 60);
+    height: calc(var(--pt) * 52);
+    border: 1px solid var(--ax-dim);
+  }
+
+  .ascii-duo .adu-play {
+    width: calc(var(--pt) * 64);
+    height: calc(var(--pt) * 64);
+    border: 1px solid var(--adu-ochre);
+    background-color: rgb(255 178 46 / 0.08);
+  }
+
+  .ascii-duo .adu-play .media-button-icon {
+    width: calc(var(--pt) * 28);
+    height: calc(var(--pt) * 28);
+  }
+
+  /* Paused, the play key reads [ ▶ RUN ]. */
+  .ascii-duo .adu-board .adu-play[data-paused] {
+    width: auto;
+    padding: 0 calc(var(--pt) * 14);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6ch;
+    font: 800 calc(var(--pt) * 16) var(--ax-mono);
+    letter-spacing: 0.12em;
+    text-shadow: var(--ax-split-text);
+    box-shadow: -4px 0 0 1px rgb(255 98 54 / 0.45);
+  }
+
+  .ascii-duo .adu-board .adu-play[data-paused] .media-button-icon {
+    position: static;
+    width: calc(var(--pt) * 20);
+    height: calc(var(--pt) * 20);
+  }
+
+  .ascii-duo .adu-board .adu-play[data-paused]::before,
+  .ascii-duo .adu-board .adu-play[data-paused]::after {
+    position: static;
+    translate: none;
+    opacity: 1;
+    color: var(--adu-ochre);
+    font-size: inherit;
+    line-height: 1;
+  }
+
+  .ascii-duo .adu-board .adu-play[data-paused]::before {
+    content: '[';
+    order: -1;
+  }
+
+  .ascii-duo .adu-board .adu-play[data-paused]::after {
+    content: 'RUN ]';
+    color: var(--adu-cream);
+  }
+
+  .ascii-duo .adu-board .adu-play[data-ended]::after {
+    content: 'REPLAY ]';
+  }
+
+  /* Row 3: the timeline. */
+  .ascii-duo .adu-timeline {
+    left: var(--adu-margin);
+    right: var(--adu-margin);
+    top: calc(var(--pt) * 228);
+  }
+
+  .ascii-duo .adu-timeline-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: calc(var(--pt) * 10);
+    height: calc(var(--pt) * 48);
+    padding: 0 calc(var(--pt) * 10);
+  }
+
+  .ascii-duo .adu-timeline .media-time-slider {
+    width: 100%;
+    height: calc(var(--pt) * 44);
+  }
+
+  .ascii-duo .adu-time {
+    font: 600 calc(var(--pt) * 14) var(--ax-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Row 4: keys, each with its label under it. Captions hide themselves when the media has none. */
+  .ascii-duo .adu-keys {
+    left: 0;
+    right: 0;
+    top: calc(var(--pt) * 306);
+    display: flex;
+    justify-content: center;
+    gap: calc(var(--pt) * 18);
+  }
+
+  .ascii-duo .adu-key {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: calc(var(--pt) * 5);
+  }
+
+  /* A key whose control is hidden (data-hidden) or not rendered at all (captions on media without any) closes up. */
+  .ascii-duo .adu-key:is(:has([data-hidden]), :not(:has(button))) {
+    display: none;
+  }
+
+  .ascii-duo .adu-key > .media-button,
+  .ascii-duo .adu-key .adu-panel-key {
+    width: calc(var(--pt) * 52);
+    height: calc(var(--pt) * 52);
+    border: 1px solid var(--ax-dim);
+    background-color: var(--adu-panel);
+  }
+
+  .ascii-duo .adu-key-label {
+    color: var(--adu-ochre);
+    font: 600 calc(var(--pt) * 9) / 1 var(--ax-mono);
+    letter-spacing: 0.08em;
+    text-shadow: var(--ax-split-text);
+  }
+
+  .ascii-duo .adu-panel-key {
+    display: grid;
+    place-items: center;
+    padding: 0;
+    color: var(--adu-cream);
+    cursor: pointer;
+  }
+
+  .ascii-duo .adu-panel-key.is-open,
+  .ascii-duo .adu-key .media-captions-button[data-active] {
+    border-color: var(--adu-ochre);
+  }
+
+  .ascii-duo .adu-board .adu-panel-key.is-open {
+    background-color: var(--adu-ochre);
+    color: var(--adu-on-ochre);
+  }
+
+  .ascii-duo .adu-glyph {
+    font: 800 calc(var(--pt) * 22) / 1 var(--ax-mono);
+  }
+
+  /* Wires between the rows, with their labels. */
+  .ascii-duo .adu-wire {
+    left: 50%;
+    width: 0;
+    display: flex;
+    align-items: center;
+    border-left: 1px dashed var(--ax-dim);
+    padding-left: calc(var(--pt) * 6);
+    color: var(--adu-ochre);
+    font: 600 calc(var(--pt) * 9) / 1 var(--ax-mono);
+    white-space: nowrap;
+    text-shadow: var(--ax-split-text);
+    pointer-events: none;
+  }
+
+  .ascii-duo .adu-wire-a {
+    display: none;
+  }
+
+  .ascii-duo .adu-wire-b {
+    top: calc(var(--pt) * 182);
+    height: calc(var(--pt) * 28);
+  }
+
+  .ascii-duo .adu-wire-c {
+    top: calc(var(--pt) * 278);
+    height: calc(var(--pt) * 28);
+  }
+
+  /* ---------- Panels: chapters and settings, scrolling inside themselves ---------- */
+  /* Panels live inside the board, so they cover what it covers: the bottom half when split. */
+  .ascii-duo .adu-panel {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    pointer-events: auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    padding: calc(var(--pt) * 14) var(--adu-margin) calc(var(--pt) * 20);
+    background-color: rgb(21 13 8 / 0.97);
+    border-top: 1px solid var(--adu-ochre);
+    box-shadow: 0 -4px 0 rgb(255 98 54 / 0.35);
+    color: var(--adu-cream);
+  }
+
+  .ascii-duo .adu-panel[hidden] {
+    display: none;
+  }
+
+  .ascii-duo .adu-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--pt) * 12);
+    padding-bottom: calc(var(--pt) * 10);
+  }
+
+  .ascii-duo .adu-panel-head .adu-tab {
+    height: calc(var(--pt) * 22);
+    font-size: calc(var(--pt) * 11);
+    line-height: calc(var(--pt) * 22);
+  }
+
+  .ascii-duo .adu-panel-close {
+    flex: none;
+    width: calc(var(--pt) * 44);
+    height: calc(var(--pt) * 44);
+    padding: 0;
+    border: 1px solid var(--ax-dim);
+    background: transparent;
+    color: var(--adu-cream);
+    font: 700 calc(var(--pt) * 16) var(--ax-mono);
+    cursor: pointer;
+  }
+
+  .ascii-duo .adu-panel-close:focus-visible {
+    outline: 1px solid var(--adu-ochre);
+    outline-offset: 2px;
+  }
+
+  .ascii-duo .adu-panel-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--pt) * 14);
+  }
+
+  /* Tapping the picture while a panel is open closes it. */
+  .ascii-duo .adu-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 35;
+    padding: 0;
+    border: 0;
+    background: rgb(10 6 4 / 0.3);
+    cursor: pointer;
+  }
+
+  /* Chapter rows and settings keys (the schematic layout's parts, styled for this player). */
+  .ascii-duo .sx-chapter-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ascii-duo .sx-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--pt) * 12);
+    width: 100%;
+    min-height: calc(var(--pt) * 52);
+    padding: calc(var(--pt) * 6) calc(var(--pt) * 10);
+    border: 0;
+    border-bottom: 1px dashed var(--ax-faint);
+    background: transparent;
+    color: var(--adu-cream);
+    font: 600 calc(var(--pt) * 13) / 1.35 var(--ax-mono);
+    text-align: left;
+    text-shadow: var(--ax-split-text);
+    cursor: pointer;
+  }
+
+  .ascii-duo .sx-chapter-list li:last-child .sx-row {
+    border-bottom: 0;
+  }
+
+  .ascii-duo .sx-row.is-active {
+    color: var(--adu-ochre);
+    background-color: rgb(255 178 46 / 0.1);
+  }
+
+  .ascii-duo .sx-row-value {
+    flex: none;
+    color: var(--adu-ochre);
+  }
+
+  .ascii-duo .sx-row.is-active .sx-row-value {
+    color: var(--adu-sage);
+  }
+
+  @media (hover: hover) {
+    .ascii-duo .sx-row:hover {
+      background-color: var(--adu-ochre);
+      color: var(--adu-on-ochre);
+      text-shadow: none;
+    }
+
+    .ascii-duo .sx-row:hover .sx-row-value {
+      color: inherit;
+    }
+  }
+
+  .ascii-duo .sx-row:focus-visible {
+    outline: 1px solid var(--adu-ochre);
+    outline-offset: -2px;
+  }
+
+  .ascii-duo .sx-empty {
+    margin: 0;
+    color: var(--adu-ochre);
+    font: calc(var(--pt) * 12) var(--ax-mono);
+  }
+
+  .ascii-duo .sx-option-title {
+    margin: 0 0 calc(var(--pt) * 6);
+    color: var(--adu-ochre);
+    font: 700 calc(var(--pt) * 11) var(--ax-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-shadow: var(--ax-split-text);
+  }
+
+  .ascii-duo .sx-option-keys {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--pt) * 6);
+  }
+
+  .ascii-duo .sx-option {
+    min-width: calc(var(--pt) * 44);
+    min-height: calc(var(--pt) * 44);
+    padding: 0 calc(var(--pt) * 10);
+    border: 1px solid rgb(255 178 46 / 0.35);
+    background: transparent;
+    color: var(--adu-cream);
+    font: 600 calc(var(--pt) * 12) var(--ax-mono);
+    cursor: pointer;
+  }
+
+  .ascii-duo .sx-option[aria-pressed='true'] {
+    border-color: var(--adu-ochre);
+    background-color: var(--adu-ochre);
+    color: var(--adu-on-ochre);
+  }
+
+  .ascii-duo .sx-option:focus-visible {
+    outline: 1px solid var(--adu-cream);
+    outline-offset: 2px;
+  }
+
+  .ascii-duo .sx-option:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* ================= Full (flat screen, any orientation) =================
+     The picture fills the display; the units float over it — title top-left, keys top-right, transport in the middle,
+     the timeline along the bottom — and step away while playing until a tap or pointer move. */
+  .ascii-duo[data-layout="duo-full"] .adu-top {
+    inset: 0;
+    height: auto;
+  }
+
+  .ascii-duo[data-layout="duo-full"] :is(.adu-crease, .adu-wire) {
+    display: none;
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-board {
+    inset: 0;
+    height: auto;
+    background: linear-gradient(to bottom, rgb(10 6 4 / 0.7), transparent 22%, transparent 70%, rgb(10 6 4 / 0.8));
+    pointer-events: none;
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-board::after {
+    display: none;
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-board :is(button, [role='slider'], .media-time-slider) {
+    pointer-events: auto;
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-head {
+    left: calc(var(--pt) * 24);
+    right: auto;
+    top: calc(var(--pt) * 24);
+    max-width: calc(100% - var(--pt) * 330);
+    padding: calc(var(--pt) * 6) calc(var(--pt) * 10);
+    background-color: rgb(21 13 8 / 0.62);
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-title {
+    font-size: calc(var(--pt) * 17);
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-transport {
+    top: 50%;
+    translate: -50% -50%;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-transport > .adu-tab {
+    display: none;
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-transport .media-seek-button,
+  .ascii-duo[data-layout="duo-full"] .adu-play {
+    background-color: rgb(21 13 8 / 0.8);
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-timeline {
+    top: auto;
+    bottom: calc(var(--pt) * 24);
+    left: calc(var(--pt) * 24);
+    right: calc(var(--pt) * 24);
+    background-color: rgb(21 13 8 / 0.78);
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-keys {
+    left: auto;
+    right: calc(var(--pt) * 24);
+    top: calc(var(--pt) * 24);
+    gap: calc(var(--pt) * 6);
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-key-label {
+    display: none;
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-key > .media-button,
+  .ascii-duo[data-layout="duo-full"] .adu-key .adu-panel-key {
+    width: calc(var(--pt) * 46);
+    height: calc(var(--pt) * 46);
+    background-color: rgb(21 13 8 / 0.78);
+  }
+
+  .ascii-duo[data-layout="duo-full"][data-controls-visible] .ax-cue-layer {
+    bottom: calc(var(--pt) * 100);
+  }
+
+  .ascii-duo[data-layout="duo-full"] .ax-cue {
+    font-size: calc(var(--pt) * 18);
+  }
+
+  /* Panels slide in from the trailing edge, full height. */
+  .ascii-duo[data-layout="duo-full"] .adu-panel {
+    inset: 0 0 0 auto;
+    width: min(calc(var(--pt) * 380), 78%);
+    padding: calc(var(--pt) * 24) calc(var(--pt) * 24) calc(var(--pt) * 20) calc(var(--pt) * 16);
+    border-top: 0;
+    border-left: 1px solid var(--adu-ochre);
+    box-shadow: -4px 0 0 rgb(255 98 54 / 0.35);
+  }
+
+  /* ================= Outer display (closed) =================
+     The picture is a feed unit on the leading side; the keys line up on a 73 pt rail along the trailing edge, under
+     the camera. The board's groups step aside (display: contents) so every key lands in the rail's column. */
+  .ascii-duo[data-layout^="duo-outer"] {
+    background: var(--adu-paper);
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-crease {
+    display: none;
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-top {
+    left: calc(var(--pt) * 14);
+    top: calc(var(--pt) * var(--adu-video-top));
+    width: calc(var(--pt) * var(--adu-content-w));
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--adu-ochre);
+    box-shadow:
+      -3px 0 0 rgb(255 98 54 / 0.3),
+      3px 0 0 rgb(255 178 46 / 0.16);
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-feed-tab {
+    display: block;
+    position: absolute;
+    left: -1px;
+    bottom: 100%;
+    margin: 0;
+    height: calc(var(--pt) * 18);
+    padding: 0 calc(var(--pt) * 6);
+    background-color: var(--adu-ochre);
+    color: var(--adu-on-ochre);
+    font: 800 calc(var(--pt) * 10) / calc(var(--pt) * 18) var(--ax-mono);
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    box-shadow: -2px 0 0 var(--adu-terra);
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-board {
+    inset: 0;
+    height: auto;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: calc(var(--pt) * 10);
+    padding: calc(var(--pt) * 70) calc(var(--pt) * 12.5) calc(var(--pt) * 23) 0;
+    background: none;
+    pointer-events: none;
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-board::after,
+  .ascii-duo[data-layout^="duo-outer"] :is(.adu-key-label, .adu-wire) {
+    display: none;
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] :is(.adu-transport, .adu-transport-keys, .adu-keys) {
+    display: contents;
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-transport > .adu-tab {
+    display: none;
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-board :is(button, [role='slider'], .media-time-slider) {
+    pointer-events: auto;
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-board :is(.media-seek-button, .adu-key) {
+    position: relative;
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-board :is(.media-seek-button, .adu-key > .media-button, .adu-key .adu-panel-key) {
+    width: calc(var(--pt) * 48);
+    height: calc(var(--pt) * 48);
+    background-color: var(--adu-panel);
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-play {
+    order: -1;
+    width: calc(var(--pt) * 56);
+    height: calc(var(--pt) * 56);
+  }
+
+  /* No room for the RUN label on the rail: the key keeps its icon. */
+  .ascii-duo[data-layout^="duo-outer"] .adu-board .adu-play[data-paused] {
+    width: calc(var(--pt) * 56);
+    padding: 0;
+    justify-content: center;
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-board .adu-play[data-paused]::before,
+  .ascii-duo[data-layout^="duo-outer"] .adu-board .adu-play[data-paused]::after {
+    content: none;
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-key-fullscreen {
+    order: 1;
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] :is(.adu-head, .adu-timeline) {
+    position: absolute;
+    left: calc(var(--pt) * 14);
+    right: auto;
+    width: calc(var(--pt) * var(--adu-content-w));
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-title {
+    font-size: calc(var(--pt) * 18);
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-timeline-row {
+    height: calc(var(--pt) * 44);
+    gap: calc(var(--pt) * 8);
+    padding: 0 calc(var(--pt) * 8);
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-time {
+    font-size: calc(var(--pt) * 12);
+  }
+
+  /* The rail: a darker strip ruled off with a dashed line, and the camera at its top. */
+  .ascii-duo[data-layout^="duo-outer"] .adu-rail {
+    display: block;
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: calc(var(--pt) * 73);
+    background-color: rgb(10 6 4 / 0.55);
+    border-left: 1px dashed var(--ax-dim);
+  }
+
+  .ascii-duo[data-layout^="duo-outer"] .adu-camera {
+    display: block;
+    position: absolute;
+    top: calc(var(--pt) * 22);
+    right: calc(var(--pt) * 18);
+    width: calc(var(--pt) * 37);
+    height: calc(var(--pt) * 37);
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, #2c3340 0 14%, #07080a 15% 100%);
+    box-shadow: 0 0 0 calc(var(--pt) * 2) rgb(0 0 0 / 0.6);
+  }
+
+  /* Panels cover the content area, left of the rail. */
+  .ascii-duo[data-layout^="duo-outer"] .adu-panel {
+    inset: 0 calc(var(--pt) * 73) 0 0;
+    padding: calc(var(--pt) * 20) calc(var(--pt) * 14);
+    border-top: 0;
+    border-right: 1px solid var(--adu-ochre);
+    box-shadow: 4px 0 0 rgb(255 98 54 / 0.35);
+  }
+
+  /* ---------- Outer · portrait (466 × 678 pt) ---------- */
+  .ascii-duo[data-layout="duo-outer-p"] {
+    --adu-content-w: 366;
+    --adu-video-top: 250;
+  }
+
+  .ascii-duo[data-layout="duo-outer-p"] .adu-head {
+    top: calc(var(--pt) * 140);
+  }
+
+  .ascii-duo[data-layout="duo-outer-p"] .adu-timeline {
+    top: calc(var(--pt) * 484);
+  }
+
+  /* The wallpaper: an illustration in the empty space above the title and under the timeline. */
+  .ascii-duo .adu-wallpaper {
+    display: none;
+  }
+
+  .ascii-duo[data-layout="duo-outer-p"]:not([data-outer-fullscreen]) .adu-wallpaper {
+    display: block;
+    position: absolute;
+    inset: 0 calc(var(--pt) * 73) 0 0;
+    width: calc(100% - var(--pt) * 73);
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* Wallpaper motion, in steps like the rest of the glitch. */
+  .ascii-duo .adu-flick {
+    animation: adu-flick 4.2s steps(1) infinite;
+  }
+
+  .ascii-duo .adu-tear {
+    animation: adu-tear 5.6s steps(1) infinite;
+  }
+
+  .ascii-duo .adu-roll {
+    animation: adu-roll 7s steps(56) infinite;
+  }
+
+  @keyframes adu-flick {
+    0%, 100% { opacity: 1; }
+    46% { opacity: 0.15; }
+    50% { opacity: 1; }
+    53% { opacity: 0; }
+    57% { opacity: 1; }
+  }
+
+  /* Mostly in line; a short jolt sideways, back past centre, then home. */
+  @keyframes adu-tear {
+    0%, 84%, 100% { transform: translateX(0); }
+    86% { transform: translateX(var(--tear)); }
+    90% { transform: translateX(calc(var(--tear) * -0.4)); }
+    93% { transform: translateX(calc(var(--tear) * 0.6)); }
+  }
+
+  @keyframes adu-roll {
+    from { transform: translateY(0); }
+    to { transform: translateY(702px); }
+  }
+
+  /* ---------- Outer · landscape (678 × 466 pt) ----------
+     Less height on the rail: the skip keys step out (double-tap or the timeline skips instead). */
+  .ascii-duo[data-layout="duo-outer-l"] {
+    --adu-content-w: 572;
+    --adu-video-top: 44;
+  }
+
+  .ascii-duo[data-layout="duo-outer-l"] .adu-head {
+    display: none;
+  }
+
+  .ascii-duo[data-layout="duo-outer-l"] .adu-board {
+    gap: calc(var(--pt) * 8);
+  }
+
+  .ascii-duo[data-layout="duo-outer-l"] .adu-board .media-seek-button {
+    display: none;
+  }
+
+  .ascii-duo[data-layout="duo-outer-l"] .adu-timeline {
+    top: calc(var(--pt) * 392);
+  }
+
+  /* ---------- Outer · fullscreen (simulation) ----------
+     The picture takes the whole outer display; the rail and the timeline lie over it and step away while playing. */
+  .ascii-duo[data-outer-fullscreen] {
+    background: #000;
+  }
+
+  .ascii-duo[data-outer-fullscreen] .adu-top {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .ascii-duo[data-outer-fullscreen] :is(.adu-head, .adu-feed-tab) {
+    display: none;
+  }
+
+  .ascii-duo[data-outer-fullscreen] .adu-timeline {
+    top: auto;
+    bottom: calc(var(--pt) * 14);
+    background-color: rgb(21 13 8 / 0.78);
+  }
+
+  /* ---------- Hiding while playing (full, and outer fullscreen) ---------- */
+  .ascii-duo:is([data-layout="duo-full"], [data-outer-fullscreen]) :is(.adu-rail, .adu-board > *, .adu-keys > *, .adu-transport-keys > *) {
+    transition-property: opacity, translate;
+    transition-duration: var(--media-duration-controls, 0.3s);
+    transition-timing-function: steps(4);
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-board {
+    transition: opacity var(--media-duration-controls, 0.3s) steps(4);
+  }
+
+  .ascii-duo[data-layout="duo-full"] .adu-board:not([data-visible]) {
+    opacity: 0;
+  }
+
+  .ascii-duo[data-outer-fullscreen]:has(.adu-board:not([data-visible])) .adu-rail,
+  .ascii-duo[data-outer-fullscreen] .adu-board:not([data-visible]) :is(.adu-board > *, .adu-keys > *, .adu-transport-keys > *) {
+    opacity: 0;
+  }
+
+  .ascii-duo[data-outer-fullscreen]:has(.adu-board:not([data-visible])) .adu-rail {
+    translate: calc(var(--pt) * 30) 0;
+  }
+
+  .ascii-duo:is([data-layout="duo-full"], [data-outer-fullscreen]) .adu-board:not([data-visible]) * {
+    pointer-events: none;
+  }
+
+  @media (pointer: fine) {
+    .ascii-duo[data-layout="duo-full"]:not([data-controls-visible]) {
+      cursor: none;
+    }
+  }
+
+  /* ---------- Preferences ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .ascii-duo :is(.adu-rail, .adu-board, .adu-board > *) {
+      transition: none;
+    }
+
+    .ascii-duo :is(.adu-flick, .adu-tear, .adu-roll) {
+      animation: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .ascii-duo :is(.adu-unit, .adu-panel, .adu-key > .media-button, .adu-panel-key) {
+      forced-color-adjust: none;
+      background-color: Canvas;
+      color: CanvasText;
+      border-color: CanvasText;
+    }
+  }
+}
+
+/* ---------- Tabletop in the simulation: the live player bends with the phone ----------
+   As for Papercut · Duo and Sketch · Duo (simulation.css): the picture folds up with the cover, the board and its
+   panels stay on the body. That needs one 3D context from the device down to the picture, so everything between keeps
+   its children in 3D. Outside the layer, like theirs, so it wins over the layout rules. */
+.pcd-dev-screen[data-tabletop] .ascii-duo {
+  overflow: visible;
+  isolation: auto;
+  transform-style: preserve-3d;
+  background: transparent;
+}
+
+.pcd-dev-screen[data-tabletop] .ascii-duo .adu-top {
+  overflow: hidden;
+  border-radius: calc(var(--u) * 43) calc(var(--u) * 43) 0 0;
+  transform-origin: center bottom;
+  transform: rotateX(calc(var(--fold) * -180deg)) translateZ(3px);
+  backface-visibility: hidden;
+}
+
+.pcd-dev-screen[data-tabletop] .ascii-duo .adu-board {
+  overflow: hidden;
+  border-radius: 0 0 calc(var(--u) * 43) calc(var(--u) * 43);
+}
+
+.pcd-dev[data-flat] .pcd-dev-screen[data-tabletop] .ascii-duo .adu-board {
+  transform: translateZ(1px);
+}
+
+/* A stacking context (the z-index) on the panel hides its buttons from the tilted scene's hit-testing; as the board's
+   last child it paints on top without one. */
+.pcd-dev-screen[data-tabletop] .ascii-duo .adu-panel {
+  z-index: auto;
+}
+
+/* The scrim would lie flat where the picture has folded away; the panel covers the whole board anyway. */
+.pcd-dev-screen[data-tabletop] .ascii-duo .adu-scrim {
+  display: none;
+}
+
