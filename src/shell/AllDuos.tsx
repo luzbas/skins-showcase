@@ -1,7 +1,8 @@
-// "All Duos": the four iPhone Duo layouts on one desk. The phones lie closed along the edge of the desk; pick one and it
-// comes up to the stage as the live player, with its own pose bar. Pick another and the one on stage closes, slides
-// back to its spot, and the new one comes up. Only the phone on stage is a player, so only one video loads at a time.
-import { Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
+// "All Duos": the iPhone Duo layouts on one desk. At first the phones stand together in the middle of the desk, with no
+// stage. Pick one and it rises to the stage as the live player, with its own pose bar, while the others shrink back to
+// the desk's edge. Pick another and the one on stage closes, slides back to its spot, and the new one comes up; put it
+// back and they all return to the middle. Only the phone on stage is a player, so only one video loads at a time.
+import { Suspense, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { DuoPoseBar, INITIAL_SELECTION, type DuoSimulationController, type Selection } from '../duo-kit/duo-simulation';
 import { SKINS, type Skin } from './registry';
 import papercutImg from '../lib/duo/desk/papercut.webp';
@@ -22,6 +23,8 @@ const DESK: Record<string, { img: string; tilt: number }> = {
 const IMG_ASPECT = 895 / 1158;
 const FLIGHT_MS = 650;
 const FADE_MS = 200;
+/** How long the phones take to move between the middle of the desk and its edge. */
+const REGROUP_MS = 480;
 
 type Rect = { left: number; top: number; width: number; height: number; tilt: number };
 interface Flight {
@@ -70,6 +73,24 @@ export default function AllDuos() {
 
   const controller = useRef<DuoSimulationController | null>(null);
   const slotImgs = useRef<Record<string, HTMLImageElement | null>>({});
+  /** 'gallery': nothing picked, the phones stand in the middle. 'desk': one is on the stage, the rest along the edge. */
+  const [mode, setMode] = useState<'gallery' | 'desk'>('gallery');
+  const shelf = useRef<HTMLUListElement>(null);
+  const shelfBefore = useRef<DOMRect | null>(null);
+  const regroup = (next: 'gallery' | 'desk') => {
+    shelfBefore.current = shelf.current?.getBoundingClientRect() ?? null;
+    setMode(next);
+  };
+  // The phones glide between the middle and the edge: the row is laid out in its new place, then eased in from the old.
+  useLayoutEffect(() => {
+    const el = shelf.current;
+    const before = shelfBefore.current;
+    shelfBefore.current = null;
+    if (!el || !before || reducedMotion()) return;
+    const dy = before.top + before.height / 2 - (el.getBoundingClientRect().top + el.getBoundingClientRect().height / 2);
+    if (Math.abs(dy) < 1) return;
+    el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: REGROUP_MS, easing: 'cubic-bezier(0.3, 0.9, 0.3, 1)' });
+  }, [mode]);
   const activeId = useRef<string | null>(null);
   const queued = useRef<string | null>(null);
   const alive = useRef(true);
@@ -104,6 +125,11 @@ export default function AllDuos() {
   async function bringUp(skin: Skin) {
     const slot = slotImgs.current[skin.id];
     const from = slot ? slotRect(slot, DESK[skin.id].tilt) : null;
+    if (mode === 'gallery' || !activeId.current) {
+      // From the middle: it waits where it stood while the others move to the edge, then rises to the stage.
+      if (from && !reducedMotion()) setFlight({ id: skin.id, rect: from, to: from, moving: false });
+      regroup('desk');
+    }
     setAway(skin.id);
     setSelection(INITIAL_SELECTION);
     setLive(false);
@@ -174,13 +200,18 @@ export default function AllDuos() {
 
   const putBack = () => {
     if (busy || !activeId.current) return;
-    void run(sendHome);
+    void run(async () => {
+      await sendHome();
+      if (!alive.current) return;
+      regroup('gallery');
+      await wait(reducedMotion() ? 0 : REGROUP_MS);
+    });
   };
 
   const Player = active?.duo?.Player;
 
   return (
-    <div className="duos" data-busy={busy ? '' : undefined}>
+    <div className="duos" data-mode={mode} data-busy={busy ? '' : undefined}>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" precedence="default" />
       <h1 className="visually-hidden">All Duos</h1>
 
@@ -204,11 +235,6 @@ export default function AllDuos() {
       </div>
 
       <div className="duos-stage">
-        {!active && !flight && (
-          <div className="duos-stage-empty" aria-hidden="true">
-            stage
-          </div>
-        )}
         {Player && (
           <div className="duos-stage-player" data-live={live ? '' : undefined} inert={!live}>
             <Suspense fallback={null}>
@@ -223,7 +249,7 @@ export default function AllDuos() {
         )}
       </div>
 
-      <ul className="duos-shelf" aria-label="Duo phones">
+      <ul ref={shelf} className="duos-shelf" aria-label="Duo phones">
         {duos.map((s) => {
           const desk = DESK[s.id];
           const off = away === s.id;

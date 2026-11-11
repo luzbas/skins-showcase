@@ -85,20 +85,6 @@
   background: radial-gradient(closest-side, rgba(0, 0, 0, 0.32), transparent);
   pointer-events: none;
 }
-.duos-stage-empty {
-  display: grid;
-  place-items: center;
-  width: min(280px, 60vw);
-  aspect-ratio: 3 / 4;
-  max-height: 100%;
-  box-sizing: border-box;
-  border: 2px dashed rgba(243, 230, 207, 0.22);
-  border-radius: 28px;
-  color: rgba(243, 230, 207, 0.4);
-  font-family: Caveat, cursive;
-  font-weight: 600;
-  font-size: 30px;
-}
 .duos-stage-player {
   position: relative;
   z-index: 1;
@@ -139,7 +125,24 @@
   width: clamp(64px, 9vw, 118px);
   height: auto;
   filter: drop-shadow(0 8px 7px rgba(0, 0, 0, 0.45));
+  transition: width 480ms cubic-bezier(0.3, 0.9, 0.3, 1);
 }
+
+/* ---------- Before anything is picked: the phones stand together in the middle, bigger, with no stage ---------- */
+.duos[data-mode='gallery'] .duos-stage { display: none; }
+.duos[data-mode='gallery'] .duos-shelf {
+  flex: 1;
+  align-items: center;
+  align-content: center;
+  flex-wrap: wrap;
+  gap: 40px clamp(20px, 4vw, 64px);
+  padding: 24px 0 40px;
+  border-top: 0;
+  box-shadow: none;
+}
+.duos[data-mode='gallery'] .duos-slot-button img { width: clamp(110px, 14vw, 220px); filter: drop-shadow(0 18px 16px rgba(0, 0, 0, 0.5)); }
+.duos[data-mode='gallery'] .duos-slot { gap: 16px; }
+.duos[data-mode='gallery'] .duos-tag { font-size: clamp(20px, 2vw, 28px); }
 .duos-slot-button:hover { translate: 0 -6px; }
 .duos-slot-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; }
 .duos-slot[data-away] .duos-slot-button { cursor: default; translate: none; }
