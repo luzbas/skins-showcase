@@ -154,6 +154,8 @@ export const SKINS: Skin[] = [
     id: 'annotated',
     name: 'Annotated Page',
     description: 'A player laid out as an open book: the film a figure on the left page, the controls a sentence on the right, the extras footnotes.',
+    repo: 'https://github.com/luzbas/annotated-skin',
+    demo: 'https://luzbas.github.io/annotated-skin/',
     Player: AnnotatedPlayer,
     duo: { Player: lazy(() => import('../lib/duo/AnnotatedDuo')) },
     variations: [PLAYER_ONLY],
